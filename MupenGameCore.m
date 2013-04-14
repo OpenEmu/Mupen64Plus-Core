@@ -32,6 +32,7 @@
 #import "api/m64p_common.h"
 #import "api/m64p_config.h"
 #import "api/m64p_frontend.h"
+#import "api/m64p_vidext.h"
 #import "rom.h"
 #import "osal/dynamiclib.h"
 #import "version.h"
@@ -53,6 +54,8 @@ NSString *MupenControlNames[] = {
 @end
 
 MupenGameCore *g_core;
+
+static void (*ptr_OE_ForceUpdateWindowSize)(int width, int height);
 
 @implementation MupenGameCore
 {
@@ -223,14 +226,16 @@ static void MupenSetAudioSpeed(int percent)
     ConfigSetParameter(config, "SaveSRAMPath", M64TYPE_STRING, [batterySavesDirectory UTF8String]);
     ConfigSaveSection("Core");
 
-#ifdef DEBUG
     // Disable dynarec (for debugging)
     m64p_handle section;
+#ifdef DEBUG
     int ival = 0;
-
+#else
+    int ival = 2;
+#endif
+    
     ConfigOpenSection("Core", &section);
     ConfigSetParameter(section, "R4300Emulator", M64TYPE_INT, &ival);
-#endif
         
     // Load ROM
     romData = [NSData dataWithContentsOfMappedFile:path];
@@ -253,6 +258,8 @@ static void MupenSetAudioSpeed(int percent)
     // Load Video
     LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-rice.so");
     //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-glide64mk2.so");
+    
+    ptr_OE_ForceUpdateWindowSize = dlsym(RTLD_DEFAULT, "_OE_ForceUpdateWindowSize");
     
     // Load Audio
     audio.aiDacrateChanged = MupenAudioSampleRateChanged;
@@ -349,6 +356,12 @@ static void MupenSetAudioSpeed(int percent)
 - (OEIntSize)bufferSize
 {
     return OEIntSizeMake(videoWidth, videoHeight);
+}
+
+- (void) tryToResizeVideoTo:(OEIntSize)size
+{
+    VidExt_SetVideoMode(size.width, size.height, 32, M64VIDEO_WINDOWED);
+    ptr_OE_ForceUpdateWindowSize(size.width, size.height);
 }
 
 - (BOOL)rendersToOpenGL
