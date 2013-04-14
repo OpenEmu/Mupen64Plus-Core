@@ -352,7 +352,7 @@ BOOL InitConfiguration(void)
     ConfigSetDefaultBool(l_ConfigVideoRice, "DumpTexturesToFiles", FALSE, "Enable texture dumping");
     ConfigSetDefaultBool(l_ConfigVideoRice, "ShowFPS", FALSE, "Display On-screen FPS");
 
-    ConfigSetDefaultInt(l_ConfigVideoRice, "Mipmapping", 3, "Use Mipmapping? 0=no, 1=nearest, 2=bilinear, 3=trilinear");
+    ConfigSetDefaultInt(l_ConfigVideoRice, "Mipmapping", 0, "Use Mipmapping? 0=no, 1=nearest, 2=bilinear, 3=trilinear");
     ConfigSetDefaultInt(l_ConfigVideoRice, "FogMethod", 0, "Enable, Disable or Force fog generation (0=Disable, 1=Enable n64 choose, 2=Force Fog)");
     ConfigSetDefaultInt(l_ConfigVideoRice, "ForceTextureFilter", 0, "Force to use texture filtering or not (0=auto: n64 choose, 1=force no filtering, 2=force filtering)");
     ConfigSetDefaultInt(l_ConfigVideoRice, "TextureEnhancement", 3, "Primary texture enhancement filter (0=None, 1=2X, 2=2XSAI, 3=HQ2X, 4=LQ2X, 5=HQ4X, 6=Sharpen, 7=Sharpen More, 8=External, 9=Mirrored)");
