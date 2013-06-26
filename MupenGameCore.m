@@ -125,8 +125,8 @@ static void MupenGetKeys(int Control, BUTTONS *Keys)
     Keys->U_CBUTTON = g_core->padData[Control][OEN64ButtonCUp];
     Keys->R_TRIG = g_core->padData[Control][OEN64ButtonR];
     Keys->L_TRIG = g_core->padData[Control][OEN64ButtonL];
-    Keys->X_AXIS = (g_core->xAxis[Control][0] ?: (g_core->xAxis[Control][1] ?: 0));
-    Keys->Y_AXIS = (g_core->yAxis[Control][0] ?: (g_core->yAxis[Control][1] ?: 0));
+    Keys->X_AXIS = g_core->xAxis[Control];
+    Keys->Y_AXIS = g_core->yAxis[Control];
 }
 
 static void MupenInitiateControllers (CONTROL_INFO ControlInfo)
@@ -413,16 +413,16 @@ static void MupenSetAudioSpeed(int percent)
     switch (button)
     {
         case OEN64AnalogUp:
-            yAxis[player][0] = value * INT8_MAX;
+            yAxis[player] = value * INT8_MAX;
             break;
         case OEN64AnalogDown:
-            yAxis[player][1] = value * INT8_MIN;
+            yAxis[player] = value * INT8_MIN;
             break;
         case OEN64AnalogLeft:
-            xAxis[player][0] = value * INT8_MIN;
+            xAxis[player] = value * INT8_MIN;
             break;
         case OEN64AnalogRight:
-            xAxis[player][1] = value * INT8_MAX;
+            xAxis[player] = value * INT8_MAX;
             break;
         default:
             break;
