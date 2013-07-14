@@ -35,6 +35,7 @@
 #import "api/m64p_vidext.h"
 #import "api/callbacks.h"
 #import "rom.h"
+#import "savestates.h"
 #import "osal/dynamiclib.h"
 #import "version.h"
 
@@ -351,6 +352,7 @@ static void _OEMupenGameCoreSaveStateCallback(void *context, m64p_core_param par
 {
     SetStateCallback(_OEMupenGameCoreSaveStateCallback, (__bridge_retained void *)[block copy]);
     CoreDoCommand(M64CMD_STATE_SAVE, 1, (void *)[fileName UTF8String]);
+    savestates_save();
 }
 
 static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param paramType, int newValue)
