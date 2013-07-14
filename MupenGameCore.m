@@ -33,6 +33,7 @@
 #import "api/m64p_config.h"
 #import "api/m64p_frontend.h"
 #import "api/m64p_vidext.h"
+#import "api/callbacks.h"
 #import "rom.h"
 #import "osal/dynamiclib.h"
 #import "version.h"
@@ -337,20 +338,34 @@ static void MupenSetAudioSpeed(int percent)
     CoreDoCommand(M64CMD_RESET, 1 /* hard reset */, NULL);
 }
 
-- (BOOL)saveStateToFileAtPath:(NSString *)fileName
+static void _OEMupenGameCoreSaveStateCallback(void *context, m64p_core_param paramType, int newValue)
 {
-    // freeze save
-    //FIXME how to fit into emu event loop?
-    //CoreDoCommand(M64CMD_STATE_SAVE, 1, (void*)[fileName UTF8String]);
-    return NO;
+    SetStateCallback(NULL, NULL);
+
+    void (^block)(BOOL) = (__bridge_transfer void(^)(BOOL))context;
+
+    block(paramType == M64CORE_STATE_SAVECOMPLETE);
 }
 
-- (BOOL)loadStateFromFileAtPath:(NSString *)fileName
+- (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL))block
 {
-    // freeze load
-    //FIXME how to fit into emu event loop?
-    //CoreDoCommand(M64CMD_STATE_LOAD, 1, (void*)[fileName UTF8String]);
-    return NO;
+    SetStateCallback(_OEMupenGameCoreSaveStateCallback, (__bridge_retained void *)[block copy]);
+    CoreDoCommand(M64CMD_STATE_SAVE, 1, (void *)[fileName UTF8String]);
+}
+
+static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param paramType, int newValue)
+{
+    SetStateCallback(NULL, NULL);
+
+    void (^block)(BOOL) = (__bridge_transfer void(^)(BOOL))context;
+
+    block(paramType == M64CORE_STATE_LOADCOMPLETE);
+}
+
+- (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL))block
+{
+    SetStateCallback(_OEMupenGameCoreLoadStateCallback, (__bridge_retained void *)[block copy]);
+    CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName UTF8String]);
 }
 
 - (OEIntSize)bufferSize
