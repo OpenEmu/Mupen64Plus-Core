@@ -22,6 +22,7 @@
 #ifndef __AUTOCONFIG_H__
 #define __AUTOCONFIG_H__
 
+extern int auto_copy_inputconfig(const char *pccSourceSectionName, const char *pccDestSectionName, const char *sdlJoyName);
 extern int auto_set_defaults(int iDeviceIdx, const char *joySDLName);
 
 #endif /* __AUTOCONFIG_H__ */

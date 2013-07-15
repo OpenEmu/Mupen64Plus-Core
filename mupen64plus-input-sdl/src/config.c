@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-input-sdl - config.c                                      *
  *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
- *   Copyright (C) 2009 Richard Goedeken                                   *
+ *   Copyright (C) 2009-2013 Richard Goedeken                              *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -39,6 +39,11 @@
        ((hat == SDL_HAT_RIGHT) ? "Right" :  \
          "None"))))
 
+typedef enum {
+    E_MODE_MANUAL = 0,
+    E_MODE_NAMED_AUTO,
+    E_MODE_FULL_AUTO
+ } eModeType;
 
 static const char *button_names[] = {
     "DPad R",       // R_DPAD
@@ -61,7 +66,6 @@ static const char *button_names[] = {
     "Y Axis"        // Y_AXIS
 };
 
-
 /* static functions */
 static int get_hat_pos_by_name( const char *name )
 {
@@ -81,14 +85,14 @@ static void clear_controller(int iCtrlIdx)
 {
     int b;
 
-    controller[iCtrlIdx].device = DEVICE_AUTO;
+    controller[iCtrlIdx].device = DEVICE_NO_JOYSTICK;
     controller[iCtrlIdx].control->Present = 0;
     controller[iCtrlIdx].control->RawData = 0;
     controller[iCtrlIdx].control->Plugin = PLUGIN_NONE;
     for( b = 0; b < 16; b++ )
     {
         controller[iCtrlIdx].button[b].button = -1;
-        controller[iCtrlIdx].button[b].key = SDLK_UNKNOWN;
+        controller[iCtrlIdx].button[b].key = SDL_SCANCODE_UNKNOWN;
         controller[iCtrlIdx].button[b].axis = -1;
         controller[iCtrlIdx].button[b].axis_deadzone = -1;
         controller[iCtrlIdx].button[b].hat = -1;
@@ -101,7 +105,7 @@ static void clear_controller(int iCtrlIdx)
         controller[iCtrlIdx].axis_deadzone[b] = 4096;
         controller[iCtrlIdx].axis_peak[b] = 32768;
         controller[iCtrlIdx].axis[b].button_a = controller[iCtrlIdx].axis[b].button_b = -1;
-        controller[iCtrlIdx].axis[b].key_a = controller[iCtrlIdx].axis[b].key_b = SDLK_UNKNOWN;
+        controller[iCtrlIdx].axis[b].key_a = controller[iCtrlIdx].axis[b].key_b = SDL_SCANCODE_UNKNOWN;
         controller[iCtrlIdx].axis[b].axis_a = -1;
         controller[iCtrlIdx].axis[b].axis_dir_a = 1;
         controller[iCtrlIdx].axis[b].axis_b = -1;
@@ -147,15 +151,35 @@ static const char * get_sdl_joystick_name(int iCtrlIdx)
         return JoyName;
 }
 
+static int get_sdl_num_joysticks(void)
+{
+    int numJoysticks = 0;
+    int joyWasInit = SDL_WasInit(SDL_INIT_JOYSTICK);
+    
+    /* initialize the joystick subsystem if necessary */
+    if (!joyWasInit)
+        if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) == -1)
+        {
+            DebugMessage(M64MSG_ERROR, "Couldn't init SDL joystick subsystem: %s", SDL_GetError() );
+            return 0;
+        }
+
+    /* get thenumber of joysticks */
+    numJoysticks = SDL_NumJoysticks();
+
+    /* quit the joystick subsystem if necessary */
+    if (!joyWasInit)
+        SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+
+    return numJoysticks;
+}
+
 /////////////////////////////////////
 // load_controller_config()
 // return value: 1 = OK
 //               0 = fail: couldn't open config section
-//              -1 = fail: stored configuration incomplete - missing parameters
-//              -2 = fail: AutoKeyboard stored in mupen64plus.cfg file
-//              -3 = fail: joystick name stored in mupen64plus.cfg doesn't match SDL joystick name for given SDL joystick #
 
-static int load_controller_config(const char *SectionName, int i, int bIsAutoconfig)
+static int load_controller_config(const char *SectionName, int i, int sdlDeviceIdx)
 {
     m64p_handle pConfig;
     char input_str[256], value1_str[16], value2_str[16];
@@ -168,53 +192,22 @@ static int load_controller_config(const char *SectionName, int i, int bIsAutocon
         DebugMessage(M64MSG_ERROR, "Couldn't open config section '%s'", SectionName);
         return 0;
     }
-    /* Check version number, and if it doesn't match: delete the config section and return with error */
-    if (!bIsAutoconfig)
-    {
-        float fVersion = 0.0f;
-        if (ConfigGetParameter(pConfig, "version", M64TYPE_FLOAT, &fVersion, sizeof(float)) != M64ERR_SUCCESS)
-        {
-            ConfigDeleteSection(SectionName);
-            return -1;
-        }
-        if (((int) fVersion) != ((int) CONFIG_VERSION))
-        {
-            DebugMessage(M64MSG_WARNING, "Incompatible version %.2f in config section '%s': current is %.2f. Clearing.", fVersion, SectionName, (float) CONFIG_VERSION);
-            ConfigDeleteSection(SectionName);
-            return -1;
-        }
-    }
-    /* check for the required parameters */
+
+    /* set SDL device number */
+    controller[i].device = sdlDeviceIdx;
+
+    /* throw warnings if 'plugged' or 'plugin' are missing */
     if (ConfigGetParameter(pConfig, "plugged", M64TYPE_BOOL, &controller[i].control->Present, sizeof(int)) != M64ERR_SUCCESS)
-        return -1;
-    if (ConfigGetParameter(pConfig, "plugin", M64TYPE_INT, &controller[i].control->Plugin, sizeof(int)) != M64ERR_SUCCESS)
-        return -1;
-    if (ConfigGetParameter(pConfig, "device", M64TYPE_INT, &controller[i].device, sizeof(int)) != M64ERR_SUCCESS)
-        return -1;
-    /* Name validation only applies to stored configurations (not auto-configs) */
-    if (!bIsAutoconfig)
     {
-        char device_name[256];
-        if (ConfigGetParameter(pConfig, "name", M64TYPE_STRING, device_name, 256) != M64ERR_SUCCESS)
-            device_name[0] = 0;
-        if (controller[i].device == DEVICE_NOT_JOYSTICK)
-        {
-            /* do not load automatically generated keyboard config that was stored to disk (prefer any joysticks attached) */
-            if (strcmp(device_name, "AutoKeyboard") == 0)
-                return -2;
-        }
-        else if (controller[i].device >= 0 && device_name[0] != 0)
-        {
-            /* check that the SDL device name matches the name stored in the config section */
-            const char *sdl_name = get_sdl_joystick_name(controller[i].device);
-            if (sdl_name == NULL || strncmp(device_name, sdl_name, 255) != 0)
-            {
-                DebugMessage(M64MSG_WARNING, "N64 Controller #%i: SDL joystick name '%s' doesn't match stored configuration name '%s'", i + 1, sdl_name, device_name);
-                return -3;
-            }
-        }
+        DebugMessage(M64MSG_WARNING, "missing 'plugged' parameter from config section %s. Setting to 1 (true).", SectionName);
+        controller[i].control->Present = 1;
     }
-    /* then do the optional parameters */
+    if (ConfigGetParameter(pConfig, "plugin", M64TYPE_INT, &controller[i].control->Plugin, sizeof(int)) != M64ERR_SUCCESS)
+    {
+        DebugMessage(M64MSG_WARNING, "missing 'plugin' parameter from config section %s. Setting to 1 (none).", SectionName);
+        controller[i].control->Plugin = PLUGIN_NONE;
+    }
+    /* load optional parameters */
     ConfigGetParameter(pConfig, "mouse", M64TYPE_BOOL, &controller[i].mouse, sizeof(int));
     if (ConfigGetParameter(pConfig, "MouseSensitivity", M64TYPE_STRING, input_str, 256) == M64ERR_SUCCESS)
     {
@@ -309,7 +302,7 @@ static int load_controller_config(const char *SectionName, int i, int bIsAutocon
     return 1;
 }
 
-static void save_controller_config(int iCtrlIdx, const char *pccDeviceName)
+static void init_controller_config(int iCtrlIdx, const char *pccDeviceName, eModeType mode)
 {
     m64p_handle pConfig;
     char SectionName[32], Param[32], ParamString[128];
@@ -326,12 +319,13 @@ static void save_controller_config(int iCtrlIdx, const char *pccDeviceName)
     }
 
     /* save the general controller parameters */
-    ConfigSetDefaultFloat(pConfig, "version", CONFIG_VERSION, "Mupen64Plus SDL Input Plugin config parameter version number.  Please don't change");
+    ConfigSetDefaultFloat(pConfig, "version", CONFIG_VERSION, "Mupen64Plus SDL Input Plugin config parameter version number.  Please don't change this version number.");
+    ConfigSetDefaultInt(pConfig, "mode", (int) mode, "Controller configuration mode: 0=Fully Manual, 1=Auto with named SDL Device, 2=Fully automatic");
+    ConfigSetDefaultInt(pConfig, "device", controller[iCtrlIdx].device, "Specifies which joystick is bound to this controller: -1=No joystick, 0 or more= SDL Joystick number");
+    ConfigSetDefaultString(pConfig, "name", pccDeviceName, "SDL joystick name (or Keyboard)");
     ConfigSetDefaultBool(pConfig, "plugged", controller[iCtrlIdx].control->Present, "Specifies whether this controller is 'plugged in' to the simulated N64");
     ConfigSetDefaultInt(pConfig, "plugin", controller[iCtrlIdx].control->Plugin, "Specifies which type of expansion pak is in the controller: 1=None, 2=Mem pak, 5=Rumble pak");
     ConfigSetDefaultBool(pConfig, "mouse", controller[iCtrlIdx].mouse, "If True, then mouse buttons may be used with this controller");
-    ConfigSetDefaultInt(pConfig, "device", controller[iCtrlIdx].device, "Specifies which joystick is bound to this controller: -2=Keyboard/mouse, -1=Auto config, 0 or more= SDL Joystick number");
-    ConfigSetDefaultString(pConfig, "name", pccDeviceName, "SDL joystick name (name check disabled if this is empty string)");
 
     sprintf(Param, "%.2f,%.2f", controller[iCtrlIdx].mouse_sens[0], controller[iCtrlIdx].mouse_sens[1]);
     ConfigSetDefaultString(pConfig, "MouseSensitivity", Param, "Scaling factor for mouse movements.  For X, Y axes.");
@@ -428,162 +422,375 @@ static void save_controller_config(int iCtrlIdx, const char *pccDeviceName)
 
 }
 
-static void force_controller_keyboard(int n64CtrlIdx)
+static int setup_auto_controllers(int bPreConfig, int n64CtrlStart, int sdlCtrlIdx, const char *sdlJoyName, eModeType ControlMode[], eModeType OrigControlMode[], char DeviceName[][256])
 {
-    if (n64CtrlIdx < 0 || n64CtrlIdx > 3)
-    {
-        DebugMessage(M64MSG_ERROR, "internal assert in ForceControllerKeyboard.  n64CtrlIdx=%i", n64CtrlIdx);
-        return;
-    }
+    char SectionName[32];
+    int ActiveControllers = 0;
+    int j;
 
-    DebugMessage(M64MSG_INFO, "N64 Controller #%i: Forcing default keyboard configuration", n64CtrlIdx+1);
-    auto_set_defaults(DEVICE_NOT_JOYSTICK, "Keyboard");
-    if (load_controller_config("AutoConfig0", n64CtrlIdx, 1) > 0)
+    /* create auto-config section(s) for this joystick (if this joystick is in the InputAutoConfig.ini) */
+    int ControllersFound = auto_set_defaults(sdlCtrlIdx, sdlJoyName);
+    if (ControllersFound == 0)
+        return 0;
+
+    /* copy the auto-config settings to the controller config section, and load our plugin joystick config from this */
+    sprintf(SectionName, "Input-SDL-Control%i", n64CtrlStart + 1);
+    if (OrigControlMode[n64CtrlStart] == E_MODE_FULL_AUTO)
+        auto_copy_inputconfig("AutoConfig0", SectionName, sdlJoyName);
+    else
+        auto_copy_inputconfig("AutoConfig0", SectionName, NULL);  // don't overwrite 'name' parameter if original mode was "named auto"
+    if (load_controller_config("AutoConfig0", n64CtrlStart, sdlCtrlIdx) > 0)
     {
-        /* use ConfigSetDefault*() to save this auto-config if config section was empty */
-        save_controller_config(n64CtrlIdx, "AutoKeyboard");
+        if (!bPreConfig)
+            DebugMessage(M64MSG_INFO, "N64 Controller #%i: Using auto-config with SDL joystick %i ('%s')", n64CtrlStart+1, sdlCtrlIdx, sdlJoyName);
+        ActiveControllers++;
+        ConfigSaveSection(SectionName);
     }
     else
     {
-        DebugMessage(M64MSG_ERROR, "Autoconfig keyboard setup invalid");
+        if (!bPreConfig)
+            DebugMessage(M64MSG_ERROR, "Autoconfig data invalid for SDL joystick '%s'", sdlJoyName);
     }
     ConfigDeleteSection("AutoConfig0");
+
+    /* we have to handle the unfortunate case of a USB device mapping more than > 1 controller */
+    if (ControllersFound > 1)
+    {
+        for (j = 1; j < ControllersFound; j++)
+        {
+            char AutoSectionName[32];
+            sprintf(AutoSectionName, "AutoConfig%i", j);
+            /* if this would be > 4th controller, then just delete the auto-config */
+            if (n64CtrlStart + j >= 4)
+            {
+                ConfigDeleteSection(AutoSectionName);
+                continue;
+            }
+            /* look for another N64 controller that is in AUTO mode */
+            if (ControlMode[n64CtrlStart+j] == E_MODE_FULL_AUTO ||
+                (ControlMode[n64CtrlStart+j] == E_MODE_NAMED_AUTO && strncmp(DeviceName[n64CtrlStart+j], sdlJoyName, 255) == 0))
+            {
+                sprintf(SectionName, "Input-SDL-Control%i", n64CtrlStart + j + 1);
+                /* load our plugin joystick settings from the autoconfig */
+                if (load_controller_config(AutoSectionName, n64CtrlStart+j, sdlCtrlIdx) > 0)
+                {
+                    /* copy the auto-config settings to the controller config section */
+                    if (OrigControlMode[n64CtrlStart+j] == E_MODE_FULL_AUTO)
+                        auto_copy_inputconfig(AutoSectionName, SectionName, sdlJoyName);
+                    else
+                        auto_copy_inputconfig(AutoSectionName, SectionName, NULL);  // don't overwrite 'name' parameter if original mode was "named auto"
+                    if (!bPreConfig)
+                        DebugMessage(M64MSG_INFO, "N64 Controller #%i: Using auto-config with SDL joystick %i ('%s')", n64CtrlStart+j+1, sdlCtrlIdx, sdlJoyName);
+                    ActiveControllers++;
+                    ConfigSaveSection(SectionName);
+                    /* set the local controller mode to Manual so that we won't re-configure this controller in the next loop */
+                    ControlMode[n64CtrlStart+j] = E_MODE_MANUAL;
+                }
+                else
+                {
+                    if (!bPreConfig)
+                        DebugMessage(M64MSG_ERROR, "Autoconfig data invalid for SDL device '%s'", sdlJoyName);
+                }
+                /* delete the autoconfig section */
+                ConfigDeleteSection(AutoSectionName);
+            }
+        }
+    }
+
+    return ActiveControllers;
 }
 
 /* global functions */
 
-/* The reason why the architecture of this config-handling code is so wacky is that it tries to balance
- * several different user scenarios.  From a high-level perspective, it works like this:
- * 1. If there is a valid configuration setup already in the config file, it should not be changed
- *    - if a user sets up a joystick in a GUI dialog, this code should not cause the setup to magically change under any circumstances
- *    - if the config setup references an SDL joystick, and that device is not connected, then the controller is disabled
- * 2. If there is no valid setup for an N64 controller in the config file, or the device is set to AUTO, then we will try to auto-configure it
- *    - there must be a joystick connected which SDL recognizes
- *    - the auto-configuration is based on the joystick's name (usually USB device name)
- *    - if the auto-configuration is successful, then the input plugin's internal data structures are configured for use but the config file parameters are not overwritten
- *    - However, if the config data section (Input-SDL-Control*) was previously empty, then the auto-configured parameters *will* be written to the config file
- *      - this allows a user to run the emulator once and save the auto-configured parameters, then later tweak the settings from a GUI
- * 3. If for any reason there are no joysticks enabled after trying to set up all 4 controllers, then Controller #1 will be auto-configured for Keyboard usage
- *    - the keyboard config parameters will never be written to the config file, even if the Input-SDL-Control1 section was previously empty
+/* There are 4 special section parameters: version, mode, device, and name.  There are also 24 regular
+ * parameters: plugged, plugin, mouse, MouseSensitivity, DPad R/L/D/U, Start, Z/L/R Trigger, A/B button,
+ * C Button R/L/D/U, Mempak/Rumblepak switch, X/Y Axis, AnalogDeadzone, AnalogPeak.
+ *
+ * The N64 controller configuration behavior is regulated by the 'mode' parameter.  If this parameter is
+ * 0 (Fully Manual), then all configuration data is loaded and parsed without changes or autoconfig from
+ * the configuration section.  Any errors or warnings are printed.  If the mode parameter is 1 (Auto with
+ * named SDL Device), then the code below searches through the available SDL joysticks for one which
+ * matches with the 'name' parameter in the config section.  If a match is found, then the corresponding
+ * autoconfig is loaded and the regular parameters from the config section are updated with the
+ * autoconfig'ed settings.  If the mode parameter is 2 (Fully Auto), then the code below searches through
+ * all available detected SDL joysticks to try and find an autoconfig for each.  If an autoconfig match is
+ * found, then it is loaded and all config parameters (including device, name, and the regular parameters)
+ * are updated.
+ *
+ * This function is called with bPreConfig=true from the PluginStartup() function.  The purpose of this
+ * call is to load the 4 configuration sections with autoconfig data if necessary for a GUI front-end.
+ * When we are called with bPreConfig=true, we should only print warning/error messages and not info/status.
+ * This function is also called right before running the ROM game from InitiateControllers() with
+ * bPreConfig=false.  We should only print informational messages here, because we do not want to duplicate
+ * console output with the console-ui front-end (since the PluginStart() and InitiateControllers()
+ * functions are called in quick sequence from the console-ui).
  */
   
-void load_configuration(int bPrintSummary)
+void load_configuration(int bPreConfig)
 {
     char SectionName[32];
-    const char *JoyName;
-    int joy_found = 0, joy_plugged = 0;
-    int readOK;
+    int joy_plugged = 0;
     int n64CtrlIdx, sdlCtrlIdx, j;
+    int sdlNumDevUsed = 0;
+    int sdlDevicesUsed[4];
+    eModeType OrigControlMode[4], ControlMode[4];
+    int ControlDevice[4];
+    char DeviceName[4][256];
+    int ActiveControllers = 0;
+    int sdlNumJoysticks = get_sdl_num_joysticks();
+    float fVersion = 0.0f;
+    const char *sdl_name;
+    int ControllersFound = 0;
 
-    /* loop through all 4 simulated N64 controllers */
-    for (n64CtrlIdx=0,sdlCtrlIdx=0; n64CtrlIdx < 4; n64CtrlIdx++)
+    /* tell user how many SDL joysticks are available */
+    if (!bPreConfig)
+        DebugMessage(M64MSG_INFO, "%i SDL joysticks were found.", sdlNumJoysticks);
+
+    /* loop through 4 N64 controllers, initializing and validating special section parameters */
+    for (n64CtrlIdx=0; n64CtrlIdx < 4; n64CtrlIdx++)
     {
+        m64p_handle pConfig;
         /* reset the controller configuration */
         clear_controller(n64CtrlIdx);
-        /* try to load the config from the core's configuration api */
+
+        /* Open the configuration section for this controller */
         sprintf(SectionName, "Input-SDL-Control%i", n64CtrlIdx + 1);
-        readOK = load_controller_config(SectionName, n64CtrlIdx, 0);
-
-        if (readOK <= 0 || controller[n64CtrlIdx].device == DEVICE_AUTO)
+        if (ConfigOpenSection(SectionName, &pConfig) != M64ERR_SUCCESS)
         {
-            int ControllersFound = 0;
-            /* make sure that SDL device number hasn't already been used for a different N64 controller */
-            for (j = 0; j < n64CtrlIdx; j++)
-            {
-                if (controller[j].device == sdlCtrlIdx)
-                {
-                    sdlCtrlIdx++;
-                    j = -1;
-                }
-            }
-            /* if auto / bad config, get joystick name based on SDL order */
-            JoyName = get_sdl_joystick_name(sdlCtrlIdx);
-            /* reset the controller configuration again and try to auto-configure */
-            ControllersFound = auto_set_defaults(sdlCtrlIdx, JoyName);
-            sdlCtrlIdx++;
-            if (ControllersFound == 0)
-            {
-                controller[n64CtrlIdx].device = DEVICE_AUTO;
-                controller[n64CtrlIdx].control->Present = 0;
-                DebugMessage(M64MSG_WARNING, "N64 Controller #%i: Disabled, SDL joystick %i is not available", n64CtrlIdx+1, sdlCtrlIdx-1);
-            }
-            else
-            {
-                for (j = 0; j < ControllersFound; j++) /* a USB device may have > 1 controller */
-                {
-                    sprintf(SectionName, "AutoConfig%i", j);
-                    if (n64CtrlIdx + j > 3)
-                    {
-                        ConfigDeleteSection(SectionName);
-                        continue;
-                    }
-                    clear_controller(n64CtrlIdx + j);
-                    if (load_controller_config(SectionName, n64CtrlIdx + j, 1) > 0)
-                    {
-                        /* use ConfigSetDefault*() to save this auto-config if config section was empty */
-                        save_controller_config(n64CtrlIdx + j, JoyName);
-                        DebugMessage(M64MSG_INFO, "N64 Controller #%i: Using auto-config for SDL joystick %i ('%s')", n64CtrlIdx+1, controller[n64CtrlIdx].device, JoyName);
-                    }
-                    else
-                    {
-                        DebugMessage(M64MSG_ERROR, "Autoconfig data invalid for controller #%i in device '%s'", j + 1, JoyName);
-                    }
-                    ConfigDeleteSection(SectionName);
-                }
-                n64CtrlIdx += ControllersFound - 1;
-                continue;
-            }
+            // this should never happen
+            DebugMessage(M64MSG_ERROR, "Couldn't open config section '%s'.  Aborting...", SectionName);
+            return;
         }
-        else if (controller[n64CtrlIdx].device >= 0)
+        /* Check version number, and if it doesn't match: delete the config section */
+        fVersion = 0.0f;
+        if (ConfigGetParameter(pConfig, "version", M64TYPE_FLOAT, &fVersion, sizeof(float)) != M64ERR_SUCCESS || ((int) fVersion) != ((int) CONFIG_VERSION))
         {
-            /* if joystick found in cfg, take its SDL number from there */
-            JoyName = get_sdl_joystick_name(controller[n64CtrlIdx].device);
-            /* valid joystick configuration was read; check if the specified joystick is available in SDL */
-            if (JoyName == NULL)
-            {
-                controller[n64CtrlIdx].device = DEVICE_AUTO;
-                controller[n64CtrlIdx].control->Present = 0;
-                DebugMessage(M64MSG_WARNING, "N64 Controller #%i: Disabled, SDL joystick %i is not available", n64CtrlIdx+1, controller[n64CtrlIdx].device);
-            }
-            else
-                DebugMessage(M64MSG_INFO, "N64 Controller #%i: Using stored config for SDL joystick %i ('%s')", n64CtrlIdx+1, controller[n64CtrlIdx].device, JoyName);
-        }
-        else /* controller is configured for keyboard/mouse */
-        {
-            DebugMessage(M64MSG_INFO, "N64 Controller #%i: Using keyboard/mouse", n64CtrlIdx+1);
-        }
-    }
-
-    /* see how many joysticks were found */
-    joy_found = 0, joy_plugged = 0;
-    for (j = 0; j < 4; j++)
-    {
-        if (controller[j].device >= 0 || controller[j].device == DEVICE_NOT_JOYSTICK)
-        {
-            joy_found++;
-            if (controller[j].control->Present)
-                joy_plugged++;
-        }
-    }
-
-    /* fallback to keyboard if no joysticks are available and 'plugged in' */
-    if (joy_found == 0 || joy_plugged == 0)
-    {
-        force_controller_keyboard(0);
-    }
-
-    if (bPrintSummary)
-    {
-        if (joy_found > 0 && joy_plugged > 0)
-        {
-            DebugMessage(M64MSG_INFO, "%i controller(s) found, %i plugged in and usable in the emulator", joy_found, joy_plugged);
+            DebugMessage(M64MSG_WARNING, "Missing or incompatible config section '%s'. Clearing.", SectionName);
+            ConfigDeleteSection(SectionName);
+            // set local controller default parameters
+            OrigControlMode[n64CtrlIdx] = ControlMode[n64CtrlIdx] = E_MODE_FULL_AUTO;
+            ControlDevice[n64CtrlIdx] = DEVICE_NO_JOYSTICK;
+            DeviceName[n64CtrlIdx][0] = 0;
+            // write blank config for GUI front-ends
+            init_controller_config(n64CtrlIdx, "", E_MODE_FULL_AUTO);
+            // save it to the file too
+            ConfigSaveSection(SectionName);
         }
         else
         {
-            if (joy_found == 0)
+            if (ConfigGetParameter(pConfig, "mode", M64TYPE_INT, &OrigControlMode[n64CtrlIdx], sizeof(int)) != M64ERR_SUCCESS ||
+                (int) OrigControlMode[n64CtrlIdx] < 0 || (int) OrigControlMode[n64CtrlIdx] > 2)
+            {
+                if (!bPreConfig)
+                    DebugMessage(M64MSG_WARNING, "Missing or invalid 'mode' parameter in config section '%s'.  Setting to 2 (Fully Auto)", SectionName);
+                OrigControlMode[n64CtrlIdx] = E_MODE_FULL_AUTO;
+            }
+            ControlMode[n64CtrlIdx] = OrigControlMode[n64CtrlIdx];
+            if (ConfigGetParameter(pConfig, "device", M64TYPE_INT, &ControlDevice[n64CtrlIdx], sizeof(int)) != M64ERR_SUCCESS)
+            {
+                if (!bPreConfig)
+                    DebugMessage(M64MSG_WARNING, "Missing 'device' parameter in config section '%s'.  Setting to -1 (No joystick)", SectionName);
+                ControlDevice[n64CtrlIdx] = DEVICE_NO_JOYSTICK;
+            }
+            if (ConfigGetParameter(pConfig, "name", M64TYPE_STRING, DeviceName[n64CtrlIdx], 256) != M64ERR_SUCCESS)
+            {
+                DeviceName[n64CtrlIdx][0] = 0;
+            }
+        }
+    }
+
+    /* loop through 4 N64 controllers and set up those in Fully Manual mode */
+    for (n64CtrlIdx=0; n64CtrlIdx < 4; n64CtrlIdx++)
+    {
+        if (ControlMode[n64CtrlIdx] != E_MODE_MANUAL)
+            continue;
+        /* load the stored configuration (disregard any errors) */
+        sprintf(SectionName, "Input-SDL-Control%i", n64CtrlIdx + 1);
+        load_controller_config(SectionName, n64CtrlIdx, ControlDevice[n64CtrlIdx]);
+        /* if this config uses an SDL joystick, mark it as used */
+        if (ControlDevice[n64CtrlIdx] == DEVICE_NO_JOYSTICK)
+        {
+            if (!bPreConfig)
+                DebugMessage(M64MSG_INFO, "N64 Controller #%i: Using manual config with no SDL joystick (keyboard/mouse only)", n64CtrlIdx+1);
+        }
+        else
+        {
+            sdlDevicesUsed[sdlNumDevUsed++] = ControlDevice[n64CtrlIdx];
+            if (!bPreConfig)
+                DebugMessage(M64MSG_INFO, "N64 Controller #%i: Using manual config for SDL joystick %i", n64CtrlIdx+1, ControlDevice[n64CtrlIdx]);
+        }
+        ActiveControllers++;
+    }
+
+    /* now loop through again, setting up those in Named Auto mode */
+    for (n64CtrlIdx=0; n64CtrlIdx < 4; n64CtrlIdx++)
+    {
+        if (ControlMode[n64CtrlIdx] != E_MODE_NAMED_AUTO)
+            continue;
+        /* if name is empty, then use full auto mode instead */
+        if (DeviceName[n64CtrlIdx][0] == 0)
+        {
+            ControlMode[n64CtrlIdx] = E_MODE_FULL_AUTO;
+            continue;
+        }
+        sprintf(SectionName, "Input-SDL-Control%i", n64CtrlIdx + 1);
+        /* if user is looking for a keyboard, set that up */
+        if (strcasecmp(DeviceName[n64CtrlIdx], "Keyboard") == 0)
+        {
+            auto_set_defaults(DEVICE_NO_JOYSTICK, "Keyboard");
+            if (load_controller_config("AutoConfig0", n64CtrlIdx, DEVICE_NO_JOYSTICK) > 0)
+            {
+                if (!bPreConfig)
+                    DebugMessage(M64MSG_INFO, "N64 Controller #%i: Using auto-config for keyboard", n64CtrlIdx+1);
+                /* copy the auto-config settings to the controller config section */
+                auto_copy_inputconfig("AutoConfig0", SectionName, "Keyboard");
+                ActiveControllers++;
+                ConfigSaveSection(SectionName);
+            }
+            else
+            {
+                DebugMessage(M64MSG_ERROR, "Autoconfig keyboard setup invalid");
+            }
+            ConfigDeleteSection("AutoConfig0");
+            continue;
+        }
+        /* search for an unused SDL device with the matching name */
+        for (sdlCtrlIdx=0; sdlCtrlIdx < sdlNumJoysticks; sdlCtrlIdx++)
+        {
+            /* check if this one is in use */
+            int deviceAlreadyUsed = 0;
+            for (j = 0; j < sdlNumDevUsed; j++)
+            {
+                if (sdlDevicesUsed[j] == sdlCtrlIdx)
+                    deviceAlreadyUsed = 1;
+            }
+            if (deviceAlreadyUsed)
+                continue;
+            /* check if the name matches */
+            sdl_name = get_sdl_joystick_name(sdlCtrlIdx);
+            if (sdl_name != NULL && strncmp(DeviceName[n64CtrlIdx], sdl_name, 255) == 0)
+            {
+                /* set up one or more controllers for this SDL device, if present in InputAutoConfig.ini */
+                int ControllersFound = setup_auto_controllers(bPreConfig, n64CtrlIdx, sdlCtrlIdx, sdl_name, ControlMode, OrigControlMode, DeviceName);
+                if (ControllersFound == 0)
+                {
+                    // error: no auto-config found for this SDL device
+                    DebugMessage(M64MSG_ERROR, "No auto-config found for joystick named '%s' in InputAutoConfig.ini", sdl_name);
+                    // mark this device as being used just so we don't complain about it again
+                    sdlDevicesUsed[sdlNumDevUsed++] = sdlCtrlIdx;
+                    // quit looking for SDL joysticks which match the name, because there's no valid autoconfig for that name.
+                    // this controller will be unused; skip to the next one
+                    break;
+                }
+                /* mark this sdl device as used */
+                sdlDevicesUsed[sdlNumDevUsed++] = sdlCtrlIdx;
+                ActiveControllers += ControllersFound;
+                break;
+            }
+        }
+        /* if we didn't find a match for this joystick name, then set the controller to fully auto */
+        if (sdlCtrlIdx == sdlNumJoysticks)
+        {
+            if (!bPreConfig)
+                DebugMessage(M64MSG_WARNING, "N64 Controller #%i: No SDL joystick found matching name '%s'.  Using full auto mode.", n64CtrlIdx+1, DeviceName[n64CtrlIdx]);
+            ControlMode[n64CtrlIdx] = E_MODE_FULL_AUTO;
+        }
+    }
+
+    /* Final loop through N64 controllers, setting up those in Full Auto mode */
+    for (n64CtrlIdx=0; n64CtrlIdx < 4; n64CtrlIdx++)
+    {
+        if (ControlMode[n64CtrlIdx] != E_MODE_FULL_AUTO)
+            continue;
+        sprintf(SectionName, "Input-SDL-Control%i", n64CtrlIdx + 1);
+        /* search for an unused SDL device */
+        for (sdlCtrlIdx=0; sdlCtrlIdx < sdlNumJoysticks; sdlCtrlIdx++)
+        {
+            /* check if this one is in use */
+            int deviceAlreadyUsed = 0;
+            for (j = 0; j < sdlNumDevUsed; j++)
+            {
+                if (sdlDevicesUsed[j] == sdlCtrlIdx)
+                    deviceAlreadyUsed = 1;
+            }
+            if (deviceAlreadyUsed)
+                continue;
+            /* set up one or more controllers for this SDL device, if present in InputAutoConfig.ini */
+            sdl_name = get_sdl_joystick_name(sdlCtrlIdx);
+            ControllersFound = setup_auto_controllers(bPreConfig, n64CtrlIdx, sdlCtrlIdx, sdl_name, ControlMode, OrigControlMode, DeviceName);
+            if (!bPreConfig && ControllersFound == 0)
+            {
+                // error: no auto-config found for this SDL device
+                DebugMessage(M64MSG_ERROR, "No auto-config found for joystick named '%s' in InputAutoConfig.ini", sdl_name);
+                // mark this device as being used just so we don't complain about it again
+                sdlDevicesUsed[sdlNumDevUsed++] = sdlCtrlIdx;
+                // keep trying more SDL devices to see if we can auto-config one for this N64 controller
+                continue;
+            }
+            /* mark this sdl device as used */
+            sdlDevicesUsed[sdlNumDevUsed++] = sdlCtrlIdx;
+            ActiveControllers += ControllersFound;
+            break;
+        }
+        /* if this N64 controller was not activated, set device to -1 */
+        if (sdlCtrlIdx == sdlNumJoysticks)
+        {
+            m64p_handle section;
+            if (ConfigOpenSection(SectionName, &section) == M64ERR_SUCCESS)
+            {
+                const int iNoDevice = -1;
+                ConfigSetParameter(section, "device", M64TYPE_INT, &iNoDevice);
+                if (OrigControlMode[n64CtrlIdx] == E_MODE_FULL_AUTO)
+                    ConfigSetParameter(section, "name", M64TYPE_STRING, "");
+                ConfigSaveSection(SectionName);
+            }
+        }
+    }
+
+    /* fallback to keyboard if no controllers were configured */
+    if (ActiveControllers == 0)
+    {
+        if (!bPreConfig)
+            DebugMessage(M64MSG_INFO, "N64 Controller #1: Forcing default keyboard configuration");
+        auto_set_defaults(DEVICE_NO_JOYSTICK, "Keyboard");
+        if (load_controller_config("AutoConfig0", 0, DEVICE_NO_JOYSTICK) > 0)
+        {
+            /* copy the auto-config settings to the controller config section */
+            if (OrigControlMode[0] == E_MODE_FULL_AUTO)
+                auto_copy_inputconfig("AutoConfig0", "Input-SDL-Control1", "Keyboard");
+            else
+                auto_copy_inputconfig("AutoConfig0", "Input-SDL-Control1", NULL);  // don't overwrite 'name' parameter
+            ActiveControllers++;
+            ConfigSaveSection("Input-SDL-Control1");
+        }
+        else
+        {
+            DebugMessage(M64MSG_ERROR, "Autoconfig keyboard setup invalid");
+        }
+        ConfigDeleteSection("AutoConfig0");
+    }
+
+    /* see how many joysticks are plugged in */
+    joy_plugged = 0;
+    for (j = 0; j < 4; j++)
+    {
+        if (controller[j].control->Present)
+            joy_plugged++;
+    }
+
+    /* print out summary info message */
+    if (!bPreConfig)
+    {
+        if (joy_plugged > 0)
+        {
+            DebugMessage(M64MSG_INFO, "%i controller(s) found, %i plugged in and usable in the emulator", ActiveControllers, joy_plugged);
+        }
+        else
+        {
+            if (ActiveControllers == 0)
                 DebugMessage(M64MSG_WARNING, "No joysticks/controllers found");
-            else if (joy_plugged == 0)
-                DebugMessage(M64MSG_WARNING, "%i controllers found, but none were 'plugged in'", joy_found);
+            else
+                DebugMessage(M64MSG_WARNING, "%i controllers found, but none were 'plugged in'", ActiveControllers);
         }
     }
 

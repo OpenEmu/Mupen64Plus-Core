@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-input-sdl - autoconfig.c                                  *
  *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
- *   Copyright (C) 2009 Richard Goedeken                                   *
+ *   Copyright (C) 2009-2013 Richard Goedeken                              *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -29,6 +29,10 @@
 
 /* local definitions */
 #define INI_FILE_NAME "InputAutoCfg.ini"
+typedef struct {
+    m64p_handle pSrc;
+    m64p_handle pDst;
+} SCopySection;
 
 /* local functions */
 static char *StripSpace(char *pIn)
@@ -44,7 +48,73 @@ static char *StripSpace(char *pIn)
     return pIn;
 }
 
+static void CopyParamCallback(void * context, const char *ParamName, m64p_type ParamType)
+{
+    SCopySection *pCpyContext = (SCopySection *) context;
+    int paramInt;
+    float paramFloat;
+    char paramString[1024];
+
+    // handle the parameter copy depending upon type
+    switch (ParamType)
+    {
+        case M64TYPE_INT:
+        case M64TYPE_BOOL:
+            if (ConfigGetParameter(pCpyContext->pSrc, ParamName, ParamType, &paramInt, sizeof(int)) == M64ERR_SUCCESS)
+                ConfigSetParameter(pCpyContext->pDst, ParamName, ParamType, &paramInt);
+            break;
+        case M64TYPE_FLOAT:
+            if (ConfigGetParameter(pCpyContext->pSrc, ParamName, ParamType, &paramFloat, sizeof(float)) == M64ERR_SUCCESS)
+                ConfigSetParameter(pCpyContext->pDst, ParamName, ParamType, &paramFloat);
+            break;
+        case M64TYPE_STRING:
+            if (ConfigGetParameter(pCpyContext->pSrc, ParamName, ParamType, paramString, 1024) == M64ERR_SUCCESS)
+                ConfigSetParameter(pCpyContext->pDst, ParamName, ParamType, paramString);
+            break;
+        default:
+            // this should never happen
+            DebugMessage(M64MSG_ERROR, "Unknown source parameter type %i in copy callback", (int) ParamType);
+            return;
+    }
+}
+
 /* global functions */
+int auto_copy_inputconfig(const char *pccSourceSectionName, const char *pccDestSectionName, const char *sdlJoyName)
+{
+    SCopySection cpyContext;
+
+    if (ConfigOpenSection(pccSourceSectionName, &cpyContext.pSrc) != M64ERR_SUCCESS)
+    {
+        DebugMessage(M64MSG_ERROR, "auto_copy_inputconfig: Couldn't open source config section '%s' for copying", pccSourceSectionName);
+        return 0;
+    }
+
+    if (ConfigOpenSection(pccDestSectionName, &cpyContext.pDst) != M64ERR_SUCCESS)
+    {
+        DebugMessage(M64MSG_ERROR, "auto_copy_inputconfig: Couldn't open destination config section '%s' for copying", pccDestSectionName);
+        return 0;
+    }
+
+    // set the 'name' parameter
+    if (sdlJoyName != NULL)
+    {
+        if (ConfigSetParameter(cpyContext.pDst, "name", M64TYPE_STRING, sdlJoyName) != M64ERR_SUCCESS)
+        {
+            DebugMessage(M64MSG_ERROR, "auto_copy_inputconfig: Couldn't set 'name' parameter to '%s' in section '%s'", sdlJoyName, pccDestSectionName);
+            return 0;
+        }
+    }
+
+    // the copy gets done by the callback function
+    if (ConfigListParameters(cpyContext.pSrc, (void *) &cpyContext, CopyParamCallback) != M64ERR_SUCCESS)
+    {
+        DebugMessage(M64MSG_ERROR, "auto_copy_inputconfig: parameter list copy failed");
+        return 0;
+    }
+
+    return 1;
+}
+
 int auto_set_defaults(int iDeviceIdx, const char *joySDLName)
 {
     FILE *pfIn;
@@ -181,7 +251,6 @@ int auto_set_defaults(int iDeviceIdx, const char *joySDLName)
                 }
                 eParseState = E_NAME_FOUND;
                 ControllersFound++;
-                DebugMessage(M64MSG_INFO, "Using auto-configuration for device '%s'", joySDLName);
                 ConfigSetParameter(pConfig, "device", M64TYPE_INT, &iDeviceIdx);
             }
             continue;
@@ -241,7 +310,6 @@ int auto_set_defaults(int iDeviceIdx, const char *joySDLName)
                     return ControllersFound;
                 }
                 ControllersFound++;
-                DebugMessage(M64MSG_INFO, "Using auto-configuration for device '%s': %i controllers for this device", joySDLName, ControllersFound);
                 ConfigSetParameter(pConfig, "device", M64TYPE_INT, &iDeviceIdx);
             }
             else
@@ -262,7 +330,6 @@ int auto_set_defaults(int iDeviceIdx, const char *joySDLName)
         return ControllersFound;
     }
 
-    DebugMessage(M64MSG_INFO, "No auto-configuration found for device '%s'", joySDLName);
     free(pchIni);
     return 0;
 }

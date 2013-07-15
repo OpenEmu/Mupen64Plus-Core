@@ -60,6 +60,9 @@
 /* definitions of pointers to Core config functions */
 ptr_ConfigOpenSection      ConfigOpenSection = NULL;
 ptr_ConfigDeleteSection    ConfigDeleteSection = NULL;
+ptr_ConfigSaveSection      ConfigSaveSection = NULL;
+ptr_ConfigListParameters   ConfigListParameters = NULL;
+ptr_ConfigSaveFile         ConfigSaveFile = NULL;
 ptr_ConfigSetParameter     ConfigSetParameter = NULL;
 ptr_ConfigGetParameter     ConfigGetParameter = NULL;
 ptr_ConfigGetParameterHelp ConfigGetParameterHelp = NULL;
@@ -106,12 +109,12 @@ static unsigned short button_bits[] = {
 
 static int romopen = 0;         // is a rom opened
 
-static unsigned char myKeyState[SDLK_LAST];
+static unsigned char myKeyState[SDL_NUM_SCANCODES];
 
 #ifdef __linux__
-static struct ff_effect ffeffect[3];
-static struct ff_effect ffstrong[3];
-static struct ff_effect ffweak[3];
+static struct ff_effect ffeffect[4];
+static struct ff_effect ffstrong[4];
+static struct ff_effect ffweak[4];
 #endif //__linux__
 
 /* Global functions */
@@ -157,7 +160,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
     }
     
     (*CoreAPIVersionFunc)(&ConfigAPIVersion, &DebugAPIVersion, &VidextAPIVersion, NULL);
-    if ((ConfigAPIVersion & 0xffff0000) != (CONFIG_API_VERSION & 0xffff0000))
+    if ((ConfigAPIVersion & 0xffff0000) != (CONFIG_API_VERSION & 0xffff0000) || ConfigAPIVersion < CONFIG_API_VERSION)
     {
         DebugMessage(M64MSG_ERROR, "Emulator core Config API (v%i.%i.%i) incompatible with plugin (v%i.%i.%i)",
                 VERSION_PRINTF_SPLIT(ConfigAPIVersion), VERSION_PRINTF_SPLIT(CONFIG_API_VERSION));
@@ -167,6 +170,9 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
     /* Get the core config function pointers from the library handle */
     ConfigOpenSection = (ptr_ConfigOpenSection) osal_dynlib_getproc(CoreLibHandle, "ConfigOpenSection");
     ConfigDeleteSection = (ptr_ConfigDeleteSection) osal_dynlib_getproc(CoreLibHandle, "ConfigDeleteSection");
+    ConfigSaveFile = (ptr_ConfigSaveFile) osal_dynlib_getproc(CoreLibHandle, "ConfigSaveFile");
+    ConfigSaveSection = (ptr_ConfigSaveSection) osal_dynlib_getproc(CoreLibHandle, "ConfigSaveSection");
+    ConfigListParameters = (ptr_ConfigListParameters) osal_dynlib_getproc(CoreLibHandle, "ConfigListParameters");
     ConfigSetParameter = (ptr_ConfigSetParameter) osal_dynlib_getproc(CoreLibHandle, "ConfigSetParameter");
     ConfigGetParameter = (ptr_ConfigGetParameter) osal_dynlib_getproc(CoreLibHandle, "ConfigGetParameter");
     ConfigSetDefaultInt = (ptr_ConfigSetDefaultInt) osal_dynlib_getproc(CoreLibHandle, "ConfigSetDefaultInt");
@@ -183,7 +189,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
     ConfigGetUserDataPath = (ptr_ConfigGetUserDataPath) osal_dynlib_getproc(CoreLibHandle, "ConfigGetUserDataPath");
     ConfigGetUserCachePath = (ptr_ConfigGetUserCachePath) osal_dynlib_getproc(CoreLibHandle, "ConfigGetUserCachePath");
 
-    if (!ConfigOpenSection || !ConfigDeleteSection || !ConfigSetParameter || !ConfigGetParameter ||
+    if (!ConfigOpenSection || !ConfigDeleteSection || !ConfigSaveFile || !ConfigSaveSection || !ConfigSetParameter || !ConfigGetParameter ||
         !ConfigSetDefaultInt || !ConfigSetDefaultFloat || !ConfigSetDefaultBool || !ConfigSetDefaultString ||
         !ConfigGetParamInt   || !ConfigGetParamFloat   || !ConfigGetParamBool   || !ConfigGetParamString ||
         !ConfigGetSharedDataFilepath || !ConfigGetUserConfigPath || !ConfigGetUserDataPath || !ConfigGetUserCachePath)
@@ -194,7 +200,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
 
     /* reset controllers */
     memset(controller, 0, sizeof(SController) * 4);
-    for (i = 0; i < SDLK_LAST; i++)
+    for (i = 0; i < SDL_NUM_SCANCODES; i++)
     {
         myKeyState[i] = 0;
     }
@@ -205,7 +211,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
         controller[i].control = temp_core_controlinfo + i;
 
     /* read plugin config from core config database, auto-config if necessary and update core database */
-    load_configuration(0);
+    load_configuration(1);
 
     l_PluginInit = 1;
     return M64ERR_SUCCESS;
@@ -255,16 +261,16 @@ doSdlKeys(unsigned char* keystate)
     static int grabmouse = 1, grabtoggled = 0;
 
     axis_max_val = 80;
-    if (keystate[SDLK_RCTRL])
+    if (keystate[SDL_SCANCODE_RCTRL])
         axis_max_val -= 40;
-    if (keystate[SDLK_RSHIFT])
+    if (keystate[SDL_SCANCODE_RSHIFT])
         axis_max_val -= 20;
 
     for( c = 0; c < 4; c++ )
     {
         for( b = 0; b < 16; b++ )
         {
-            if( controller[c].button[b].key == SDLK_UNKNOWN || ((int) controller[c].button[b].key) < 0)
+            if( controller[c].button[b].key == SDL_SCANCODE_UNKNOWN || ((int) controller[c].button[b].key) < 0)
                 continue;
             if( keystate[controller[c].button[b].key] )
                 controller[c].buttons.Value |= button_bits[b];
@@ -278,10 +284,10 @@ doSdlKeys(unsigned char* keystate)
             else
                 axis_val = -controller[c].buttons.Y_AXIS;
 
-            if( controller[c].axis[b].key_a != SDLK_UNKNOWN && ((int) controller[c].axis[b].key_a) > 0)
+            if( controller[c].axis[b].key_a != SDL_SCANCODE_UNKNOWN && ((int) controller[c].axis[b].key_a) > 0)
                 if( keystate[controller[c].axis[b].key_a] )
                     axis_val = -axis_max_val;
-            if( controller[c].axis[b].key_b != SDLK_UNKNOWN && ((int) controller[c].axis[b].key_b) > 0)
+            if( controller[c].axis[b].key_b != SDL_SCANCODE_UNKNOWN && ((int) controller[c].axis[b].key_b) > 0)
                 if( keystate[controller[c].axis[b].key_b] )
                     axis_val = axis_max_val;
 
@@ -292,14 +298,18 @@ doSdlKeys(unsigned char* keystate)
         }
         if (controller[c].mouse)
         {
-            if (keystate[SDLK_LCTRL] && keystate[SDLK_LALT])
+            if (keystate[SDL_SCANCODE_LCTRL] && keystate[SDL_SCANCODE_LALT])
             {
                 if (!grabtoggled)
                 {
                     grabtoggled = 1;
                     grabmouse = !grabmouse;
                     // grab/ungrab mouse
+#if SDL_VERSION_ATLEAST(2,0,0)
+#warning SDL mouse grabbing not yet supported with SDL 2.0
+#else
                     SDL_WM_GrabInput( grabmouse ? SDL_GRAB_ON : SDL_GRAB_OFF );
+#endif
                     SDL_ShowCursor( grabmouse ? 0 : 1 );
                 }
             }
@@ -455,7 +465,7 @@ EXPORT void CALL GetKeys( int Control, BUTTONS *Keys )
     unsigned char mstate;
 
     // Handle keyboard input first
-    doSdlKeys(SDL_GetKeyState(NULL));
+    doSdlKeys(SDL_GetKeyboardState(NULL));
     doSdlKeys(myKeyState);
 
     // read joystick state
@@ -556,10 +566,17 @@ EXPORT void CALL GetKeys( int Control, BUTTONS *Keys )
 
     if (controller[Control].mouse)
     {
+#if SDL_VERSION_ATLEAST(2,0,0)
+#warning SDL mouse grabbing not yet supported with SDL 2.0
+#else
         if (SDL_WM_GrabInput(SDL_GRAB_QUERY) == SDL_GRAB_ON)
         {
             SDL_PumpEvents();
+#if SDL_VERSION_ATLEAST(1,3,0)
+            while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEMOTION) == 1)
+#else
             while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENTMASK(SDL_MOUSEMOTION)) == 1)
+#endif
             {
                 if (event.motion.xrel)
                 {
@@ -572,6 +589,7 @@ EXPORT void CALL GetKeys( int Control, BUTTONS *Keys )
             }
         }
         else
+#endif
         {
             mousex_residual = 0;
             mousey_residual = 0;
@@ -717,6 +735,9 @@ static void InitiateRumble(int cntrl)
     ffeffect[cntrl].id = -1;
     ffeffect[cntrl].u.rumble.strong_magnitude = 0xFFFF;
     ffeffect[cntrl].u.rumble.weak_magnitude = 0xFFFF;
+    ffeffect[cntrl].replay.length = 0x7fff;             // hack: xboxdrv is buggy and doesn't support infinite replay.
+                                                        // when xboxdrv is fixed (https://github.com/Grumbel/xboxdrv/issues/47),
+                                                        // please remove this
 
     ioctl(controller[cntrl].event_joystick, EVIOCSFF, &ffeffect[cntrl]);
 
@@ -757,7 +778,7 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
 
     // reset controllers
     memset( controller, 0, sizeof( SController ) * 4 );
-    for ( i = 0; i < SDLK_LAST; i++)
+    for ( i = 0; i < SDL_NUM_SCANCODES; i++)
     {
         myKeyState[i] = 0;
     }
@@ -767,7 +788,7 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
         controller[i].control = ControlInfo.Controls + i;
 
     // read configuration
-    load_configuration(1);
+    load_configuration(0);
 
     for( i = 0; i < 4; i++ )
     {
@@ -823,7 +844,11 @@ EXPORT void CALL RomClosed(void)
     SDL_QuitSubSystem( SDL_INIT_JOYSTICK );
 
     // release/ungrab mouse
+#if SDL_VERSION_ATLEAST(2,0,0)
+#warning SDL mouse grabbing not yet supported with SDL 2.0
+#else
     SDL_WM_GrabInput( SDL_GRAB_OFF );
+#endif
     SDL_ShowCursor( 1 );
 
     romopen = 0;
@@ -862,11 +887,15 @@ EXPORT int CALL RomOpen(void)
     // grab mouse
     if (controller[0].mouse || controller[1].mouse || controller[2].mouse || controller[3].mouse)
     {
+#if SDL_VERSION_ATLEAST(2,0,0)
+#warning SDL mouse grabbing not yet supported with SDL 2.0
+#else
         SDL_ShowCursor( 0 );
         if (SDL_WM_GrabInput( SDL_GRAB_ON ) != SDL_GRAB_ON)
         {
             DebugMessage(M64MSG_WARNING, "Couldn't grab input! Mouse support won't work!");
         }
+#endif
     }
 
     romopen = 1;

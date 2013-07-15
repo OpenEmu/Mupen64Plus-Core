@@ -22,9 +22,9 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define CONFIG_VERSION 1.00
+#define CONFIG_VERSION 2.00
 
-extern void load_configuration(int bPrintSummary);
+extern void load_configuration(int bPreConfig);
 
 #endif /* __CONFIG_H__ */
 
