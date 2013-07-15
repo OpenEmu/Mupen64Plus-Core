@@ -22,7 +22,7 @@
 # Makefile for SDL Audio plugin in Mupen64plus
 
 # detect operation system
-UNAME = $(shell uname -s)
+UNAME ?= $(shell uname -s)
 OS := NONE
 ifeq ("$(UNAME)","Linux")
   OS = LINUX
@@ -60,6 +60,13 @@ ifneq ("$(filter GNU/kFreeBSD kfreebsd,$(UNAME))","")
   SHARED = -shared
   SO_EXTENSION = so
 endif
+ifeq ("$(patsubst MINGW%,MINGW,$(UNAME))","MINGW")
+  OS = MINGW
+  SHARED = -shared
+  SO_EXTENSION = dll
+  PIC = 0
+  NO_OSS = 1
+endif
 ifeq ("$(OS)","NONE")
   $(error OS type "$(UNAME)" not supported.  Please file bug report at 'http://code.google.com/p/mupen64plus/issues')
 endif
@@ -83,7 +90,7 @@ ifneq ("$(filter pentium i%86,$(HOST_CPU))","")
   ARCH_DETECTED := 32BITS
   PIC ?= 0
 endif
-ifneq ("$(filter ppc powerpc,$(HOST_CPU))","")
+ifneq ("$(filter ppc macppc socppc powerpc,$(HOST_CPU))","")
   CPU := PPC
   ARCH_DETECTED := 32BITS
   BIG_ENDIAN := 1
@@ -97,23 +104,30 @@ ifneq ("$(filter ppc64 powerpc64,$(HOST_CPU))","")
   PIC ?= 1
   $(warning Architecture "$(HOST_CPU)" not officially supported.')
 endif
+ifneq ("$(filter arm%,$(HOST_CPU))","")
+  ifeq ("$(filter arm%b,$(HOST_CPU))","")
+    CPU := ARM
+    ARCH_DETECTED := 32BITS
+    PIC ?= 1
+    $(warning Architecture "$(HOST_CPU)" not officially supported.')
+  endif
+endif
 ifeq ("$(CPU)","NONE")
   $(error CPU type "$(HOST_CPU)" not supported.  Please file bug report at 'http://code.google.com/p/mupen64plus/issues')
 endif
 
 # base CFLAGS, LDLIBS, and LDFLAGS
-OPTFLAGS ?= -O3
-CFLAGS += $(OPTFLAGS) -ffast-math -fno-strict-aliasing -fvisibility=hidden -I../../src
+OPTFLAGS ?= -O3 -flto
+WARNFLAGS ?= -Wall
+CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -ffast-math -fno-strict-aliasing -fvisibility=hidden -I../../src
 LDFLAGS += $(SHARED)
 
 # Since we are building a shared library, we must compile with -fPIC on some architectures
 # On 32-bit x86 systems we do not want to use -fPIC because we don't have to and it has a big performance penalty on this arch
 ifeq ($(PIC), 1)
   CFLAGS += -fPIC
-  LDFLAGS += -fPIC
 else
   CFLAGS += -fno-PIC
-  LDFLAGS += -fno-PIC
 endif
 
 ifeq ($(BIG_ENDIAN), 1)
@@ -126,7 +140,7 @@ ifeq ($(ARCH_DETECTED), 64BITS_32)
     $(error Do not use the BITS=32 option with FreeBSD, use -m32 and -m elf_i386)
   endif
   CFLAGS += -m32
-  LDFLAGS += -m32 -Wl,-m,elf_i386
+  LDFLAGS += -Wl,-m,elf_i386
 endif
 
 # set special flags per-system
@@ -134,48 +148,89 @@ ifeq ($(OS), LINUX)
   LDLIBS += -ldl
 endif
 ifeq ($(OS), OSX)
+  # Select the proper SDK
+  # Also, SDKs are stored in a different location since XCode 4.3
+  OSX_SDK ?= $(shell sw_vers -productVersion | cut -f1 -f2 -d .)
+  OSX_XCODEMAJ = $(shell xcodebuild -version | grep '[0-9]*\.[0-9]*' | cut -f2 -d ' ' | cut -f1 -d .)
+  OSX_XCODEMIN = $(shell xcodebuild -version | grep '[0-9]*\.[0-9]*' | cut -f2 -d ' ' | cut -f2 -d .)
+  OSX_XCODEGE43 = $(shell echo "`expr $(OSX_XCODEMAJ) \>= 4``expr $(OSX_XCODEMIN) \>= 3`")
+  ifeq ($(OSX_XCODEGE43), 11)
+    OSX_SYSROOT := /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+  else
+    OSX_SYSROOT := /Developer/SDKs
+  endif
+
   ifeq ($(CPU), X86)
     ifeq ($(ARCH_DETECTED), 64BITS)
-      CFLAGS += -pipe -arch x86_64 -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk
-      LDFLAGS += -arch x86_64
+      CFLAGS += -pipe -arch x86_64 -mmacosx-version-min=$(OSX_SDK) -isysroot $(OSX_SYSROOT)/MacOSX$(OSX_SDK).sdk
       LDLIBS += -ldl
     else
-      CFLAGS += -pipe -mmmx -msse -fomit-frame-pointer -arch i686 -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk
-      LDFLAGS += -arch i686
-      LDLIBS += -ldl
+      CFLAGS += -pipe -mmmx -msse -fomit-frame-pointer -arch i686 -mmacosx-version-min=$(OSX_SDK) -isysroot $(OSX_SYSROOT)/MacOSX$(OSX_SDK).sdk
+      LDLIBS += -ldl -read_only_relocs suppress
     endif
   endif
 endif
 
 # test for presence of SDL
-ifeq ($(shell which sdl-config 2>/dev/null),)
-  $(error No SDL development libraries found!)
+ifeq ($(origin SDL_CFLAGS) $(origin SDL_LDLIBS), undefined undefined)
+  SDL_CONFIG = $(CROSS_COMPILE)sdl-config
+  ifeq ($(shell which $(SDL_CONFIG) 2>/dev/null),)
+    $(error No SDL development libraries found!)
+  endif
+  SDL_CFLAGS  += $(shell $(SDL_CONFIG) --cflags)
+  SDL_LDLIBS += $(shell $(SDL_CONFIG) --libs)
 endif
-ifeq ($(OS),FREEBSD)
-    CFLAGS  += $(shell sdl-config --cflags)
-    LDLIBS += $(shell sdl-config --libs)
+CFLAGS += $(SDL_CFLAGS)
+LDLIBS += $(SDL_LDLIBS)
+
+# test for essential build dependencies
+ifeq ($(origin PKG_CONFIG), undefined)
+  PKG_CONFIG = $(CROSS_COMPILE)pkg-config
+  ifeq ($(shell which $(PKG_CONFIG) 2>/dev/null),)
+    $(error $(PKG_CONFIG) not found)
+  endif
 endif
-ifeq ($(OS),OSX)
-    CFLAGS  += $(shell sdl-config --cflags)
-    # sdl-config on mac screws up when we're trying to build a library and not an executable
-    # SDL 1.3 is supposed to fix that, if it's ever released
-    LDLIBS += -L/usr/local/lib -lSDL -Wl,-framework,Cocoa
-endif
-ifeq ($(OS),LINUX)
-    CFLAGS  += $(shell sdl-config --cflags)
-    LDLIBS += $(shell sdl-config --libs)
+
+# test for presence of speexdsp
+ifneq ($(NO_SPEEX), 1)
+  ifeq ($(origin SPEEX_CFLAGS) $(origin SPEEX_LDLIBS), undefined undefined)
+    ifneq ($(strip $(shell $(PKG_CONFIG) speexdsp --modversion 2> /dev/null)),)
+      # set speexdsp flags and libraries
+      SPEEX_CFLAGS += $(shell $(PKG_CONFIG) speexdsp --cflags) -DUSE_SPEEX
+      SPEEX_LDLIBS += $(shell $(PKG_CONFIG) speexdsp --libs)
+    else
+      # warn user
+      $(warning No libspeexdsp development libraries found.  Mupen64plus-sdl-audio will be built without speex-* resampler.)
+    endif
+  else
+    SPEEX_CFLAGS += -DUSE_SPEEX
+  endif
+  CFLAGS += $(SPEEX_CFLAGS)
+  LDLIBS += $(SPEEX_LDLIBS)
 endif
 
 # test for presence of libsamplerate
-ifneq ($(strip $(shell pkg-config samplerate --modversion 2> /dev/null)),)
-  ifneq ($(NO_RESAMP), 1)
-    # set libsamplerate flags and libraries
-    CFLAGS	+= $(shell pkg-config samplerate --cflags) -DUSE_SRC
-    LDLIBS += $(shell pkg-config samplerate --libs)
+ifneq ($(NO_SRC), 1)
+  ifeq ($(origin SRC_CFLAGS) $(origin SRC_LDLIBS), undefined undefined)
+    ifneq ($(strip $(shell $(PKG_CONFIG) samplerate --modversion 2> /dev/null)),)
+      # set libsamplerate flags and libraries
+      SRC_CFLAGS += $(shell $(PKG_CONFIG) samplerate --cflags) -DUSE_SRC
+      SRC_LDLIBS += $(shell $(PKG_CONFIG) samplerate --libs)
+    else
+      $(warning No libsamplerate development libraries found.  Mupen64plus-sdl-audio will be built without src-* resampler.)
+    endif
+  else
+    SRC_CFLAGS += -DUSE_SRC
   endif
-else
-  # warn user
-  $(warning No libsamplerate development libraries found.  Mupen64plus-sdl-audio will be built without Best Quality SINC resampler.)
+  CFLAGS += $(SRC_CFLAGS)
+  LDLIBS += $(SRC_LDLIBS)
+endif
+
+# test for the presence of OSS
+ifneq ($(wildcard /dev/mixer),)
+  ifneq ($(NO_OSS), 1)
+    CFLAGS += -DHAS_OSS_SUPPORT
+  endif
 endif
 
 # set mupen64plus core API header path
@@ -209,19 +264,21 @@ endif
 endif
 
 # set base program pointers and flags
-CC       ?= gcc
+CC        = $(CROSS_COMPILE)gcc
 RM       ?= rm -f
 INSTALL  ?= install
 MKDIR ?= mkdir -p
 COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
-LINK.o = $(Q_LD)$(CC) $(LDFLAGS) $(TARGET_ARCH)
+LINK.o = $(Q_LD)$(CC) $(CFLAGS) $(LDFLAGS) $(TARGET_ARCH)
 
 # set special flags for given Makefile parameters
 ifeq ($(DEBUG),1)
   CFLAGS += -g
   INSTALL_STRIP_FLAG ?= 
 else
-  INSTALL_STRIP_FLAG ?= -s
+  ifneq ($(OS),OSX)
+    INSTALL_STRIP_FLAG ?= -s
+  endif
 endif
 
 # set installation options
@@ -236,25 +293,26 @@ ifeq ($(PLUGINDIR),)
 endif
 
 SRCDIR = ../../src
-OBJDIR = _obj
+OBJDIR = _obj$(POSTFIX)
 
 # list of source files to compile
 SOURCE = \
 	$(SRCDIR)/main.c \
-	$(SRCDIR)/volume.c \
-	$(SRCDIR)/osal_dynamiclib_unix.c
+	$(SRCDIR)/volume.c
+
+ifeq ($(OS),MINGW)
+SOURCE += $(SRCDIR)/osal_dynamiclib_win32.c
+else
+SOURCE += $(SRCDIR)/osal_dynamiclib_unix.c
+endif
 
 # generate a list of object files build, make a temporary directory for them
 OBJECTS := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(filter %.c, $(SOURCE)))
 OBJDIRS = $(dir $(OBJECTS))
 $(shell $(MKDIR) $(OBJDIRS))
 
-# build dependency files
-CFLAGS += -MD
--include $(OBJECTS:.o=.d)
-
 # build targets
-TARGET = mupen64plus-audio-sdl.$(SO_EXTENSION)
+TARGET = mupen64plus-audio-sdl$(POSTFIX).$(SO_EXTENSION)
 
 targets:
 	@echo "Mupen64Plus-audio-sdl makefile. "
@@ -267,9 +325,13 @@ targets:
 	@echo "  Options:"
 	@echo "    BITS=32       == build 32-bit binaries on 64-bit machine"
 	@echo "    APIDIR=path   == path to find Mupen64Plus Core headers"
-	@echo "    OPTFLAGS=flag == compiler optimization (default: -O3)"
+	@echo "    OPTFLAGS=flag == compiler optimization (default: -O3 -flto)"
+	@echo "    WARNFLAGS=flag == compiler warning levels (default: -Wall)"
 	@echo "    PIC=(1|0)     == Force enable/disable of position independent code"
-	@echo "    NO_RESAMP=1   == build without libsamplerate; disables high-quality audio resampling"
+	@echo "    NO_SRC=1      == build without libsamplerate; disables src-* high-quality audio resampling"
+	@echo "    NO_SPEEX=1    == build without libspeexdsp; disables speex-* high-quality audio resampling"
+	@echo "    NO_OSS=1      == build without OSS; disables Open Sound System support"
+	@echo "    POSTFIX=name  == String added to the name of the the build (default: '')"
 	@echo "  Install Options:"
 	@echo "    PREFIX=path   == install/uninstall prefix (default: /usr/local)"
 	@echo "    LIBDIR=path   == library prefix (default: PREFIX/lib)"
@@ -290,9 +352,13 @@ uninstall:
 	$(RM) "$(DESTDIR)$(PLUGINDIR)/$(TARGET)"
 
 clean:
-	$(RM) -r ./_obj $(TARGET)
+	$(RM) -r $(OBJDIR) $(TARGET)
 
 rebuild: clean all
+
+# build dependency files
+CFLAGS += -MD
+-include $(OBJECTS:.o=.d)
 
 # standard build rules
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
