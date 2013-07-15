@@ -117,6 +117,10 @@ typedef enum {
 } m64p_video_mode;
 
 typedef enum {
+  M64VIDEOFLAG_SUPPORT_RESIZING = 1
+} m64p_video_flags;
+
+typedef enum {
   M64CORE_EMU_STATE = 1,
   M64CORE_VIDEO_MODE,
   M64CORE_SAVESTATE_SLOT,
@@ -222,6 +226,35 @@ typedef enum {
 } m64p_dbg_mem_info;
 
 typedef enum {
+  M64P_MEM_NOMEM = 0,
+  M64P_MEM_NOTHING,
+  M64P_MEM_RDRAM,
+  M64P_MEM_RDRAMREG,
+  M64P_MEM_RSPMEM,
+  M64P_MEM_RSPREG,
+  M64P_MEM_RSP,
+  M64P_MEM_DP,
+  M64P_MEM_DPS,
+  M64P_MEM_VI,
+  M64P_MEM_AI,
+  M64P_MEM_PI,
+  M64P_MEM_RI,
+  M64P_MEM_SI,
+  M64P_MEM_FLASHRAMSTAT,
+  M64P_MEM_ROM,
+  M64P_MEM_PIF,
+  M64P_MEM_MI,
+  M64P_MEM_BREAKPOINT
+} m64p_dbg_mem_type;
+
+typedef enum {
+  M64P_MEM_FLAG_READABLE = 0x01,
+  M64P_MEM_FLAG_WRITABLE = 0x02,
+  M64P_MEM_FLAG_READABLE_EMUONLY = 0x04,  // the EMUONLY flags signify that emulated code can read/write here, but debugger cannot
+  M64P_MEM_FLAG_WRITABLE_EMUONLY = 0x08
+} m64p_dbg_mem_flags;
+
+typedef enum {
   M64P_DBG_PTR_RDRAM = 1,
   M64P_DBG_PTR_PI_REG,
   M64P_DBG_PTR_SI_REG,
@@ -252,6 +285,8 @@ typedef enum {
   M64P_BKP_CMD_DISABLE,
   M64P_BKP_CMD_CHECK
 } m64p_dbg_bkp_command;
+
+#define M64P_MEM_INVALID        0xFFFFFFFF  // invalid memory read will return this
 
 #define BREAKPOINTS_MAX_NUMBER  128
 
@@ -302,13 +337,14 @@ typedef struct {
   m64p_error (*VidExtFuncInit)(void);
   m64p_error (*VidExtFuncQuit)(void);
   m64p_error (*VidExtFuncListModes)(m64p_2d_size *, int *);
-  m64p_error (*VidExtFuncSetMode)(int, int, int, int);
+  m64p_error (*VidExtFuncSetMode)(int, int, int, int, int);
   void *     (*VidExtFuncGLGetProc)(const char*);
   m64p_error (*VidExtFuncGLSetAttr)(m64p_GLattr, int);
   m64p_error (*VidExtFuncGLGetAttr)(m64p_GLattr, int *);
   m64p_error (*VidExtFuncGLSwapBuf)(void);
   m64p_error (*VidExtFuncSetCaption)(const char *);
   m64p_error (*VidExtFuncToggleFS)(void);
+  m64p_error (*VidExtFuncResizeWindow)(int, int);
 } m64p_video_extension_functions;
 
 #endif /* define M64P_TYPES_H */

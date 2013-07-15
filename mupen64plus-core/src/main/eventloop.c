@@ -246,6 +246,9 @@ static int SDLCALL event_sdl_filter(void *userdata, SDL_Event *event)
 
         case SDL_KEYDOWN:
 #if SDL_VERSION_ATLEAST(1,3,0)
+            if (event->key.repeat)
+                return 0;
+
             event_sdl_keydown(event->key.keysym.scancode, event->key.keysym.mod);
 #else
             event_sdl_keydown(event->key.keysym.sym, event->key.keysym.mod);
@@ -258,6 +261,26 @@ static int SDLCALL event_sdl_filter(void *userdata, SDL_Event *event)
             event_sdl_keyup(event->key.keysym.sym, event->key.keysym.mod);
 #endif
             return 0;
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+        case SDL_WINDOWEVENT:
+            switch (event->window.event) {
+                case SDL_WINDOWEVENT_RESIZED:
+                    // call the video plugin.  if the video plugin supports resizing, it will resize its viewport and call
+                    // VidExt_ResizeWindow to update the window manager handling our opengl output window
+                    gfx.resizeVideoOutput(event->window.data1, event->window.data2);
+                    return 0;  // consumed the event
+                    break;
+            }
+            break;
+#else
+        case SDL_VIDEORESIZE:
+            // call the video plugin.  if the video plugin supports resizing, it will resize its viewport and call
+            // VidExt_ResizeWindow to update the window manager handling our opengl output window
+            gfx.resizeVideoOutput(event->resize.w, event->resize.h);
+            return 0;  // consumed the event
+            break;
+#endif
 
         // if joystick action is detected, check if it's mapped to a special function
         case SDL_JOYAXISMOTION:
@@ -333,7 +356,7 @@ void event_initialize(void)
             if (!SDL_WasInit(SDL_INIT_JOYSTICK))
                 SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 #if SDL_VERSION_ATLEAST(2,0,0)
-#warning SDL_JoystickOpened unsupported
+            SDL_JoystickOpen(device);
 #else
             if (!SDL_JoystickOpened(device))
                 SDL_JoystickOpen(device);
@@ -342,9 +365,7 @@ void event_initialize(void)
     }
 
     /* set up SDL event filter and disable key repeat */
-#if SDL_VERSION_ATLEAST(2,0,0)
-#warning SDL_EnableKeyRepeat unsupported
-#else
+#if !SDL_VERSION_ATLEAST(2,0,0)
     SDL_EnableKeyRepeat(0, 0);
 #endif
     SDL_SetEventFilter(event_sdl_filter, NULL);

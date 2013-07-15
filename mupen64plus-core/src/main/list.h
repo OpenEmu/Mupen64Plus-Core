@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 #include <stddef.h>
+#include "osal/preproc.h"
 
 struct list_head {
     struct list_head *prev;
@@ -36,13 +37,13 @@ struct list_head {
 #define LIST_HEAD(list) \
     struct list_head list = { &(list), &(list) }
 
-static inline void INIT_LIST_HEAD(struct list_head *head)
+static osal_inline void INIT_LIST_HEAD(struct list_head *head)
 {
     head->next = head;
     head->prev = head;
 }
 
-static inline void list_add(struct list_head *new_item, struct list_head *head)
+static osal_inline void list_add(struct list_head *new_item, struct list_head *head)
 {
     struct list_head *next = head->next;
 
@@ -52,7 +53,7 @@ static inline void list_add(struct list_head *new_item, struct list_head *head)
     head->next = new_item;
 }
 
-static inline void list_add_tail(struct list_head *new_item, struct list_head *head)
+static osal_inline void list_add_tail(struct list_head *new_item, struct list_head *head)
 {
     struct list_head *prev = head->prev;
 
@@ -62,7 +63,7 @@ static inline void list_add_tail(struct list_head *new_item, struct list_head *h
     head->prev = new_item;
 }
 
-static inline void list_del(struct list_head *entry)
+static osal_inline void list_del(struct list_head *entry)
 {
     struct list_head *next = entry->next;
     struct list_head *prev = entry->prev;
@@ -71,19 +72,29 @@ static inline void list_del(struct list_head *entry)
     prev->next = next;
 }
 
-static inline void list_del_init(struct list_head *entry)
+static osal_inline void list_del_init(struct list_head *entry)
 {
     list_del(entry);
     INIT_LIST_HEAD(entry);
 }
 
-static inline int list_empty(const struct list_head *head)
+static osal_inline int list_empty(const struct list_head *head)
 {
     return (head->next == head);
 }
 
+#ifdef __GNUC__
+
+#define container_of(ptr, type, member) ({ \
+    const typeof( ((type *)0)->member ) *__mptr = (ptr); \
+    (type *)( (char *)__mptr - offsetof(type,member) );})
+
+#else
+
 #define container_of(ptr, type, member) \
     ((type *)((char *)(ptr) - offsetof(type, member)))
+
+#endif
 
 #define list_entry(ptr, type, member) container_of(ptr, type, member)
 
