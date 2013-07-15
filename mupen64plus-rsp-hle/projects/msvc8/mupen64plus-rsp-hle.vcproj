@@ -179,7 +179,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\idct.c"
+				RelativePath="..\..\src\alist.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\cicx105.c"
 				>
 			</File>
 			<File
@@ -213,7 +217,23 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\src\alist.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\alist_internal.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\cicx105.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\hle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\jpeg.h"
 				>
 			</File>
 		</Filter>
