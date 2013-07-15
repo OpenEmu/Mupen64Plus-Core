@@ -22,7 +22,7 @@
 #if !defined(OSAL_OPENGL_H)
 #define OSAL_OPENGL_H
 
-#include <SDL_config.h>
+//#include <SDL_config.h>
 
 #if SDL_VIDEO_OPENGL
 #include <SDL_opengl.h>

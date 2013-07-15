@@ -377,7 +377,7 @@ static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param par
 
 - (void) tryToResizeVideoTo:(OEIntSize)size
 {
-    VidExt_SetVideoMode(size.width, size.height, 32, M64VIDEO_WINDOWED);
+    VidExt_SetVideoMode(size.width, size.height, 32, M64VIDEO_WINDOWED, 0);
     ptr_OE_ForceUpdateWindowSize(size.width, size.height);
 }
 

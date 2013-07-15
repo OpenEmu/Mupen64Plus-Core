@@ -1245,8 +1245,8 @@ void OGLRender::DisableMultiTexture()
 void OGLRender::EndRendering(void)
 {
 #if SDL_VIDEO_OPENGL
-    glFlush();
-    OPENGL_CHECK_ERRORS;
+    //glFlush();
+    //OPENGL_CHECK_ERRORS;
 #endif
     if( CRender::gRenderReferenceCount > 0 ) 
         CRender::gRenderReferenceCount--;

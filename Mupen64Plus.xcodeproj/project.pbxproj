@@ -104,7 +104,6 @@
 		3DC2145A166C6C6E0014251E /* SDLStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D00F0801183E52F002995A1 /* SDLStubs.m */; };
 		3DC2145F166C6D7F0014251E /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC2145C166C6D7F0014251E /* libpng.a */; };
 		3DC21460166C6F170014251E /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E9D1182551500BEAA42 /* libz.dylib */; };
-		3DCABDBA166C4B89002F2066 /* idct.c in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B874166C2A0A00082F27 /* idct.c */; };
 		3DCABDBB166C4B89002F2066 /* jpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B875166C2A0A00082F27 /* jpeg.c */; };
 		3DCABDBC166C4B89002F2066 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B876166C2A0A00082F27 /* main.c */; };
 		3DCABDBD166C4B89002F2066 /* ucode1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B878166C2A0A00082F27 /* ucode1.cpp */; };
@@ -159,6 +158,8 @@
 		3DCABE80166C6AB6002F2066 /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B8FA166C2A0A00082F27 /* Video.cpp */; };
 		8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
+		942130D01793DD8F00E57482 /* alist.c in Sources */ = {isa = PBXBuildFile; fileRef = 942130CB1793DD8F00E57482 /* alist.c */; };
+		942130D11793DD8F00E57482 /* cicx105.c in Sources */ = {isa = PBXBuildFile; fileRef = 942130CD1793DD8F00E57482 /* cicx105.c */; };
 		9449518B14D8F9B400FC80E7 /* config.yaml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9449518A14D8F9B400FC80E7 /* config.yaml */; };
 		944951E414D912BE00FC80E7 /* n64_cic_nus_6105.c in Sources */ = {isa = PBXBuildFile; fileRef = 944951E214D912BE00FC80E7 /* n64_cic_nus_6105.c */; };
 		94D58BDB16BE327A0093CD72 /* SDLStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D00F0801183E52F002995A1 /* SDLStubs.m */; };
@@ -184,7 +185,6 @@
 		94D58CA316BE33EC0093CD72 /* geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C6D16BE33EC0093CD72 /* geometry.cpp */; };
 		94D58CA416BE33EC0093CD72 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C7616BE33EC0093CD72 /* main.cpp */; };
 		94D58CA516BE33EC0093CD72 /* textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C7816BE33EC0093CD72 /* textures.cpp */; };
-		94D58CAB16BE5C690093CD72 /* mupen64plus-video-glide64mk2.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */; };
 		94D58CAC16BE5DAD0093CD72 /* Glide64mk2.ini in Resources */ = {isa = PBXBuildFile; fileRef = 94D58BE716BE33EC0093CD72 /* Glide64mk2.ini */; };
 		C62301A7171227AE00576081 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
 		C62301A8171227B300576081 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
@@ -221,13 +221,6 @@
 			remoteGlobalIDString = 8D5B49AC048680CD000E48DA;
 			remoteInfo = Mupen64Plus;
 		};
-		94D58CA616BE37BB0093CD72 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 94D58BAD16BE327A0093CD72;
-			remoteInfo = "mupen64plus-video-glide64mk2";
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -237,7 +230,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				94D58CAB16BE5C690093CD72 /* mupen64plus-video-glide64mk2.so in CopyFiles */,
 				3DC21457166C6BB90014251E /* mupen64plus-video-rice.so in CopyFiles */,
 				3DCABDC2166C4CB2002F2066 /* mupen64plus-rsp-hle.so in CopyFiles */,
 			);
@@ -489,6 +481,13 @@
 		3DCABE0E166C6A20002F2066 /* mupen64plus-video-rice.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-video-rice.so"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B6048680CD000E48DA /* Mupen64Plus.oecoreplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Mupen64Plus.oecoreplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		942130C61793D30000E57482 /* osal_opengl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_opengl.h; sourceTree = "<group>"; };
+		942130CA1793DD8F00E57482 /* alist_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = alist_internal.h; sourceTree = "<group>"; };
+		942130CB1793DD8F00E57482 /* alist.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = alist.c; sourceTree = "<group>"; };
+		942130CC1793DD8F00E57482 /* alist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = alist.h; sourceTree = "<group>"; };
+		942130CD1793DD8F00E57482 /* cicx105.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cicx105.c; sourceTree = "<group>"; };
+		942130CE1793DD8F00E57482 /* cicx105.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cicx105.h; sourceTree = "<group>"; };
+		942130CF1793DD8F00E57482 /* jpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jpeg.h; sourceTree = "<group>"; };
 		942597D0151470840074E3A3 /* OpenEmuBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenEmuBase.framework; path = ../OpenEmu/build/Release/OpenEmuBase.framework; sourceTree = "<group>"; };
 		9449518A14D8F9B400FC80E7 /* config.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = config.yaml; sourceTree = "<group>"; };
 		9449518E14D8FE6100FC80E7 /* OEN64SystemResponderClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OEN64SystemResponderClient.h; path = ../OpenEmu/N64/OEN64SystemResponderClient.h; sourceTree = "<group>"; };
@@ -628,7 +627,6 @@
 		94E6B849166C2A0A00082F27 /* osal_dynamiclib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = osal_dynamiclib.h; sourceTree = "<group>"; };
 		94E6B84A166C2A0A00082F27 /* osal_dynamiclib_unix.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = osal_dynamiclib_unix.c; sourceTree = "<group>"; };
 		94E6B84B166C2A0A00082F27 /* osal_dynamiclib_win32.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = osal_dynamiclib_win32.c; sourceTree = "<group>"; };
-		94E6B84C166C2A0A00082F27 /* osal_preproc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = osal_preproc.h; sourceTree = "<group>"; };
 		94E6B84D166C2A0A00082F27 /* volume.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = volume.c; sourceTree = "<group>"; };
 		94E6B84E166C2A0A00082F27 /* volume.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = volume.h; sourceTree = "<group>"; };
 		94E6B850166C2A0A00082F27 /* AUTHORS */ = {isa = PBXFileReference; lastKnownFileType = text; path = AUTHORS; sourceTree = "<group>"; };
@@ -657,7 +655,6 @@
 		94E6B870166C2A0A00082F27 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		94E6B871166C2A0A00082F27 /* RELEASE */ = {isa = PBXFileReference; lastKnownFileType = text; path = RELEASE; sourceTree = "<group>"; };
 		94E6B873166C2A0A00082F27 /* hle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hle.h; sourceTree = "<group>"; };
-		94E6B874166C2A0A00082F27 /* idct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = idct.c; sourceTree = "<group>"; };
 		94E6B875166C2A0A00082F27 /* jpeg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = jpeg.c; sourceTree = "<group>"; };
 		94E6B876166C2A0A00082F27 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		94E6B877166C2A0A00082F27 /* rsp_api_export.ver */ = {isa = PBXFileReference; lastKnownFileType = text; path = rsp_api_export.ver; sourceTree = "<group>"; };
@@ -1642,7 +1639,6 @@
 				94E6B849166C2A0A00082F27 /* osal_dynamiclib.h */,
 				94E6B84A166C2A0A00082F27 /* osal_dynamiclib_unix.c */,
 				94E6B84B166C2A0A00082F27 /* osal_dynamiclib_win32.c */,
-				94E6B84C166C2A0A00082F27 /* osal_preproc.h */,
 				94E6B84D166C2A0A00082F27 /* volume.c */,
 				94E6B84E166C2A0A00082F27 /* volume.h */,
 			);
@@ -1756,8 +1752,13 @@
 		94E6B872166C2A0A00082F27 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				942130CA1793DD8F00E57482 /* alist_internal.h */,
+				942130CB1793DD8F00E57482 /* alist.c */,
+				942130CC1793DD8F00E57482 /* alist.h */,
+				942130CD1793DD8F00E57482 /* cicx105.c */,
+				942130CE1793DD8F00E57482 /* cicx105.h */,
+				942130CF1793DD8F00E57482 /* jpeg.h */,
 				94E6B873166C2A0A00082F27 /* hle.h */,
-				94E6B874166C2A0A00082F27 /* idct.c */,
 				94E6B875166C2A0A00082F27 /* jpeg.c */,
 				94E6B876166C2A0A00082F27 /* main.c */,
 				94E6B877166C2A0A00082F27 /* rsp_api_export.ver */,
@@ -1882,6 +1883,7 @@
 				94E6B8D0166C2A0A00082F27 /* osal_files.h */,
 				94E6B8D1166C2A0A00082F27 /* osal_files_unix.c */,
 				94E6B8D2166C2A0A00082F27 /* osal_files_win32.c */,
+				942130C61793D30000E57482 /* osal_opengl.h */,
 				94E6B8D3166C2A0A00082F27 /* osal_preproc.h */,
 				94E6B8D4166C2A0A00082F27 /* RDP_Texture.h */,
 				94E6B8D5166C2A0A00082F27 /* Render.cpp */,
@@ -1993,7 +1995,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				94D58CA716BE37BB0093CD72 /* PBXTargetDependency */,
 				3DC21459166C6BE10014251E /* PBXTargetDependency */,
 				3DCABDC4166C4D86002F2066 /* PBXTargetDependency */,
 			);
@@ -2103,13 +2104,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3DCABDBA166C4B89002F2066 /* idct.c in Sources */,
 				3DCABDBB166C4B89002F2066 /* jpeg.c in Sources */,
 				3DCABDBC166C4B89002F2066 /* main.c in Sources */,
 				3DCABDBD166C4B89002F2066 /* ucode1.cpp in Sources */,
 				3DCABDBE166C4B89002F2066 /* ucode2.cpp in Sources */,
 				3DCABDBF166C4B89002F2066 /* ucode3.cpp in Sources */,
 				3DCABDC0166C4B89002F2066 /* ucode3mp3.cpp in Sources */,
+				942130D01793DD8F00E57482 /* alist.c in Sources */,
+				942130D11793DD8F00E57482 /* cicx105.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2277,11 +2279,6 @@
 			isa = PBXTargetDependency;
 			target = 8D5B49AC048680CD000E48DA /* Mupen64Plus */;
 			targetProxy = 9449518414D8F95F00FC80E7 /* PBXContainerItemProxy */;
-		};
-		94D58CA716BE37BB0093CD72 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 94D58BAD16BE327A0093CD72 /* mupen64plus-video-glide64mk2 */;
-			targetProxy = 94D58CA616BE37BB0093CD72 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2536,6 +2533,7 @@
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				HEADER_SEARCH_PATHS = "";
 				INSTALL_PATH = "";
 				LD_DYLIB_INSTALL_NAME = "";
 				LIBRARY_SEARCH_PATHS = (
@@ -2543,6 +2541,18 @@
 					"\"$(SRCROOT)/png\"",
 				);
 				MACH_O_TYPE = mh_bundle;
+				OTHER_CFLAGS = (
+					"-ffast-math",
+					"-fno-strict-aliasing",
+					"-fvisibility=hidden",
+					"-DGCC",
+					"-pthread",
+					"-mmmx",
+					"-msse",
+					"-fPIC",
+					"-D__unix__",
+					"-DSDL_VIDEO_OPENGL",
+				);
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
@@ -2564,6 +2574,7 @@
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				HEADER_SEARCH_PATHS = "";
 				INSTALL_PATH = "";
 				LD_DYLIB_INSTALL_NAME = "";
 				LIBRARY_SEARCH_PATHS = (
@@ -2571,6 +2582,18 @@
 					"\"$(SRCROOT)/png\"",
 				);
 				MACH_O_TYPE = mh_bundle;
+				OTHER_CFLAGS = (
+					"-ffast-math",
+					"-fno-strict-aliasing",
+					"-fvisibility=hidden",
+					"-DGCC",
+					"-pthread",
+					"-mmmx",
+					"-msse",
+					"-fPIC",
+					"-D__unix__",
+					"-DSDL_VIDEO_OPENGL",
+				);
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
