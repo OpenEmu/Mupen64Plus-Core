@@ -29,7 +29,7 @@ COGLTexture::COGLTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
     CTexture(dwWidth,dwHeight,usage),
     m_glFmt(GL_RGBA)
 {
-    // Fix me, if usage is AS_RENDER_TARGET, we need to create pbuffer instead of regular texture
+    // FIXME: If usage is AS_RENDER_TARGET, we need to create pbuffer instead of regular texture
 
     m_dwTextureFmt = TEXTURE_FMT_A8R8G8B8;  // Always use 32bit to load texture
     glGenTextures( 1, &m_dwTextureName );
@@ -68,7 +68,7 @@ COGLTexture::COGLTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
 
 COGLTexture::~COGLTexture()
 {
-    // Fix me, if usage is AS_RENDER_TARGET, we need to destroy the pbuffer
+    // FIXME: If usage is AS_RENDER_TARGET, we need to destroy the pbuffer
 
     glDeleteTextures(1, &m_dwTextureName );
     OPENGL_CHECK_ERRORS;
@@ -95,7 +95,7 @@ bool COGLTexture::StartUpdate(DrawInfo *di)
 
 void COGLTexture::EndUpdate(DrawInfo *di)
 {
-    COGLGraphicsContext *pcontext = (COGLGraphicsContext *)(CGraphicsContext::g_pGraphicsContext);	// we need this to check if the GL extension is avaible
+    COGLGraphicsContext *pcontext = (COGLGraphicsContext *)(CGraphicsContext::g_pGraphicsContext); // we need this to check if the GL extension is avaible
 
     glBindTexture(GL_TEXTURE_2D, m_dwTextureName);
     OPENGL_CHECK_ERRORS;
@@ -109,7 +109,7 @@ void COGLTexture::EndUpdate(DrawInfo *di)
         int m_maximumAnistropy = pcontext->getMaxAnisotropicFiltering(); //if getMaxAnisotropicFiltering() return more than 0, so aniso is supported and maxAnisotropicFiltering is set
 
         // Set Anisotropic filtering (mipmapping have to be activated, aniso filtering is not effective without)
-        if( m_maximumAnistropy )	
+        if( m_maximumAnistropy )
         {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, m_maximumAnistropy);
             OPENGL_CHECK_ERRORS;
@@ -119,8 +119,12 @@ void COGLTexture::EndUpdate(DrawInfo *di)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
         OPENGL_CHECK_ERRORS;
 
+#if SDL_VIDEO_OPENGL
         // Tell to hardware to generate mipmap (himself) when glTexImage2D is called
-        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); 
+        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+#elif SDL_VIDEO_OPENGL_ES2
+        glGenerateMipmap(GL_TEXTURE_2D);
+#endif
         OPENGL_CHECK_ERRORS;
     }
     else
@@ -130,7 +134,12 @@ void COGLTexture::EndUpdate(DrawInfo *di)
     }
 
     // Copy the image data from main memory to video card texture memory
+#if SDL_VIDEO_OPENGL
     glTexImage2D(GL_TEXTURE_2D, 0, m_glFmt, m_dwCreatedTextureWidth, m_dwCreatedTextureHeight, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, m_pTexture);
+#elif SDL_VIDEO_OPENGL_ES2
+    //GL_BGRA_IMG works on adreno but not inside profiler.
+    glTexImage2D(GL_TEXTURE_2D, 0, m_glFmt, m_dwCreatedTextureWidth, m_dwCreatedTextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pTexture);
+#endif
     OPENGL_CHECK_ERRORS;
 }
 

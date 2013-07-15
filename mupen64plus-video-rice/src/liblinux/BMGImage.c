@@ -24,7 +24,7 @@
 // POSSESSION, USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <string.h>
+#include <memory.h>
 #include <setjmp.h>
 #include <stdlib.h>
 

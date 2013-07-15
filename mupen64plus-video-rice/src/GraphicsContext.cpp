@@ -49,9 +49,9 @@ CGraphicsContext::~CGraphicsContext()
     g_pFrameBufferManager->CloseUp();
 }
 
-uint32      CGraphicsContext::m_dwWindowStyle=0;     // Saved window style for mode switches
-uint32      CGraphicsContext::m_dwWindowExStyle=0;   // Saved window style for mode switches
-uint32      CGraphicsContext::m_dwStatusWindowStyle=0;     // Saved window style for mode switches
+uint32 CGraphicsContext::m_dwWindowStyle=0;         // Saved window style for mode switches
+uint32 CGraphicsContext::m_dwWindowExStyle=0;       // Saved window style for mode switches
+uint32 CGraphicsContext::m_dwStatusWindowStyle=0;   // Saved window style for mode switches
 
 void CGraphicsContext::InitWindowInfo()
 {
@@ -62,6 +62,11 @@ bool CGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWindowe
     m_bWindowed = (bWindowed != 0);
 
     g_pFrameBufferManager->Initialize();
+    return true;
+}
+
+bool CGraphicsContext::ResizeInitialize(uint32 dwWidth, uint32 dwHeight, BOOL bWindowed )
+{
     return true;
 }
 
@@ -110,5 +115,4 @@ void CGraphicsContext::InitDeviceParameters(void)
     // To initialze device parameters for OpenGL
     COGLGraphicsContext::InitDeviceParameters();
 }
-
 

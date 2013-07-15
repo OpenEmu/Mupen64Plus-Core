@@ -19,7 +19,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <SDL_opengl.h>
+#include "osal_opengl.h"
 
 #include "OGLCombiner.h"
 #include "OGLDebug.h"
@@ -31,10 +31,10 @@
 //========================================================================
 uint32 DirectX_OGL_BlendFuncMaps [] =
 {
-    GL_SRC_ALPHA,       //Nothing
-    GL_ZERO,            //BLEND_ZERO               = 1,
-    GL_ONE,             //BLEND_ONE                = 2,
-    GL_SRC_COLOR,       //BLEND_SRCCOLOR           = 3,
+    GL_SRC_ALPHA,               //Nothing
+    GL_ZERO,                    //BLEND_ZERO               = 1,
+    GL_ONE,                     //BLEND_ONE                = 2,
+    GL_SRC_COLOR,               //BLEND_SRCCOLOR           = 3,
     GL_ONE_MINUS_SRC_COLOR,     //BLEND_INVSRCCOLOR        = 4,
     GL_SRC_ALPHA,               //BLEND_SRCALPHA           = 5,
     GL_ONE_MINUS_SRC_ALPHA,     //BLEND_INVSRCALPHA        = 6,
@@ -72,7 +72,7 @@ bool COGLColorCombiner::Initialize(void)
     m_bSupportMultiTexture = false;
 
     COGLGraphicsContext *pcontext = (COGLGraphicsContext *)(CGraphicsContext::g_pGraphicsContext);
-    if( pcontext->IsExtensionSupported("GL_ARB_texture_env_add") || pcontext->IsExtensionSupported("GL_EXT_texture_env_add") )
+    if( pcontext->IsExtensionSupported(OSAL_GL_ARB_TEXTURE_ENV_ADD) || pcontext->IsExtensionSupported("GL_EXT_texture_env_add") )
     {
         m_bSupportAdd = true;
     }
@@ -158,6 +158,7 @@ void COGLColorCombiner::InitCombinerCycle12(void)
         return;
     }
 
+#if SDL_VIDEO_OPENGL
     uint32 mask = 0x1f;
     COGLTexture* pTexture = g_textures[gRSP.curTile].m_pCOGLTexture;
     if( pTexture )
@@ -226,7 +227,7 @@ void COGLColorCombiner::InitCombinerCycle12(void)
         case CM_FMT_TYPE_A_MOD_C_ADD_D: // = A*C+D
             if( shadeIsUsedInColor && texIsUsedInColor )
             {
-                if( ((comb.c & mask) == MUX_SHADE && !(comb.c&MUX_COMPLEMENT)) || 
+                if( ((comb.c & mask) == MUX_SHADE && !(comb.c&MUX_COMPLEMENT)) ||
                     ((comb.a & mask) == MUX_SHADE && !(comb.a&MUX_COMPLEMENT)) )
                     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
                 else
@@ -262,7 +263,7 @@ void COGLColorCombiner::InitCombinerCycle12(void)
         default:        // = (A-B)*C+D
             if( shadeIsUsedInColor )
             {
-                if( ((comb.c & mask) == MUX_SHADE && !(comb.c&MUX_COMPLEMENT)) || 
+                if( ((comb.c & mask) == MUX_SHADE && !(comb.c&MUX_COMPLEMENT)) ||
                     ((comb.a & mask) == MUX_SHADE && !(comb.a&MUX_COMPLEMENT)) )
                     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
                 else
@@ -281,6 +282,7 @@ void COGLColorCombiner::InitCombinerCycle12(void)
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
         OPENGL_CHECK_ERRORS;
     }
+#endif
 }
 
 void COGLBlender::NormalAlphaBlender(void)

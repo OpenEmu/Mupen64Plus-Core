@@ -16,20 +16,20 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include <SDL_opengl.h>
+#include "osal_opengl.h"
 
 #define M64P_PLUGIN_PROTOTYPES 1
 #include "m64p_plugin.h"
 #include "Config.h"
 #include "Debugger.h"
+#if SDL_VIDEO_OPENGL
 #include "OGLExtensions.h"
+#endif
 #include "OGLDebug.h"
 #include "OGLGraphicsContext.h"
 #include "TextureManager.h"
 #include "Video.h"
 #include "version.h"
-
-#include "liblinux/BMGLibPNG.h"
 
 COGLGraphicsContext::COGLGraphicsContext() :
     m_bSupportMultiTexture(false),
@@ -89,13 +89,13 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
 
     /* hard-coded attribute values */
     const int iDOUBLEBUFFER = 1;
-#if 0
+
     /* set opengl attributes */
     CoreVideo_GL_SetAttribute(M64P_GL_DOUBLEBUFFER, iDOUBLEBUFFER);
     CoreVideo_GL_SetAttribute(M64P_GL_SWAP_CONTROL, bVerticalSync);
     CoreVideo_GL_SetAttribute(M64P_GL_BUFFER_SIZE, colorBufferDepth);
     CoreVideo_GL_SetAttribute(M64P_GL_DEPTH_SIZE, depthBufferDepth);
-#endif
+
     /* set multisampling */
     if (options.multiSampling > 0)
     {
@@ -109,16 +109,17 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
         else
             CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 16);
     }
-   
+
     /* Set the video mode */
     m64p_video_mode ScreenMode = bWindowed ? M64VIDEO_WINDOWED : M64VIDEO_FULLSCREEN;
-    if (CoreVideo_SetVideoMode(windowSetting.uDisplayWidth, windowSetting.uDisplayHeight, colorBufferDepth, ScreenMode) != M64ERR_SUCCESS)
+    m64p_video_flags flags = M64VIDEOFLAG_SUPPORT_RESIZING;
+    if (CoreVideo_SetVideoMode(windowSetting.uDisplayWidth, windowSetting.uDisplayHeight, colorBufferDepth, ScreenMode, flags) != M64ERR_SUCCESS)
     {
         DebugMessage(M64MSG_ERROR, "Failed to set %i-bit video mode: %ix%i", colorBufferDepth, (int)windowSetting.uDisplayWidth, (int)windowSetting.uDisplayHeight);
         CoreVideo_Quit();
         return false;
     }
-#if 0
+
     /* check that our opengl attributes were properly set */
     int iActual;
     if (CoreVideo_GL_GetAttribute(M64P_GL_DOUBLEBUFFER, &iActual) == M64ERR_SUCCESS)
@@ -133,9 +134,11 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
     if (CoreVideo_GL_GetAttribute(M64P_GL_DEPTH_SIZE, &iActual) == M64ERR_SUCCESS)
         if (iActual != depthBufferDepth)
             DebugMessage(M64MSG_WARNING, "Failed to set GL_DEPTH_SIZE to %i. (it's %i)", depthBufferDepth, iActual);
-#endif
+
+#if SDL_VIDEO_OPENGL
     /* Get function pointers to OpenGL extensions (blame Microsoft Windows for this) */
     OGLExtensions_Init();
+#endif
 
     char caption[500];
     sprintf(caption, "%s v%i.%i.%i", PLUGIN_NAME, VERSION_PRINTF_SPLIT(PLUGIN_VERSION));
@@ -161,6 +164,59 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
     return true;
 }
 
+bool COGLGraphicsContext::ResizeInitialize(uint32 dwWidth, uint32 dwHeight, BOOL bWindowed )
+{
+    Lock();
+
+    CGraphicsContext::Initialize(dwWidth, dwHeight, bWindowed );
+
+    int  depthBufferDepth = options.OpenglDepthBufferSetting;
+    int  colorBufferDepth = 32;
+    int bVerticalSync = windowSetting.bVerticalSync;
+    if( options.colorQuality == TEXTURE_FMT_A4R4G4B4 ) colorBufferDepth = 16;
+
+    /* hard-coded attribute values */
+    const int iDOUBLEBUFFER = 1;
+
+    /* set opengl attributes */
+    CoreVideo_GL_SetAttribute(M64P_GL_DOUBLEBUFFER, iDOUBLEBUFFER);
+    CoreVideo_GL_SetAttribute(M64P_GL_SWAP_CONTROL, bVerticalSync);
+    CoreVideo_GL_SetAttribute(M64P_GL_BUFFER_SIZE, colorBufferDepth);
+    CoreVideo_GL_SetAttribute(M64P_GL_DEPTH_SIZE, depthBufferDepth);
+
+    /* set multisampling */
+    if (options.multiSampling > 0)
+    {
+        CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLEBUFFERS, 1);
+        if (options.multiSampling <= 2)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 2);
+        else if (options.multiSampling <= 4)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 4);
+        else if (options.multiSampling <= 8)
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 8);
+        else
+            CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, 16);
+    }
+
+    /* Call Mupen64plus core Video Extension to resize the window, which will create a new OpenGL Context under SDL */
+    if (CoreVideo_ResizeWindow(windowSetting.uDisplayWidth, windowSetting.uDisplayHeight) != M64ERR_SUCCESS)
+    {
+        DebugMessage(M64MSG_ERROR, "Failed to set %i-bit video mode: %ix%i", colorBufferDepth, (int)windowSetting.uDisplayWidth, (int)windowSetting.uDisplayHeight);
+        CoreVideo_Quit();
+        return false;
+    }
+
+    InitState();
+    Unlock();
+
+    Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);    // Clear buffers
+    UpdateFrame();
+    Clear(CLEAR_COLOR_AND_DEPTH_BUFFER);
+    UpdateFrame();
+    
+    return true;
+}
+
 void COGLGraphicsContext::InitState(void)
 {
     m_pRenderStr = glGetString(GL_RENDERER);
@@ -177,6 +233,7 @@ void COGLGraphicsContext::InitState(void)
     glClearDepth(1.0f);
     OPENGL_CHECK_ERRORS;
 
+#if SDL_VIDEO_OPENGL
     glShadeModel(GL_SMOOTH);
     OPENGL_CHECK_ERRORS;
 
@@ -186,6 +243,7 @@ void COGLGraphicsContext::InitState(void)
 
     glDisable(GL_ALPHA_TEST);
     OPENGL_CHECK_ERRORS;
+#endif
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     OPENGL_CHECK_ERRORS;
@@ -196,19 +254,24 @@ void COGLGraphicsContext::InitState(void)
     OPENGL_CHECK_ERRORS;
     glDisable(GL_CULL_FACE);
     OPENGL_CHECK_ERRORS;
+#if SDL_VIDEO_OPENGL
     glDisable(GL_NORMALIZE);
     OPENGL_CHECK_ERRORS;
+#endif
 
     glDepthFunc(GL_LEQUAL);
     OPENGL_CHECK_ERRORS;
     glEnable(GL_DEPTH_TEST);
     OPENGL_CHECK_ERRORS;
 
+#if SDL_VIDEO_OPENGL
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     OPENGL_CHECK_ERRORS;
+#endif
 
     glEnable(GL_BLEND);
     OPENGL_CHECK_ERRORS;
+#if SDL_VIDEO_OPENGL
     glEnable(GL_ALPHA_TEST);
     OPENGL_CHECK_ERRORS;
 
@@ -218,13 +281,17 @@ void COGLGraphicsContext::InitState(void)
     OPENGL_CHECK_ERRORS;
     
     glDepthRange(-1, 1);
+
+#elif SDL_VIDEO_OPENGL_ES2
+    glDepthRangef(0.0f, 1.0f);
+#endif
     OPENGL_CHECK_ERRORS;
 }
 
 void COGLGraphicsContext::InitOGLExtension(void)
 {
     // important extension features, it is very bad not to have these feature
-    m_bSupportMultiTexture = IsExtensionSupported("GL_ARB_multitexture");
+    m_bSupportMultiTexture = IsExtensionSupported(OSAL_GL_ARB_MULTITEXTURE);
     m_bSupportTextureEnvCombine = IsExtensionSupported("GL_EXT_texture_env_combine");
     
     m_bSupportSeparateSpecularColor = IsExtensionSupported("GL_EXT_separate_specular_color");
@@ -327,8 +394,8 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
 {
     status.gFrameCount++;
 
-    //glFlush();
-    //OPENGL_CHECK_ERRORS;
+    glFlush();
+    OPENGL_CHECK_ERRORS;
     //glFinish();
     //wglSwapIntervalEXT(0);
 
@@ -401,9 +468,9 @@ void COGLGraphicsContext::UpdateFrame(bool swaponly)
 
     glDepthMask(GL_TRUE);
     OPENGL_CHECK_ERRORS;
-    glClearDepth(1.0);
+    glClearDepth(1.0f);
     OPENGL_CHECK_ERRORS;
-    if( !g_curRomInfo.bForceScreenClear ) 
+    if( !g_curRomInfo.bForceScreenClear )
     {
         glClear(GL_DEPTH_BUFFER_BIT);
         OPENGL_CHECK_ERRORS;

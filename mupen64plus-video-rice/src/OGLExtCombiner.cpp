@@ -17,8 +17,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include <algorithm>
+#include "osal_opengl.h"
 
+#if SDL_VIDEO_OPENGL
 #include "OGLExtensions.h"
+#endif
 #include "OGLDebug.h"
 #include "OGLExtCombiner.h"
 #include "OGLExtRender.h"
@@ -27,8 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "OGLTexture.h"
 #include "DirectXDecodedMux.h"
 
-#define         GL_MODULATE_ADD_ATI                   0x8744
-#define         GL_MODULATE_SUBTRACT_ATI              0x8746
+#define GL_MODULATE_ADD_ATI        0x8744
+#define GL_MODULATE_SUBTRACT_ATI   0x8746
 
 //========================================================================
 COGLColorCombiner4::COGLColorCombiner4(CRender *pRender)
@@ -65,6 +68,7 @@ bool COGLColorCombiner4::Initialize(void)
     m_bSupportModSub_ATI = false;
     m_maxTexUnits = 1;
 
+#if SDL_VIDEO_OPENGL
     if( COGLColorCombiner::Initialize() )
     {
         m_bSupportMultiTexture = true;
@@ -92,8 +96,11 @@ bool COGLColorCombiner4::Initialize(void)
         m_supportedStages = m_maxTexUnits;
         return true;
     }
-
     return false;
+
+#elif SDL_VIDEO_OPENGL_ES2
+    return true;
+#endif
 }
 
 bool COGLColorCombiner2::Initialize(void)
@@ -106,14 +113,14 @@ bool COGLColorCombiner2::Initialize(void)
 
         m_bTxtOpAdd = m_bSupportAdd;
         m_bTxtOpSub = m_bSupportSubtract;
-        m_bTxtOpLerp = true;                
+        m_bTxtOpLerp = true;
 
-        m_bTxtOpAddSmooth = true;           
-        m_bTxtOpBlendCurAlpha = true;       
-        m_bTxtOpBlendDifAlpha = true;       
-        m_bTxtOpBlendFacAlpha = true;       
-        m_bTxtOpBlendTxtAlpha = true;       
-        m_bTxtOpMulAdd = m_bSupportModAdd_ATI;          
+        m_bTxtOpAddSmooth = true;
+        m_bTxtOpBlendCurAlpha = true;
+        m_bTxtOpBlendDifAlpha = true;
+        m_bTxtOpBlendFacAlpha = true;
+        m_bTxtOpBlendTxtAlpha = true;
+        m_bTxtOpMulAdd = m_bSupportModAdd_ATI;
 
         return true;
     }
@@ -205,11 +212,14 @@ void COGLColorCombiner4::InitCombinerCycle12(void)
 int COGLColorCombiner4::ParseDecodedMux()
 {
 #define nextUnit()  {unitNo++;}
+#if SDL_VIDEO_OPENGL
     if( m_maxTexUnits<3) 
         return  ParseDecodedMux2Units();
 
     OGLExtCombinerSaveType res;
-    for( int k=0; k<8; k++ )    res.units[k].tex = -1;
+    for( int k=0; k<8; k++ )
+        res.units[k].tex = -1;
+    
     COGLDecodedMux &mux = *(COGLDecodedMux*)m_pDecodedMux;
 
     int unitNos[2];
@@ -232,7 +242,7 @@ int COGLColorCombiner4::ParseDecodedMux()
                 unit.ops[rgbalpha] = GL_REPLACE;
                 nextUnit();
                 break;
-            case CM_FMT_TYPE_D:             // = A
+            case CM_FMT_TYPE_D:                 // = A
                 comb.arg0 = m.d;
                 unit.ops[rgbalpha] = GL_REPLACE;
                 nextUnit();
@@ -255,7 +265,7 @@ int COGLColorCombiner4::ParseDecodedMux()
                 unit.ops[rgbalpha] = GL_MODULATE;
                 nextUnit();
                 break;
-            case CM_FMT_TYPE_A_MOD_C_ADD_D: // = A*C+D
+            case CM_FMT_TYPE_A_MOD_C_ADD_D:     // = A*C+D
                 if( m_bSupportModAdd_ATI )
                 {
                     comb.arg0 = m.a;
@@ -294,7 +304,7 @@ int COGLColorCombiner4::ParseDecodedMux()
                 unit.ops[rgbalpha] = GL_INTERPOLATE_ARB;
                 nextUnit();
                 break;
-            case CM_FMT_TYPE_A_SUB_B_ADD_D: // = A-B+D
+            case CM_FMT_TYPE_A_SUB_B_ADD_D:     // = A-B+D
                 if( unitNo < m_maxTexUnits-1 )
                 {
                     comb.arg0 = m.a;
@@ -315,7 +325,7 @@ int COGLColorCombiner4::ParseDecodedMux()
                     nextUnit();
                 }
                 break;
-            case CM_FMT_TYPE_A_SUB_B_MOD_C: // = (A-B)*C
+            case CM_FMT_TYPE_A_SUB_B_MOD_C:     // = (A-B)*C
                 if( unitNo < m_maxTexUnits-1 )
                 {
                     comb.arg0 = m.a;
@@ -401,12 +411,17 @@ int COGLColorCombiner4::ParseDecodedMux()
     res.lodFracIsUsed = mux.isUsed(MUX_LODFRAC) || mux.isUsed(MUX_PRIMLODFRAC);
 
     return SaveParsedResult(res);
+
+#elif SDL_VIDEO_OPENGL_ES2
+    return 0;
+#endif
 }
 
 int COGLColorCombiner4::ParseDecodedMux2Units()
 {
     OGLExtCombinerSaveType res;
-    for( int k=0; k<8; k++ )    res.units[k].tex = -1;
+    for( int k=0; k<8; k++ )
+        res.units[k].tex = -1;
 
     res.numOfUnits = 2;
 
@@ -429,10 +444,11 @@ int COGLColorCombiner4::ParseDecodedMux2Units()
             comb.arg0 = MUX_COMBINED;
             unit.ops[i%2] = GL_REPLACE;
             break;
-        case CM_FMT_TYPE_D:             // = A
+        case CM_FMT_TYPE_D:                 // = A
             comb.arg0 = m.d;
             unit.ops[i%2] = GL_REPLACE;
             break;
+#if SDL_VIDEO_OPENGL
         case CM_FMT_TYPE_A_ADD_D:           // = A+D
             comb.arg0 = m.a;
             comb.arg1 = m.d;
@@ -448,7 +464,7 @@ int COGLColorCombiner4::ParseDecodedMux2Units()
             comb.arg1 = m.c;
             unit.ops[i%2] = GL_MODULATE;
             break;
-        case CM_FMT_TYPE_A_MOD_C_ADD_D: // = A*C+D
+        case CM_FMT_TYPE_A_MOD_C_ADD_D:     // = A*C+D
             comb.arg0 = m.a;
             comb.arg1 = m.c;
             comb.arg2 = m.d;
@@ -460,13 +476,13 @@ int COGLColorCombiner4::ParseDecodedMux2Units()
             comb.arg2 = m.c;
             unit.ops[i%2] = GL_INTERPOLATE_ARB;
             break;
-        case CM_FMT_TYPE_A_SUB_B_ADD_D: // = A-B+D
+        case CM_FMT_TYPE_A_SUB_B_ADD_D:     // = A-B+D
             // fix me, to use 2 texture units
             comb.arg0 = m.a;
             comb.arg1 = m.b;
             unit.ops[i%2] = GL_SUBTRACT_ARB;
             break;
-        case CM_FMT_TYPE_A_SUB_B_MOD_C: // = (A-B)*C
+        case CM_FMT_TYPE_A_SUB_B_MOD_C:     // = (A-B)*C
             // fix me, to use 2 texture units
             comb.arg0 = m.a;
             comb.arg1 = m.c;
@@ -474,6 +490,7 @@ int COGLColorCombiner4::ParseDecodedMux2Units()
             break;
             break;
         case CM_FMT_TYPE_A_B_C_D:           // = (A-B)*C+D
+#endif
         default:
             comb.arg0 = m.a;
             comb.arg1 = m.b;
@@ -500,6 +517,7 @@ const char* COGLColorCombiner4::GetOpStr(GLenum op)
     {
     case GL_REPLACE:
         return "REPLACE";
+#if SDL_VIDEO_OPENGL
     case GL_MODULATE:
         return "MOD";
     case GL_ADD:
@@ -510,6 +528,7 @@ const char* COGLColorCombiner4::GetOpStr(GLenum op)
         return "INTERPOLATE";
     case GL_SUBTRACT_ARB:
         return "SUB";
+#endif
     case GL_MODULATE_ADD_ATI:
         return "MULADD";
     default:
@@ -718,16 +737,21 @@ int COGLColorCombiner4::FindCompiledMux()
 
 GLint COGLColorCombiner4::RGBArgsMap4[] =
 {
+#if SDL_VIDEO_OPENGL
     GL_PRIMARY_COLOR_ARB,           //MUX_0
     GL_PRIMARY_COLOR_ARB,           //MUX_1
     GL_PREVIOUS_ARB,                //MUX_COMBINED,
+#endif
     GL_TEXTURE0_ARB,                //MUX_TEXEL0,
+#if SDL_VIDEO_OPENGL
     GL_TEXTURE1_ARB,                //MUX_TEXEL1,
     GL_CONSTANT_ARB,                //MUX_PRIM,
     GL_PRIMARY_COLOR_ARB,           //MUX_SHADE,
     GL_CONSTANT_ARB,                //MUX_ENV,
     GL_PREVIOUS_ARB,                //MUX_COMBALPHA,
+#endif
     GL_TEXTURE0_ARB,                //MUX_T0_ALPHA,
+#if SDL_VIDEO_OPENGL
     GL_TEXTURE1_ARB,                //MUX_T1_ALPHA,
     GL_CONSTANT_ARB,                //MUX_PRIM_ALPHA,
     GL_PRIMARY_COLOR_ARB,           //MUX_SHADE_ALPHA,
@@ -736,14 +760,18 @@ GLint COGLColorCombiner4::RGBArgsMap4[] =
     GL_CONSTANT_ARB,                //MUX_PRIMLODFRAC,
     GL_PRIMARY_COLOR_ARB,           //MUX_K5
     GL_PRIMARY_COLOR_ARB            //MUX_UNK
+#endif
 };
 
 GLint COGLColorCombiner4v2::RGBArgsMap4v2[] =
 {
+#if SDL_VIDEO_OPENGL
     GL_PRIMARY_COLOR_ARB,           //MUX_0
     GL_PRIMARY_COLOR_ARB,           //MUX_1
     GL_PREVIOUS_ARB,                //MUX_COMBINED,
+#endif
     GL_TEXTURE0_ARB,                //MUX_TEXEL0,
+#if SDL_VIDEO_OPENGL
     GL_TEXTURE1_ARB,                //MUX_TEXEL1,
     GL_CONSTANT_ARB,                //MUX_PRIM,
     GL_PRIMARY_COLOR_ARB,           //MUX_SHADE,
@@ -762,16 +790,20 @@ GLint COGLColorCombiner4v2::RGBArgsMap4v2[] =
         GL_TEXTURE1_ARB,                //MUX_PRIMLODFRAC,
     GL_PRIMARY_COLOR_ARB,           //MUX_K5
     GL_PRIMARY_COLOR_ARB            //MUX_UNK
+#endif
 };
 
 GLint COGLColorCombiner2::RGBArgsMap2[] =
 {
+#if SDL_VIDEO_OPENGL
     GL_PRIMARY_COLOR_ARB,           //MUX_0
     GL_PRIMARY_COLOR_ARB,           //MUX_1
     GL_PREVIOUS_ARB,                //MUX_COMBINED,
     //{GL_TEXTURE,              },  //MUX_TEXEL0,
     //{GL_TEXTURE,              },  //MUX_TEXEL1,
+#endif
     GL_TEXTURE0_ARB,                //MUX_TEXEL0,
+#if SDL_VIDEO_OPENGL
     GL_TEXTURE1_ARB,                //MUX_TEXEL1,
     GL_CONSTANT_ARB,                //MUX_PRIM,
     GL_PRIMARY_COLOR_ARB,           //MUX_SHADE,
@@ -788,6 +820,7 @@ GLint COGLColorCombiner2::RGBArgsMap2[] =
     GL_CONSTANT_ARB,                //MUX_PRIMLODFRAC,
     GL_PRIMARY_COLOR_ARB,           //MUX_K5
     GL_PRIMARY_COLOR_ARB            //MUX_UNK
+#endif
 };
 
 //========================================================================
@@ -854,6 +887,7 @@ GLint COGLColorCombiner4::MapAlphaArgFlags(uint8 arg)
 
 void ApplyFor1Unit(OGLExtCombinerType &unit)
 {
+#if SDL_VIDEO_OPENGL
     glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB, unit.rgbOp);
     OPENGL_CHECK_ERRORS;
 
@@ -904,6 +938,7 @@ void ApplyFor1Unit(OGLExtCombinerType &unit)
         glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_ARB, (unit.alphaFlag2gl));
         OPENGL_CHECK_ERRORS;
     }
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1059,6 +1094,7 @@ void COGLColorCombiner4v2::GenerateCombinerSettingConstants(int index)
 GLenum GeneralToGLMaps[]=
 {
     GL_REPLACE,             //CM_REPLACE,
+#if SDL_VIDEO_OPENGL
     GL_MODULATE,            //CM_MODULATE,
     GL_ADD,                 //CM_ADD,
     GL_SUBTRACT_ARB,        //CM_SUBTRACT,
@@ -1068,6 +1104,7 @@ GLenum GeneralToGLMaps[]=
     GL_INTERPOLATE_ARB,     //CM_BLENDDIFFUSEALPHA
     GL_INTERPOLATE_ARB,     //CM_BLENDFACTORALPHA,
     GL_INTERPOLATE_ARB,     //CM_BLENDTEXTUREALPHA
+#endif
     GL_MODULATE_ADD_ATI,    //CM_MULTIPLYADD,       
 };
 

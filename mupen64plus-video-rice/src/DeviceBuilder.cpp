@@ -17,16 +17,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#include "osal_opengl.h"
+
 #include "DeviceBuilder.h"
 #include "FrameBuffer.h"
-#include "OGLCombinerNV.h"
-#include "OGLCombinerTNT2.h"
+#include "OGLCombiner.h"
 #include "OGLDebug.h"
-#include "OGLFragmentShaders.h"
 #include "OGLExtRender.h"
-#include "OGLExtensions.h"
 #include "OGLGraphicsContext.h"
 #include "OGLTexture.h"
+#if SDL_VIDEO_OPENGL
+#include "OGLCombinerNV.h"
+#include "OGLCombinerTNT2.h"
+#include "OGLExtensions.h"
+#include "OGLFragmentShaders.h"
+#elif SDL_VIDEO_OPENGL_ES2
+#include "OGLES2FragmentShaders.h"
+#endif
 
 //========================================================================
 CDeviceBuilder* CDeviceBuilder::m_pInstance=NULL;
@@ -236,6 +243,9 @@ CColorCombiner * OGLDeviceBuilder::CreateColorCombiner(CRender *pRender)
         else
         {
             m_deviceType = (SupportedDeviceType)options.OpenglRenderSetting;
+
+#if SDL_VIDEO_OPENGL
+
             if (m_deviceType == NVIDIA_OGL_DEVICE && !bNvidiaExtensionsSupported)
             {
                 DebugMessage(M64MSG_WARNING, "Your video card does not support Nvidia OpenGL extensions.  Falling back to auto device.");
@@ -251,21 +261,19 @@ CColorCombiner * OGLDeviceBuilder::CreateColorCombiner(CRender *pRender)
                 if( pcontext->IsExtensionSupported("GL_ARB_fragment_program") )
                 {
                     m_pColorCombiner = new COGL_FragmentProgramCombiner(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: Fragment Program");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: Fragment Program");
                 }
-#ifndef __APPLE__
-                else if( pcontext->IsExtensionSupported("GL_NV_texture_env_combine4") ||
+                else if( pcontext->IsExtensionSupported("GL_NV_texture_env_combine4") || 
                     pcontext->IsExtensionSupported("GL_NV_register_combiners") )
                 {
                     m_pColorCombiner = new COGLColorCombinerNvidia(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: NVidia");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: NVidia");
                 }
                 else if( pcontext->IsExtensionSupported("GL_NV_texture_env_combine4") )
                 {
                     m_pColorCombiner = new COGLColorCombinerTNT2(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: TNT2");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: TNT2");
                 }
-#endif
                 else if( pcontext->IsExtensionSupported("GL_EXT_texture_env_combine") ||
                          pcontext->IsExtensionSupported("GL_ARB_texture_env_combine") )
                 {
@@ -274,12 +282,12 @@ CColorCombiner * OGLDeviceBuilder::CreateColorCombiner(CRender *pRender)
                         if( maxUnit > 2 )
                         {
                             m_pColorCombiner = new COGLColorCombiner4v2(pRender);
-                            DebugMessage(M64MSG_INFO, "OpenGL Combiner: OGL 1.4 version 2");
+                            DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: OGL 1.4 version 2");
                         }
                         else
                         {
                             m_pColorCombiner = new COGLColorCombiner4(pRender);
-                            DebugMessage(M64MSG_INFO, "OpenGL Combiner: OGL 1.4");
+                            DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: OGL 1.4");
                         }
                     }
                     else
@@ -287,19 +295,19 @@ CColorCombiner * OGLDeviceBuilder::CreateColorCombiner(CRender *pRender)
                         if( maxUnit > 2 )
                         {
                             m_pColorCombiner = new COGLColorCombiner4v2(pRender);
-                            DebugMessage(M64MSG_INFO, "OpenGL Combiner: OGL 1.4 version 2 (w/o env crossbar)");
+                            DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: OGL 1.4 version 2 (w/o env crossbar)");
                         }
                         else
                         {
                             m_pColorCombiner = new COGLColorCombiner2(pRender);
-                            DebugMessage(M64MSG_INFO, "OpenGL Combiner: OGL 1.2/1.3");
+                            DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: OGL 1.2/1.3");
                         }
                     }
                 }
                 else
                 {
                     m_pColorCombiner = new COGLColorCombiner(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: Basic OGL");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: Basic OGL");
                 }
             }
             else
@@ -308,39 +316,42 @@ CColorCombiner * OGLDeviceBuilder::CreateColorCombiner(CRender *pRender)
                 {
                 case OGL_1_1_DEVICE:
                     m_pColorCombiner = new COGLColorCombiner(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: Basic OGL");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: Basic OGL");
                     break;
                 case OGL_1_2_DEVICE:
                 case OGL_1_3_DEVICE:
                     m_pColorCombiner = new COGLColorCombiner2(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: OGL 1.2/1.3");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: OGL 1.2/1.3");
                     break;
                 case OGL_1_4_DEVICE:
                     m_pColorCombiner = new COGLColorCombiner4(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: OGL 1.4");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: OGL 1.4");
                     break;
                 case OGL_1_4_V2_DEVICE:
                     m_pColorCombiner = new COGLColorCombiner4v2(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: OGL 1.4 Version 2");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: OGL 1.4 Version 2");
                     break;
-#ifndef __APPLE__
                 case OGL_TNT2_DEVICE:
                     m_pColorCombiner = new COGLColorCombinerTNT2(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: TNT2");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: TNT2");
                     break;
                 case NVIDIA_OGL_DEVICE:
                     m_pColorCombiner = new COGLColorCombinerNvidia(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: Nvidia");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: Nvidia");
                     break;
-#endif
                 case OGL_FRAGMENT_PROGRAM:
                     m_pColorCombiner = new COGL_FragmentProgramCombiner(pRender);
-                    DebugMessage(M64MSG_INFO, "OpenGL Combiner: Fragment Program");
+                    DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: Fragment Program");
                     break;
                  default:
-                        break;
+                    break;
                 }
             }
+
+#elif SDL_VIDEO_OPENGL_ES2
+            m_pColorCombiner = new COGL_FragmentProgramCombiner(pRender);
+            DebugMessage(M64MSG_VERBOSE, "OpenGL Combiner: Fragment Program");
+#endif
         }
 
         SAFE_CHECK(m_pColorCombiner);
