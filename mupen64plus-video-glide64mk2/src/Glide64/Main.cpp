@@ -114,6 +114,7 @@ ptr_VidExt_ListFullscreenModes   CoreVideo_ListFullscreenModes = NULL;
 ptr_VidExt_SetVideoMode          CoreVideo_SetVideoMode = NULL;
 ptr_VidExt_SetCaption            CoreVideo_SetCaption = NULL;
 ptr_VidExt_ToggleFullScreen      CoreVideo_ToggleFullScreen = NULL;
+ptr_VidExt_ResizeWindow          CoreVideo_ResizeWindow = NULL;
 ptr_VidExt_GL_GetProcAddress     CoreVideo_GL_GetProcAddress = NULL;
 ptr_VidExt_GL_SetAttribute       CoreVideo_GL_SetAttribute = NULL;
 ptr_VidExt_GL_SwapBuffers        CoreVideo_GL_SwapBuffers = NULL;
@@ -914,9 +915,11 @@ void DisplayLoadProgress(const wchar_t *format, ...)
 
 int InitGfx ()
 {
+#ifdef TEXTURE_FILTER
   wchar_t romname[256];
   wchar_t foldername[PATH_MAX + 64];
   wchar_t cachename[PATH_MAX + 64];
+#endif
   if (fullscreen)
     ReleaseGfx ();
 
@@ -1101,21 +1104,8 @@ int InitGfx ()
   else
     grTextureBufferExt = 0;
 
-#pragma message ( "TODO: not sure what to replace wxDynamicLibrary with" )
-/*#ifdef __WINDOWS__
-  wxDynamicLibrary glidelib(_T("glide3x"));
-  if (glidelib.IsLoaded())
-  {
-    if (glidelib.HasSymbol(_T("_grStippleMode@4")))
-      grStippleModeExt = (GRSTIPPLE)glidelib.GetSymbol(_T("_grStippleMode@4"));
-    if (glidelib.HasSymbol(_T("_grStipplePattern@4")))
-      grStipplePatternExt = (GRSTIPPLE)glidelib.GetSymbol(_T("_grStipplePattern@4"));
-  }
-#else
-*/
   grStippleModeExt = (GRSTIPPLE)grStippleMode;
   grStipplePatternExt = (GRSTIPPLE)grStipplePattern;
-//#endif
 
   if (grStipplePatternExt)
     grStipplePatternExt(settings.stipple_pattern);
@@ -1232,9 +1222,9 @@ int InitGfx ()
 
       ghq_dmptex_toggle_key = 0;
 
-      swprintf(romname, 256, L"%hs", rdp.RomName);
-      swprintf(foldername, sizeof(foldername), L"%hs", ConfigGetUserDataPath());
-      swprintf(cachename, sizeof(cachename), L"%hs", ConfigGetUserCachePath());
+      swprintf(romname, sizeof(romname) / sizeof(*romname), L"%hs", rdp.RomName);
+      swprintf(foldername, sizeof(foldername) / sizeof(*foldername), L"%hs", ConfigGetUserDataPath());
+      swprintf(cachename, sizeof(cachename) / sizeof(*cachename), L"%hs", ConfigGetUserCachePath());
 
       settings.ghq_use = (int)ext_ghq_init(voodoo.max_tex_size, // max texture width supported by hardware
         voodoo.max_tex_size, // max texture height supported by hardware
@@ -1345,6 +1335,28 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
   VLOG("CALL PluginStartup ()\n");
     l_DebugCallback = DebugCallback;
     l_DebugCallContext = Context;
+
+    /* attach and call the CoreGetAPIVersions function, check Config and Video Extension API versions for compatibility */
+    ptr_CoreGetAPIVersions CoreAPIVersionFunc;
+    CoreAPIVersionFunc = (ptr_CoreGetAPIVersions) osal_dynlib_getproc(CoreLibHandle, "CoreGetAPIVersions");
+    if (CoreAPIVersionFunc == NULL)
+    {
+        ERRLOG("Core emulator broken; no CoreAPIVersionFunc() function found.");
+        return M64ERR_INCOMPATIBLE;
+    }
+    int ConfigAPIVersion, DebugAPIVersion, VidextAPIVersion;
+    (*CoreAPIVersionFunc)(&ConfigAPIVersion, &DebugAPIVersion, &VidextAPIVersion, NULL);
+    if ((ConfigAPIVersion & 0xffff0000) != (CONFIG_API_VERSION & 0xffff0000))
+    {
+        ERRLOG("Emulator core Config API incompatible with this plugin");
+        return M64ERR_INCOMPATIBLE;
+    }
+    if ((VidextAPIVersion & 0xffff0000) != (VIDEXT_API_VERSION & 0xffff0000))
+    {
+        ERRLOG("Emulator core Video Extension API incompatible with this plugin");
+        return M64ERR_INCOMPATIBLE;
+    }
+
     ConfigOpenSection = (ptr_ConfigOpenSection) osal_dynlib_getproc(CoreLibHandle, "ConfigOpenSection");
     ConfigSetParameter = (ptr_ConfigSetParameter) osal_dynlib_getproc(CoreLibHandle, "ConfigSetParameter");
     ConfigGetParameter = (ptr_ConfigGetParameter) osal_dynlib_getproc(CoreLibHandle, "ConfigGetParameter");
@@ -1378,12 +1390,13 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
     CoreVideo_SetVideoMode = (ptr_VidExt_SetVideoMode) osal_dynlib_getproc(CoreLibHandle, "VidExt_SetVideoMode");
     CoreVideo_SetCaption = (ptr_VidExt_SetCaption) osal_dynlib_getproc(CoreLibHandle, "VidExt_SetCaption");
     CoreVideo_ToggleFullScreen = (ptr_VidExt_ToggleFullScreen) osal_dynlib_getproc(CoreLibHandle, "VidExt_ToggleFullScreen");
+    CoreVideo_ResizeWindow = (ptr_VidExt_ResizeWindow) osal_dynlib_getproc(CoreLibHandle, "VidExt_ResizeWindow");
     CoreVideo_GL_GetProcAddress = (ptr_VidExt_GL_GetProcAddress) osal_dynlib_getproc(CoreLibHandle, "VidExt_GL_GetProcAddress");
     CoreVideo_GL_SetAttribute = (ptr_VidExt_GL_SetAttribute) osal_dynlib_getproc(CoreLibHandle, "VidExt_GL_SetAttribute");
     CoreVideo_GL_SwapBuffers = (ptr_VidExt_GL_SwapBuffers) osal_dynlib_getproc(CoreLibHandle, "VidExt_GL_SwapBuffers");
 
     if (!CoreVideo_Init || !CoreVideo_Quit || !CoreVideo_ListFullscreenModes || !CoreVideo_SetVideoMode ||
-        !CoreVideo_SetCaption || !CoreVideo_ToggleFullScreen || !CoreVideo_GL_GetProcAddress ||
+        !CoreVideo_SetCaption || !CoreVideo_ToggleFullScreen || !CoreVideo_ResizeWindow || !CoreVideo_GL_GetProcAddress ||
         !CoreVideo_GL_SetAttribute || !CoreVideo_GL_SwapBuffers)
     {
         ERRLOG("Couldn't connect to Core video functions");
@@ -1419,13 +1432,13 @@ EXPORT m64p_error CALL PluginGetVersion(m64p_plugin_type *PluginType, int *Plugi
         *PluginType = M64PLUGIN_GFX;
 
     if (PluginVersion != NULL)
-        *PluginVersion = 0x016304;
+        *PluginVersion = PLUGIN_VERSION;
 
     if (APIVersion != NULL)
         *APIVersion = VIDEO_PLUGIN_API_VERSION;
 
     if (PluginNamePtr != NULL)
-        *PluginNamePtr = "Glide64mk2 Video Plugin";
+        *PluginNamePtr = PLUGIN_NAME;
 
     if (Capabilities != NULL)
     {
@@ -1597,7 +1610,7 @@ void CALL GetDllInfo ( PLUGIN_INFO * PluginInfo )
   VLOG ("GetDllInfo ()\n");
   PluginInfo->Version = 0x0103;     // Set to 0x0103
   PluginInfo->Type  = PLUGIN_TYPE_GFX;  // Set to PLUGIN_TYPE_GFX
-  sprintf (PluginInfo->Name, "Glide64mk2 "G64_VERSION RELTIME);  // Name of the DLL
+  sprintf (PluginInfo->Name, "Glide64mk2 " G64_VERSION RELTIME);  // Name of the DLL
 
   // If DLL supports memory these memory options then set them to TRUE or FALSE
   //  if it does not support it
@@ -1717,6 +1730,18 @@ output:   none
 EXPORT void CALL MoveScreen (int xpos, int ypos)
 {
   rdp.window_changed = TRUE;
+}
+
+/******************************************************************
+Function: ResizeVideoOutput
+Purpose:  This function is called to force us to resize our output OpenGL window.
+          This is currently unsupported, and should never be called because we do
+          not pass the RESIZABLE flag to VidExt_SetVideoMode when initializing.
+input:    new width and height
+output:   none
+*******************************************************************/
+EXPORT void CALL ResizeVideoOutput(int Width, int Height)
+{
 }
 
 /******************************************************************
@@ -1929,7 +1954,7 @@ EXPORT void CALL UpdateScreen (void)
   }
 #endif
   char out_buf[128];
-  sprintf (out_buf, "UpdateScreen (). Origin: %08lx, Old origin: %08lx, width: %d\n", *gfx.VI_ORIGIN_REG, rdp.vi_org_reg, *gfx.VI_WIDTH_REG);
+  sprintf (out_buf, "UpdateScreen (). Origin: %08x, Old origin: %08x, width: %d\n", *gfx.VI_ORIGIN_REG, rdp.vi_org_reg, *gfx.VI_WIDTH_REG);
   VLOG (out_buf);
   LRDP(out_buf);
 

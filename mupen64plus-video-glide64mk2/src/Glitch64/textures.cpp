@@ -391,9 +391,9 @@ int grTexFormat2GLPackedFmt(int fmt, int * gltexfmt, int * glpixfmt, int * glpac
     break;
   case GR_TEXFMT_ARGB_CMP_FXT1:
     factor = 8;
-    *gltexfmt = 0x86B1; // GL_COMPRESSED_RGBA_FXT1_3DFX
-    *glpixfmt = 0x86B1; // GL_COMPRESSED_RGBA_FXT1_3DFX
-    *glpackfmt = 0x86B1; // XXX: what should we do about GL_COMPRESSED_RGB_FXT1_3DFX?
+    *gltexfmt = GL_COMPRESSED_RGBA_FXT1_3DFX;
+    *glpixfmt = GL_COMPRESSED_RGBA_FXT1_3DFX;
+    *glpackfmt = GL_COMPRESSED_RGBA_FXT1_3DFX; // XXX: what should we do about GL_COMPRESSED_RGB_FXT1_3DFX?
     break;
   default:
     display_warning("grTexFormat2GLPackedFmt : unknown texture format: %x", fmt);
@@ -611,7 +611,7 @@ grTexDownloadMipMap( GrChipID_t tmu,
       break;
     case GR_TEXFMT_ARGB_CMP_FXT1:
       factor = 8;
-      glformat = 0x86B1; // GL_COMPRESSED_RGBA_FXT1_3DFX
+      glformat = GL_COMPRESSED_RGBA_FXT1_3DFX;
       break;
     default:
       display_warning("grTexDownloadMipMap : unknown texture format: %x", info->format);

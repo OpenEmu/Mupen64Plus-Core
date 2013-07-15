@@ -66,8 +66,7 @@ the plugin
 #include "m64p.h"
 
 #include <stdio.h>
-//#include <SDL_mutex.h>
-#include <SDL_thread.h>
+#include <SDL_mutex.h>
 #include <fstream>
 #include <stdlib.h>
 #include <stddef.h>		// offsetof
