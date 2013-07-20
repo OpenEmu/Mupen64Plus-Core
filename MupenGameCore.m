@@ -226,6 +226,7 @@ static void MupenSetAudioSpeed(int percent)
     m64p_handle config;
     ConfigOpenSection("Core", &config);
     ConfigSetParameter(config, "SaveSRAMPath", M64TYPE_STRING, [batterySavesDirectory UTF8String]);
+    ConfigSetParameter(config, "SharedDataPath", M64TYPE_STRING, dataPath);
     ConfigSaveSection("Core");
 
     // Disable dynarec (for debugging)
