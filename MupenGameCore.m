@@ -344,12 +344,12 @@ static void _OEMupenGameCoreSaveStateCallback(void *context, m64p_core_param par
 {
     SetStateCallback(NULL, NULL);
 
-    void (^block)(BOOL) = (__bridge_transfer void(^)(BOOL))context;
+    void (^block)(BOOL, NSError *) = (__bridge_transfer void(^)(BOOL, NSError *))context;
 
-    block(paramType == M64CORE_STATE_SAVECOMPLETE);
+    block(paramType == M64CORE_STATE_SAVECOMPLETE, nil);
 }
 
-- (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL))block
+- (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
     SetStateCallback(_OEMupenGameCoreSaveStateCallback, (__bridge_retained void *)[block copy]);
     CoreDoCommand(M64CMD_STATE_SAVE, 1, (void *)[fileName UTF8String]);
@@ -360,12 +360,12 @@ static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param par
 {
     SetStateCallback(NULL, NULL);
 
-    void (^block)(BOOL) = (__bridge_transfer void(^)(BOOL))context;
+    void (^block)(BOOL, NSError *) = (__bridge_transfer void(^)(BOOL, NSError *))context;
 
-    block(paramType == M64CORE_STATE_LOADCOMPLETE);
+    block(paramType == M64CORE_STATE_LOADCOMPLETE, nil);
 }
 
-- (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL))block
+- (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
     SetStateCallback(_OEMupenGameCoreLoadStateCallback, (__bridge_retained void *)[block copy]);
     CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName UTF8String]);
