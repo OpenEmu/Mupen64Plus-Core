@@ -371,6 +371,11 @@ static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param par
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL))block
 {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sleep(1);
+    });
+    
     SetStateCallback(_OEMupenGameCoreLoadStateCallback, (__bridge_retained void *)[block copy]);
     CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName UTF8String]);
 }
