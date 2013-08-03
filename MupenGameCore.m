@@ -134,9 +134,13 @@ static void MupenGetKeys(int Control, BUTTONS *Keys)
 static void MupenInitiateControllers (CONTROL_INFO ControlInfo)
 {
     ControlInfo.Controls[0].Present = 1;
+    ControlInfo.Controls[0].Plugin = 2;
     ControlInfo.Controls[1].Present = 1;
+    ControlInfo.Controls[1].Plugin = 2;
     ControlInfo.Controls[2].Present = 1;
+    ControlInfo.Controls[2].Plugin = 2;
     ControlInfo.Controls[3].Present = 1;
+    ControlInfo.Controls[3].Plugin = 2;
 }
 
 static AUDIO_INFO AudioInfo;
@@ -367,6 +371,11 @@ static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param par
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sleep(1);
+    });
+    
     SetStateCallback(_OEMupenGameCoreLoadStateCallback, (__bridge_retained void *)[block copy]);
     CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName UTF8String]);
 }
