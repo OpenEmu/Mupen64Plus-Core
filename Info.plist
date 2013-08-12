@@ -26,6 +26,8 @@
 	<string>MupenGameCore</string>
 	<key>OEGameCorePlayerCount</key>
 	<string>8</string>
+	<key>OEGameCoreSupportsCheatCode</key>
+	<true/>
 	<key>OEProjectURL</key>
 	<string>http://bitbucket.org/richard42/</string>
 	<key>OESystemIdentifiers</key>
@@ -38,8 +40,5 @@
 	<string>http://openemu.org/updater/mupen64plus_appcast.xml</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
-</dict>
-</plist>
->
 </dict>
 </plist>

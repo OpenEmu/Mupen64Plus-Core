@@ -468,5 +468,39 @@ static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param par
     padData[player][button] = 0;
 }
 
+- (void)setCheat:(NSString *)code setType:(NSString *)type setEnabled:(BOOL)enabled
+{
+    // Sanitize
+    code = [code stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    
+    // Remove any spaces
+    code = [code stringByReplacingOccurrencesOfString:@" " withString:@""];
+    
+    NSArray *multipleCodes = [[NSArray alloc] init];
+    multipleCodes = [code componentsSeparatedByString:@"+"];
+    
+    for (NSString *singleCode in multipleCodes)
+    {
+        if ([singleCode length] == 12) // GameShark
+        {
+            // GameShark N64 format: XXXXXXXX YYYY
+            NSString *address = [singleCode substringWithRange:NSMakeRange(0, 8)];
+            NSString *value = [singleCode substringWithRange:NSMakeRange(8, 4)];
+            
+            // Convert GS hex to int
+            unsigned int outAddress, outValue;
+            NSScanner* scanAddress = [NSScanner scannerWithString:address];
+            NSScanner* scanValue = [NSScanner scannerWithString:value];
+            [scanAddress scanHexInt:&outAddress];
+            [scanValue scanHexInt:&outValue];
+            
+            m64p_cheat_code *gsCode = malloc(sizeof(*gsCode));
+            gsCode[0].address = outAddress;
+            gsCode[0].value = outValue;
+            
+            CoreAddCheat("code", gsCode, 1);
+        }
+    }
+}
 
 @end
