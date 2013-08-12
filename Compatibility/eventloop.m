@@ -46,8 +46,7 @@ void event_sdl_keyup(int keysym, int keymod)
 
 int event_gameshark_active(void)
 {
-    // FIXME: this means we need our own cheat support
-    return 0;
+    return 1;
 }
 
 void event_set_gameshark(int active)
