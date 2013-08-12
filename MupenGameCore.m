@@ -498,7 +498,7 @@ static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param par
             gsCode[0].address = outAddress;
             gsCode[0].value = outValue;
             
-            CoreAddCheat("code", gsCode, 1);
+            CoreAddCheat([singleCode UTF8String], gsCode, 1);
         }
     }
 }
