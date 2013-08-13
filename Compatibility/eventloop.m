@@ -46,7 +46,7 @@ void event_sdl_keyup(int keysym, int keymod)
 
 int event_gameshark_active(void)
 {
-    return 1;
+    return 0;
 }
 
 void event_set_gameshark(int active)

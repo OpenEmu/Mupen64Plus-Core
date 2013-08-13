@@ -38,6 +38,7 @@
 #import "savestates.h"
 #import "osal/dynamiclib.h"
 #import "version.h"
+#import "memory.h"
 
 #import <OpenEmuBase/OERingBuffer.h>
 #import <OpenGL/gl.h>
@@ -498,7 +499,20 @@ static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param par
             gsCode[0].address = outAddress;
             gsCode[0].value = outValue;
             
-            CoreAddCheat([singleCode UTF8String], gsCode, 1);
+            // Update address directly if code needs GS button pressed
+            if ((gsCode[0].address & 0xFF000000) == 0x88000000 || (gsCode[0].address & 0xFF000000) == 0xA8000000)
+            {
+                *(unsigned char *)((rdramb + ((gsCode[0].address & 0xFFFFFF)^S8))) = (unsigned char)gsCode[0].value; // Update 8-bit address
+            }
+            else if ((gsCode[0].address & 0xFF000000) == 0x89000000 || (gsCode[0].address & 0xFF000000) == 0xA9000000)
+            {
+                *(unsigned short *)((rdramb + ((gsCode[0].address & 0xFFFFFF)^S16))) = (unsigned short)gsCode[0].value; // Update 16-bit address
+            }
+            // Else add code as normal
+            else
+            {
+                enabled ? CoreAddCheat([singleCode UTF8String], gsCode, 1) : CoreCheatEnabled([singleCode UTF8String], 0);
+            }
         }
     }
 }
