@@ -302,6 +302,7 @@ static void MupenSetAudioSpeed(int percent)
     {
         [self.renderDelegate startRenderingOnAlternateThread];
         CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
+        [super stopEmulation];
     }
 }
 
@@ -335,7 +336,8 @@ static void MupenSetAudioSpeed(int percent)
     // FIXME: this needs to send a quit event into the input
     // which will be read by the emu thread
     // which will then die
-    //CoreDoCommand(M64CMD_STOP, 0, NULL);
+    CoreDoCommand(M64CMD_STOP, 0, NULL);
+    dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
 }
 
 - (void)resetEmulation
@@ -349,9 +351,10 @@ static void _OEMupenGameCoreSaveStateCallback(void *context, m64p_core_param par
 {
     SetStateCallback(NULL, NULL);
 
-    void (^block)(BOOL, NSError *) = (__bridge_transfer void(^)(BOOL, NSError *))context;
-
-    block(paramType == M64CORE_STATE_SAVECOMPLETE, nil);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        void (^block)(BOOL, NSError *) = (__bridge_transfer void(^)(BOOL, NSError *))context;
+        block(paramType == M64CORE_STATE_SAVECOMPLETE, nil);
+    });
 }
 
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
@@ -365,9 +368,10 @@ static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param par
 {
     SetStateCallback(NULL, NULL);
 
-    void (^block)(BOOL, NSError *) = (__bridge_transfer void(^)(BOOL, NSError *))context;
-
-    block(paramType == M64CORE_STATE_LOADCOMPLETE, nil);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        void (^block)(BOOL, NSError *) = (__bridge_transfer void(^)(BOOL, NSError *))context;
+        block(paramType == M64CORE_STATE_LOADCOMPLETE, nil);
+    });
 }
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
