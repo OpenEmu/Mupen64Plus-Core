@@ -54,11 +54,23 @@ NSString *MupenControlNames[] = {
 }; // FIXME: missing: joypad X, joypad Y, mempak switch, rumble switch
 
 @interface MupenGameCore () <OEN64SystemResponderClient>
+- (void)OE_didReceiveStateChangeForParamType:(m64p_core_param)paramType value:(int)newValue;
 @end
 
 MupenGameCore *g_core;
 
 static void (*ptr_OE_ForceUpdateWindowSize)(int width, int height);
+
+static void MupenDebugCallback(void *context, int level, const char *message)
+{
+    NSLog(@"Mupen (%d): %s", level, message);
+}
+
+static void MupenStateCallback(void *context, m64p_core_param paramType, int newValue)
+{
+    NSLog(@"Mupen: param %d -> %d", paramType, newValue);
+    [((__bridge MupenGameCore *)context) OE_didReceiveStateChangeForParamType:paramType value:newValue];
+}
 
 @implementation MupenGameCore
 {
@@ -66,6 +78,11 @@ static void (*ptr_OE_ForceUpdateWindowSize)(int width, int height);
     
     dispatch_semaphore_t mupenWaitToBeginFrameSemaphore;
     dispatch_semaphore_t coreWaitToEndFrameSemaphore;
+
+    m64p_emu_state _emulatorState;
+
+    dispatch_queue_t _callbackQueue;
+    NSMutableDictionary *_callbackHandlers;
 }
 
 - (instancetype)init
@@ -82,6 +99,9 @@ static void (*ptr_OE_ForceUpdateWindowSize)(int width, int height);
         sampleRate = 33600;
         
         isNTSC = YES;
+
+        _callbackQueue = dispatch_queue_create("org.openemu.MupenGameCore.CallbackHandlerQueue", DISPATCH_QUEUE_SERIAL);
+        _callbackHandlers = [[NSMutableDictionary alloc] init];
     }
     g_core = self;
     return self;
@@ -93,14 +113,46 @@ static void (*ptr_OE_ForceUpdateWindowSize)(int width, int height);
     dispatch_release(coreWaitToEndFrameSemaphore);
 }
 
-static void MupenDebugCallback(void *context, int level, const char *message)
+// Pass 0 as paramType to receive all state changes.
+// Return YES from the block to keep watching the changes.
+// Return NO to remove the block after the first received callback.
+- (void)OE_addHandlerForType:(m64p_core_param)paramType usingBlock:(BOOL(^)(m64p_core_param paramType, int newValue))block
 {
-    NSLog(@"Mupen (%d): %s", level, message);
+    // If we already have an emulator state, check if the block is satisfied with it or just add it to the queues.
+    if(paramType == M64CORE_EMU_STATE && _emulatorState != 0 && !block(M64CORE_EMU_STATE, _emulatorState))
+        return;
+
+    dispatch_async(_callbackQueue, ^{
+        NSMutableSet *callbacks = _callbackHandlers[@(paramType)];
+        if(callbacks == nil)
+        {
+            callbacks = [[NSMutableSet alloc] init];
+            _callbackHandlers[@(paramType)] = callbacks;
+        }
+
+        [callbacks addObject:block];
+    });
 }
 
-static void MupenStateCallback(void *Context, m64p_core_param ParamChanged, int NewValue)
+- (void)OE_didReceiveStateChangeForParamType:(m64p_core_param)paramType value:(int)newValue
 {
-    NSLog(@"Mupen: param %d -> %d", ParamChanged, NewValue);
+    if(paramType == M64CORE_EMU_STATE) _emulatorState = newValue;
+
+    void(^runCallbacksForType)(m64p_core_param) =
+    ^(m64p_core_param type){
+        NSMutableSet *callbacks = _callbackHandlers[@(type)];
+        [callbacks filterUsingPredicate:
+         [NSPredicate predicateWithBlock:
+          ^ BOOL (BOOL(^evaluatedObject)(m64p_core_param, int), NSDictionary *bindings)
+          {
+              return evaluatedObject(paramType, newValue);
+          }]];
+    };
+
+    dispatch_async(_callbackQueue, ^{
+        runCallbacksForType(paramType);
+        runCallbacksForType(0);
+    });
 }
 
 static void *dlopen_myself()
@@ -347,46 +399,47 @@ static void MupenSetAudioSpeed(int percent)
     CoreDoCommand(M64CMD_RESET, 1 /* hard reset */, NULL);
 }
 
-static void _OEMupenGameCoreSaveStateCallback(void *context, m64p_core_param paramType, int newValue)
-{
-    if(paramType != M64CORE_STATE_SAVECOMPLETE) return;
-
-    SetStateCallback(NULL, NULL);
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        void (^block)(BOOL, NSError *) = (__bridge_transfer void(^)(BOOL, NSError *))context;
-        block(!!newValue, nil);
-    });
-}
-
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-    SetStateCallback(_OEMupenGameCoreSaveStateCallback, (__bridge_retained void *)[block copy]);
+    [self OE_addHandlerForType:M64CORE_STATE_SAVECOMPLETE usingBlock:
+     ^ BOOL (m64p_core_param paramType, int newValue)
+     {
+         NSAssert(paramType == M64CORE_STATE_SAVECOMPLETE, @"This block should only be called for save completion!");
+         dispatch_async(dispatch_get_main_queue(), ^{
+             block(!!newValue, nil);
+         });
+         return NO;
+     }];
+
     CoreDoCommand(M64CMD_STATE_SAVE, 1, (void *)[fileName UTF8String]);
     savestates_save();
 }
 
-static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param paramType, int newValue)
-{
-    if(paramType != M64CORE_STATE_LOADCOMPLETE) return;
-
-    SetStateCallback(NULL, NULL);
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        void (^block)(BOOL, NSError *) = (__bridge_transfer void(^)(BOOL, NSError *))context;
-        block(!!newValue, nil);
-    });
-}
-
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sleep(1);
-    });
-    
-    SetStateCallback(_OEMupenGameCoreLoadStateCallback, (__bridge_retained void *)[block copy]);
-    CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName UTF8String]);
+    [self OE_addHandlerForType:M64CORE_STATE_LOADCOMPLETE usingBlock:
+     ^ BOOL (m64p_core_param paramType, int newValue)
+     {
+         NSAssert(paramType == M64CORE_STATE_LOADCOMPLETE, @"This block should only be called for load completion!");
+         dispatch_async(dispatch_get_main_queue(), ^{
+             block(!!newValue, nil);
+         });
+         return NO;
+     }];
+
+    if(CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName UTF8String]) == M64ERR_SUCCESS)
+        return;
+
+    [self OE_addHandlerForType:M64CORE_EMU_STATE usingBlock:
+     ^ BOOL (m64p_core_param paramType, int newValue)
+     {
+         NSAssert(paramType == M64CORE_EMU_STATE, @"This block should only be called for load completion!");
+         if(newValue != M64EMU_RUNNING && newValue != M64EMU_PAUSED)
+             return YES;
+
+         CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName UTF8String]);
+         return NO;
+     }];
 }
 
 - (OEIntSize)bufferSize
