@@ -50,4 +50,4 @@ OE_EXPORTED_CLASS
 - (void) swapBuffers;
 @end
 
-extern MupenGameCore *g_core;
+extern __weak MupenGameCore *_current;

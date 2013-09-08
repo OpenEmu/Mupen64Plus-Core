@@ -57,7 +57,7 @@ NSString *MupenControlNames[] = {
 - (void)OE_didReceiveStateChangeForParamType:(m64p_core_param)paramType value:(int)newValue;
 @end
 
-MupenGameCore *g_core;
+__weak MupenGameCore *_current = 0;
 
 static void (*ptr_OE_ForceUpdateWindowSize)(int width, int height);
 
@@ -103,7 +103,7 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
         _callbackQueue = dispatch_queue_create("org.openemu.MupenGameCore.CallbackHandlerQueue", DISPATCH_QUEUE_SERIAL);
         _callbackHandlers = [[NSMutableDictionary alloc] init];
     }
-    g_core = self;
+    _current = self;
     return self;
 }
 
@@ -166,22 +166,24 @@ static void *dlopen_myself()
 
 static void MupenGetKeys(int Control, BUTTONS *Keys)
 {
-    Keys->R_DPAD = g_core->padData[Control][OEN64ButtonDPadRight];
-    Keys->L_DPAD = g_core->padData[Control][OEN64ButtonDPadLeft];
-    Keys->D_DPAD = g_core->padData[Control][OEN64ButtonDPadDown];
-    Keys->U_DPAD = g_core->padData[Control][OEN64ButtonDPadUp];
-    Keys->START_BUTTON = g_core->padData[Control][OEN64ButtonStart];
-    Keys->Z_TRIG = g_core->padData[Control][OEN64ButtonZ];
-    Keys->B_BUTTON = g_core->padData[Control][OEN64ButtonB];
-    Keys->A_BUTTON = g_core->padData[Control][OEN64ButtonA];
-    Keys->R_CBUTTON = g_core->padData[Control][OEN64ButtonCRight];
-    Keys->L_CBUTTON = g_core->padData[Control][OEN64ButtonCLeft];
-    Keys->D_CBUTTON = g_core->padData[Control][OEN64ButtonCDown];
-    Keys->U_CBUTTON = g_core->padData[Control][OEN64ButtonCUp];
-    Keys->R_TRIG = g_core->padData[Control][OEN64ButtonR];
-    Keys->L_TRIG = g_core->padData[Control][OEN64ButtonL];
-    Keys->X_AXIS = g_core->xAxis[Control];
-    Keys->Y_AXIS = g_core->yAxis[Control];
+    GET_CURRENT_AND_RETURN();
+
+    Keys->R_DPAD = current->padData[Control][OEN64ButtonDPadRight];
+    Keys->L_DPAD = current->padData[Control][OEN64ButtonDPadLeft];
+    Keys->D_DPAD = current->padData[Control][OEN64ButtonDPadDown];
+    Keys->U_DPAD = current->padData[Control][OEN64ButtonDPadUp];
+    Keys->START_BUTTON = current->padData[Control][OEN64ButtonStart];
+    Keys->Z_TRIG = current->padData[Control][OEN64ButtonZ];
+    Keys->B_BUTTON = current->padData[Control][OEN64ButtonB];
+    Keys->A_BUTTON = current->padData[Control][OEN64ButtonA];
+    Keys->R_CBUTTON = current->padData[Control][OEN64ButtonCRight];
+    Keys->L_CBUTTON = current->padData[Control][OEN64ButtonCLeft];
+    Keys->D_CBUTTON = current->padData[Control][OEN64ButtonCDown];
+    Keys->U_CBUTTON = current->padData[Control][OEN64ButtonCUp];
+    Keys->R_TRIG = current->padData[Control][OEN64ButtonR];
+    Keys->L_TRIG = current->padData[Control][OEN64ButtonL];
+    Keys->X_AXIS = current->xAxis[Control];
+    Keys->Y_AXIS = current->yAxis[Control];
 }
 
 static void MupenInitiateControllers (CONTROL_INFO ControlInfo)
@@ -200,33 +202,39 @@ static AUDIO_INFO AudioInfo;
 
 static void MupenAudioSampleRateChanged(int SystemType)
 {
-    float currentRate = g_core->sampleRate;
+    GET_CURRENT_AND_RETURN();
+
+    float currentRate = current->sampleRate;
     
     switch (SystemType)
     {
         default:
         case SYSTEM_NTSC:
-            g_core->sampleRate = 48681812 / (*AudioInfo.AI_DACRATE_REG + 1);
+            current->sampleRate = 48681812 / (*AudioInfo.AI_DACRATE_REG + 1);
             break;
         case SYSTEM_PAL:
-            g_core->sampleRate = 49656530 / (*AudioInfo.AI_DACRATE_REG + 1);
+            current->sampleRate = 49656530 / (*AudioInfo.AI_DACRATE_REG + 1);
             break;
     }
 
-    [[g_core audioDelegate] audioSampleRateDidChange];
-    NSLog(@"Mupen rate changed %f -> %f\n", currentRate, g_core->sampleRate);
+    [[current audioDelegate] audioSampleRateDidChange];
+    NSLog(@"Mupen rate changed %f -> %f\n", currentRate, current->sampleRate);
 }
 
 static void MupenAudioLenChanged()
 {
+    GET_CURRENT_AND_RETURN();
+
     int LenReg = *AudioInfo.AI_LEN_REG;
     uint8_t *ptr = (uint8_t*)(AudioInfo.RDRAM + (*AudioInfo.AI_DRAM_ADDR_REG & 0xFFFFFF));
     
-    [[g_core ringBufferAtIndex:0] write:ptr maxLength:LenReg];
+    [[current ringBufferAtIndex:0] write:ptr maxLength:LenReg];
 }
 
 static void SetIsNTSC()
 {
+    GET_CURRENT_AND_RETURN();
+
     extern m64p_rom_header ROM_HEADER;
     switch (ROM_HEADER.Country_code&0xFF)
     {
@@ -238,13 +246,13 @@ static void SetIsNTSC()
         case 0x55:
         case 0x58:
         case 0x59:
-            g_core->isNTSC = NO;
+            current->isNTSC = NO;
             break;
         case 0x37:
         case 0x41:
         case 0x45:
         case 0x4a:
-            g_core->isNTSC = YES;
+            current->isNTSC = YES;
             break;
     }
 }

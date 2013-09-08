@@ -28,5 +28,7 @@
 
 void new_vi()
 {
-    [g_core videoInterrupt];
+    GET_CURRENT_AND_RETURN();
+
+    [current videoInterrupt];
 }
