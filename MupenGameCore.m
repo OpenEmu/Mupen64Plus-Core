@@ -292,35 +292,61 @@ static void MupenSetAudioSpeed(int percent)
     {
         [super startEmulation];
         [self.renderDelegate willRenderOnAlternateThread];
-        [NSThread detachNewThreadSelector:@selector(mupenEmuThread) toTarget:self withObject:nil];
+        [NSThread detachNewThreadSelector:@selector(runMupenEmuThreadWithStopCompletionHandler:) toTarget:self withObject:[^{
+            [super stopEmulation];
+        } copy]];
     }
+}
+
+static void _OEMupenGameCoreDidStartUp(void *context, m64p_core_param paramType, int newValue)
+{
+    if(paramType != M64CORE_EMU_STATE || newValue != M64EMU_RUNNING) return;
+
+    SetStateCallback(NULL, NULL);
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        void (^block)(BOOL, NSError *) = (__bridge_transfer void(^)(BOOL, NSError *))context;
+        block(paramType == M64CORE_STATE_LOADCOMPLETE, nil);
+    });
 }
 
 - (void)runStartUpFrameWithCompletionHandler:(void (^)(void))handler
 {
     [self.renderDelegate willRenderOnAlternateThread];
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self.renderDelegate startRenderingOnAlternateThread];
-        CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
+    SetStateCallback(_OEMupenGameCoreDidStartUp, (__bridge_retained void *)^{
+        [self.renderDelegate willExecute];
 
-        dispatch_async(dispatch_get_main_queue(), handler);
+        dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
+
+        dispatch_semaphore_wait(coreWaitToEndFrameSemaphore, DISPATCH_TIME_FOREVER);
+
+        [self.renderDelegate didExecute];
+
+        CoreDoCommand(M64CMD_STOP, 0, NULL);
+
+        // Apparently, you need to signal it twice to make it stop.
+        dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
+        dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
     });
 
-    [super runStartUpFrameWithCompletionHandler:
-     ^{
-         CoreDoCommand(M64CMD_STOP, 0, NULL);
-         dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
-     }];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [NSThread detachNewThreadSelector:@selector(runMupenEmuThreadWithStopCompletionHandler:) toTarget:self withObject:
+         ^{
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 handler();
+             });
+         }];
+    });
 }
 
-- (void)mupenEmuThread
+- (void)runMupenEmuThreadWithStopCompletionHandler:(void(^)(void))stopCompletionHandler
 {
     @autoreleasepool
     {
         [self.renderDelegate startRenderingOnAlternateThread];
         CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
-        [super stopEmulation];
+        stopCompletionHandler();
     }
 }
 
@@ -367,11 +393,13 @@ static void MupenSetAudioSpeed(int percent)
 
 static void _OEMupenGameCoreSaveStateCallback(void *context, m64p_core_param paramType, int newValue)
 {
+    if(paramType != M64CORE_STATE_SAVECOMPLETE) return;
+
     SetStateCallback(NULL, NULL);
 
     dispatch_async(dispatch_get_main_queue(), ^{
         void (^block)(BOOL, NSError *) = (__bridge_transfer void(^)(BOOL, NSError *))context;
-        block(paramType == M64CORE_STATE_SAVECOMPLETE, nil);
+        block(!!newValue, nil);
     });
 }
 
@@ -384,6 +412,8 @@ static void _OEMupenGameCoreSaveStateCallback(void *context, m64p_core_param par
 
 static void _OEMupenGameCoreLoadStateCallback(void *context, m64p_core_param paramType, int newValue)
 {
+    if(paramType != M64CORE_STATE_LOADCOMPLETE) return;
+
     SetStateCallback(NULL, NULL);
 
     dispatch_async(dispatch_get_main_queue(), ^{
