@@ -421,6 +421,8 @@ static void MupenSetAudioSpeed(int percent)
      ^ BOOL (m64p_core_param paramType, int newValue)
      {
          NSAssert(paramType == M64CORE_STATE_LOADCOMPLETE, @"This block should only be called for load completion!");
+
+         [self setPauseEmulation:YES];
          dispatch_async(dispatch_get_main_queue(), ^{
              block(!!newValue, nil);
          });
@@ -428,7 +430,11 @@ static void MupenSetAudioSpeed(int percent)
      }];
 
     if(CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName UTF8String]) == M64ERR_SUCCESS)
+    {
+        // Mupen needs to run for a bit for the state loading to take place.
+        [self setPauseEmulation:NO];
         return;
+    }
 
     [self OE_addHandlerForType:M64CORE_EMU_STATE usingBlock:
      ^ BOOL (m64p_core_param paramType, int newValue)
