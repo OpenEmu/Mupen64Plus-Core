@@ -296,6 +296,24 @@ static void MupenSetAudioSpeed(int percent)
     }
 }
 
+- (void)runStartUpFrameWithCompletionHandler:(void (^)(void))handler
+{
+    [self.renderDelegate willRenderOnAlternateThread];
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self.renderDelegate startRenderingOnAlternateThread];
+        CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
+
+        dispatch_async(dispatch_get_main_queue(), handler);
+    });
+
+    [super runStartUpFrameWithCompletionHandler:
+     ^{
+         CoreDoCommand(M64CMD_STOP, 0, NULL);
+         dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
+     }];
+}
+
 - (void)mupenEmuThread
 {
     @autoreleasepool
