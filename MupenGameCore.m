@@ -109,6 +109,8 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
 
 - (void)dealloc
 {
+    SetStateCallback(NULL, NULL);
+    SetDebugCallback(NULL, NULL);
     dispatch_release(mupenWaitToBeginFrameSemaphore);
     dispatch_release(coreWaitToEndFrameSemaphore);
 }
@@ -393,9 +395,6 @@ static void MupenSetAudioSpeed(int percent)
 
 - (void)stopEmulation
 {
-    // FIXME: this needs to send a quit event into the input
-    // which will be read by the emu thread
-    // which will then die
     CoreDoCommand(M64CMD_STOP, 0, NULL);
     dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
 }
