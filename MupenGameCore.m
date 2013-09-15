@@ -413,7 +413,17 @@ static void MupenSetAudioSpeed(int percent)
      {
          NSAssert(paramType == M64CORE_STATE_SAVECOMPLETE, @"This block should only be called for save completion!");
          dispatch_async(dispatch_get_main_queue(), ^{
-             block(!!newValue, nil);
+             if(newValue == 0)
+             {
+                 NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotSaveStateError userInfo:@{
+                     NSLocalizedDescriptionKey : @"Mupen Could not save the current state.",
+                     NSFilePathErrorKey : fileName
+                 }];
+                 block(NO, error);
+                 return;
+             }
+
+             block(YES, nil);
          });
          return NO;
      }];
@@ -431,7 +441,18 @@ static void MupenSetAudioSpeed(int percent)
 
          [self setPauseEmulation:YES];
          dispatch_async(dispatch_get_main_queue(), ^{
-             block(!!newValue, nil);
+             if(newValue == 0)
+             {
+                 NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:@{
+                     NSLocalizedDescriptionKey : @"Mupen Could not load the save state",
+                     NSLocalizedRecoverySuggestionErrorKey : @"The loaded file is probably corrupted.",
+                     NSFilePathErrorKey : fileName
+                 }];
+                 block(NO, error);
+                 return;
+             }
+
+             block(YES, nil);
          });
          return NO;
      }];
