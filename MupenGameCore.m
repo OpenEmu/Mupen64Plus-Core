@@ -411,6 +411,7 @@ static void MupenSetAudioSpeed(int percent)
     [self OE_addHandlerForType:M64CORE_STATE_SAVECOMPLETE usingBlock:
      ^ BOOL (m64p_core_param paramType, int newValue)
      {
+         [self setPauseEmulation:YES];
          NSAssert(paramType == M64CORE_STATE_SAVECOMPLETE, @"This block should only be called for save completion!");
          dispatch_async(dispatch_get_main_queue(), ^{
              if(newValue == 0)
@@ -428,8 +429,29 @@ static void MupenSetAudioSpeed(int percent)
          return NO;
      }];
 
-    CoreDoCommand(M64CMD_STATE_SAVE, 1, (void *)[fileName UTF8String]);
-    savestates_save();
+    BOOL (^scheduleSaveState)(void) =
+    ^ BOOL {
+        if(CoreDoCommand(M64CMD_STATE_SAVE, 1, (void *)[fileName fileSystemRepresentation]) == M64ERR_SUCCESS)
+        {
+            // Mupen needs to run for a bit for the state saving to take place.
+            [self setPauseEmulation:NO];
+            return YES;
+        }
+
+        return NO;
+    };
+
+    if(scheduleSaveState()) return;
+
+    [self OE_addHandlerForType:M64CORE_EMU_STATE usingBlock:
+     ^ BOOL (m64p_core_param paramType, int newValue)
+     {
+         NSAssert(paramType == M64CORE_EMU_STATE, @"This block should only be called for load completion!");
+         if(newValue != M64EMU_RUNNING && newValue != M64EMU_PAUSED)
+             return YES;
+
+         return !scheduleSaveState();
+     }];
 }
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
@@ -457,12 +479,19 @@ static void MupenSetAudioSpeed(int percent)
          return NO;
      }];
 
-    if(CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName UTF8String]) == M64ERR_SUCCESS)
-    {
-        // Mupen needs to run for a bit for the state loading to take place.
-        [self setPauseEmulation:NO];
-        return;
-    }
+    BOOL (^scheduleLoadState)(void) =
+    ^ BOOL {
+        if(CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName fileSystemRepresentation]) == M64ERR_SUCCESS)
+        {
+            // Mupen needs to run for a bit for the state loading to take place.
+            [self setPauseEmulation:NO];
+            return YES;
+        }
+
+        return NO;
+    };
+
+    if(scheduleLoadState()) return;
 
     [self OE_addHandlerForType:M64CORE_EMU_STATE usingBlock:
      ^ BOOL (m64p_core_param paramType, int newValue)
@@ -471,8 +500,7 @@ static void MupenSetAudioSpeed(int percent)
          if(newValue != M64EMU_RUNNING && newValue != M64EMU_PAUSED)
              return YES;
 
-         CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName UTF8String]);
-         return NO;
+         return !scheduleLoadState();
      }];
 }
 
