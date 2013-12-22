@@ -162,7 +162,6 @@
 		942130D11793DD8F00E57482 /* cicx105.c in Sources */ = {isa = PBXBuildFile; fileRef = 942130CD1793DD8F00E57482 /* cicx105.c */; };
 		942130D71793E90800E57482 /* mupen64plus-video-glide64mk2.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */; };
 		942130D91793E96600E57482 /* glitchmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 942130D81793E96600E57482 /* glitchmain.cpp */; };
-		9449518B14D8F9B400FC80E7 /* config.yaml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9449518A14D8F9B400FC80E7 /* config.yaml */; };
 		944951E414D912BE00FC80E7 /* n64_cic_nus_6105.c in Sources */ = {isa = PBXBuildFile; fileRef = 944951E214D912BE00FC80E7 /* n64_cic_nus_6105.c */; };
 		94D58BDB16BE327A0093CD72 /* SDLStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D00F0801183E52F002995A1 /* SDLStubs.m */; };
 		94D58BDE16BE327A0093CD72 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E9D1182551500BEAA42 /* libz.dylib */; };
@@ -250,7 +249,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				9449518B14D8F9B400FC80E7 /* config.yaml in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -499,7 +497,6 @@
 		942130CF1793DD8F00E57482 /* jpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jpeg.h; sourceTree = "<group>"; };
 		942130D81793E96600E57482 /* glitchmain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glitchmain.cpp; sourceTree = "<group>"; };
 		942597D0151470840074E3A3 /* OpenEmuBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenEmuBase.framework; path = ../OpenEmu/build/Release/OpenEmuBase.framework; sourceTree = "<group>"; };
-		9449518A14D8F9B400FC80E7 /* config.yaml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = config.yaml; sourceTree = "<group>"; };
 		9449518E14D8FE6100FC80E7 /* OEN64SystemResponderClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OEN64SystemResponderClient.h; path = ../OpenEmu/N64/OEN64SystemResponderClient.h; sourceTree = "<group>"; };
 		944951E214D912BE00FC80E7 /* n64_cic_nus_6105.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = n64_cic_nus_6105.c; sourceTree = "<group>"; };
 		944951E314D912BE00FC80E7 /* n64_cic_nus_6105.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = n64_cic_nus_6105.h; sourceTree = "<group>"; };
@@ -921,7 +918,6 @@
 		32C88E010371C26100C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				9449518A14D8F9B400FC80E7 /* config.yaml */,
 				3D2090581182D92800BEAA42 /* Compatibility */,
 				94E6B83D166C2A0A00082F27 /* mupen64plus-audio-sdl */,
 				94E6B84F166C2A0A00082F27 /* mupen64plus-input-sdl */,
