@@ -600,10 +600,13 @@ static void MupenSetAudioSpeed(int percent)
     // Remove any spaces
     code = [code stringByReplacingOccurrencesOfString:@" " withString:@""];
     
+    NSString *singleCode;
     NSArray *multipleCodes = [[NSArray alloc] init];
     multipleCodes = [code componentsSeparatedByString:@"+"];
+    m64p_cheat_code *gsCode = (m64p_cheat_code*) calloc([multipleCodes count], sizeof(m64p_cheat_code));
+    int codeCounter = 0;
     
-    for (NSString *singleCode in multipleCodes)
+    for (singleCode in multipleCodes)
     {
         if ([singleCode length] == 12) // GameShark
         {
@@ -618,25 +621,25 @@ static void MupenSetAudioSpeed(int percent)
             [scanAddress scanHexInt:&outAddress];
             [scanValue scanHexInt:&outValue];
             
-            m64p_cheat_code *gsCode = malloc(sizeof(*gsCode));
-            gsCode[0].address = outAddress;
-            gsCode[0].value = outValue;
-            
-            // Update address directly if code needs GS button pressed
-            if ((gsCode[0].address & 0xFF000000) == 0x88000000 || (gsCode[0].address & 0xFF000000) == 0xA8000000)
-            {
-                *(unsigned char *)((rdramb + ((gsCode[0].address & 0xFFFFFF)^S8))) = (unsigned char)gsCode[0].value; // Update 8-bit address
-            }
-            else if ((gsCode[0].address & 0xFF000000) == 0x89000000 || (gsCode[0].address & 0xFF000000) == 0xA9000000)
-            {
-                *(unsigned short *)((rdramb + ((gsCode[0].address & 0xFFFFFF)^S16))) = (unsigned short)gsCode[0].value; // Update 16-bit address
-            }
-            // Else add code as normal
-            else
-            {
-                enabled ? CoreAddCheat([singleCode UTF8String], gsCode, 1) : CoreCheatEnabled([singleCode UTF8String], 0);
-            }
+            gsCode[codeCounter].address = outAddress;
+            gsCode[codeCounter].value = outValue;
+            codeCounter++;
         }
+    }
+    
+    // Update address directly if code needs GS button pressed
+    if ((gsCode[0].address & 0xFF000000) == 0x88000000 || (gsCode[0].address & 0xFF000000) == 0xA8000000)
+    {
+        *(unsigned char *)((rdramb + ((gsCode[0].address & 0xFFFFFF)^S8))) = (unsigned char)gsCode[0].value; // Update 8-bit address
+    }
+    else if ((gsCode[0].address & 0xFF000000) == 0x89000000 || (gsCode[0].address & 0xFF000000) == 0xA9000000)
+    {
+        *(unsigned short *)((rdramb + ((gsCode[0].address & 0xFFFFFF)^S16))) = (unsigned short)gsCode[0].value; // Update 16-bit address
+    }
+    // Else add code as normal
+    else
+    {
+        enabled ? CoreAddCheat([code UTF8String], gsCode, codeCounter+1) : CoreCheatEnabled([code UTF8String], 0);
     }
 }
 
