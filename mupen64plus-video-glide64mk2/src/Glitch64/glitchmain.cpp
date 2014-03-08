@@ -1670,7 +1670,7 @@ grBufferSwap( FxU32 swap_interval )
       glUseProgramObjectARB(0);
       (*renderCallback)(1);
       if (program)
-         glUseProgramObjectARB(program);
+         glUseProgramObjectARB(&program);
   }
   int i;
   LOG("grBufferSwap(%d)\r\n", swap_interval);
