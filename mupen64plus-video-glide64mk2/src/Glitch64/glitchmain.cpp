@@ -1661,16 +1661,16 @@ grBufferClear( GrColor_t color, GrAlpha_t alpha, FxU32 depth )
 FX_ENTRY void FX_CALL
 grBufferSwap( FxU32 swap_interval )
 {
-   GLuint program;
+   GLhandleARB program;
 
 	glFinish();
 //  printf("rendercallback is %p\n", renderCallback);
   if(renderCallback) {
-      glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*) &program);
+      program = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
       glUseProgramObjectARB(0);
       (*renderCallback)(1);
       if (program)
-         glUseProgramObjectARB(&program);
+         glUseProgramObjectARB(program);
   }
   int i;
   LOG("grBufferSwap(%d)\r\n", swap_interval);
