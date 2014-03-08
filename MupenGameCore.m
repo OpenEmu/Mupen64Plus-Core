@@ -191,13 +191,13 @@ static void MupenGetKeys(int Control, BUTTONS *Keys)
 static void MupenInitiateControllers (CONTROL_INFO ControlInfo)
 {
     ControlInfo.Controls[0].Present = 1;
-    ControlInfo.Controls[0].Plugin = 2;
+    ControlInfo.Controls[0].Plugin = PLUGIN_MEMPAK;
     ControlInfo.Controls[1].Present = 1;
-    ControlInfo.Controls[1].Plugin = 2;
+    ControlInfo.Controls[1].Plugin = PLUGIN_MEMPAK;
     ControlInfo.Controls[2].Present = 1;
-    ControlInfo.Controls[2].Plugin = 2;
+    ControlInfo.Controls[2].Plugin = PLUGIN_MEMPAK;
     ControlInfo.Controls[3].Present = 1;
-    ControlInfo.Controls[3].Plugin = 2;
+    ControlInfo.Controls[3].Plugin = PLUGIN_NONE;
 }
 
 static AUDIO_INFO AudioInfo;
