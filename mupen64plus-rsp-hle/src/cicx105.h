@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-rsp-hle - cicx105.h                                       *
  *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
- *   Copyright (C) 2002 Hacktarux                                          *
+ *   Copyright (C) 2012 Bobby Smiles                                       *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,7 +22,7 @@
 #ifndef CICX105_H
 #define CICX105_H
 
-void cicx105_ucode();
+void cicx105_ucode(void);
 
 #endif
 

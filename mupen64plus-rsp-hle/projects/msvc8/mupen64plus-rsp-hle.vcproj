@@ -183,6 +183,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\alist_audio.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\alist_naudio.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\alist_nead.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\audio.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\cicx105.c"
 				>
 			</File>
@@ -195,19 +211,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\ucode1.cpp"
+				RelativePath="..\..\src\memory.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\ucode2.cpp"
+				RelativePath="..\..\src\mp3.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\ucode3.cpp"
+				RelativePath="..\..\src\musyx.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\ucode3mp3.cpp"
+				RelativePath="..\..\src\plugin.c"
 				>
 			</File>
 		</Filter>
@@ -225,15 +241,35 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\audio.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\arithmetics.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\cicx105.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\hle.h"
+				RelativePath="..\..\src\jpeg.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\jpeg.h"
+				RelativePath="..\..\src\main.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\memory.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\musyx.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\plugin.h"
 				>
 			</File>
 		</Filter>

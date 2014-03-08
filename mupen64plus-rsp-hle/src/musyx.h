@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *   Mupen64plus-rsp-hle - jpeg.h                                          *
+ *   Mupen64plus-rsp-hle - musyx.h                                         *
  *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
- *   Copyright (C) 2012 Bobby Smiles                                       *
+ *   Copyright (C) 2013 Bobby Smiles                                       *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,12 +19,10 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JPEG_H
-#define JPEG_H
+#ifndef MUSYX_H
+#define MUSYX_H
 
-void jpeg_decode_PS0(void);
-void jpeg_decode_PS(void);
-void jpeg_decode_OB(void);
+void musyx_v1_task(void);
+void musyx_v2_task(void);
 
 #endif
-

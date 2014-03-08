@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *   Mupen64plus-rsp-hle - jpeg.h                                          *
+ *   Mupen64plus-rsp-hle - arithmetics.h                                   *
  *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
- *   Copyright (C) 2012 Bobby Smiles                                       *
+ *   Copyright (C) 2014 Bobby Smiles                                       *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,12 +19,18 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef JPEG_H
-#define JPEG_H
+#ifndef ARITHMETICS_H
+#define ARITHMETICS_H
 
-void jpeg_decode_PS0(void);
-void jpeg_decode_PS(void);
-void jpeg_decode_OB(void);
+#include <stdint.h>
+
+static inline int16_t clamp_s16(int_fast32_t x)
+{
+    x = (x < INT16_MIN) ? INT16_MIN: x;
+    x = (x > INT16_MAX) ? INT16_MAX: x;
+
+    return x;
+}
 
 #endif
 
