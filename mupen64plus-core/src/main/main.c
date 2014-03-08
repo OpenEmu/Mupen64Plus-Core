@@ -673,7 +673,7 @@ void new_frame(void)
         StateChanged(M64CORE_EMU_STATE, M64EMU_PAUSED);
     }
 }
-
+#ifndef IN_OPENEMU
 void new_vi(void)
 {
     int Dif;
@@ -724,7 +724,7 @@ void new_vi(void)
     LastFPSTime = CurrentFPSTime ;
     end_section(IDLE_SECTION);
 }
-
+#endif
 /*********************************************************************************************************
 * emulation thread - runs the core
 */

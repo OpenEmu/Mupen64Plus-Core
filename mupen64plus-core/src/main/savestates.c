@@ -970,6 +970,7 @@ static void savestates_save_m64p_work(struct work_struct *work)
     }
 
     gzclose(f);
+    StateChanged(M64CORE_STATE_SAVECOMPLETE, 1);
     main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Saved state to: %s", namefrompath(save->filepath));
     free(save->data);
     free(save->filepath);
@@ -1512,7 +1513,7 @@ int savestates_save(void)
     }
 
     // deliver callback to indicate completion of state saving operation
-    StateChanged(M64CORE_STATE_SAVECOMPLETE, ret);
+    //StateChanged(M64CORE_STATE_SAVECOMPLETE, ret);
 
     savestates_clear_job();
     return ret;
