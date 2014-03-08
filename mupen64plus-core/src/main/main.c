@@ -42,6 +42,7 @@
 #include "api/vidext.h"
 
 #include "main.h"
+#include "cheat.h"
 #include "eventloop.h"
 #include "rom.h"
 #include "savestates.h"
@@ -194,6 +195,8 @@ int main_set_core_defaults(void)
     ConfigSetDefaultString(g_CoreConfig, "SaveStatePath", "", "Path to directory where emulator save states (snapshots) are saved. If this is blank, the default value of ${UserConfigPath}/save will be used");
     ConfigSetDefaultString(g_CoreConfig, "SaveSRAMPath", "", "Path to directory where SRAM/EEPROM data (in-game saves) are stored. If this is blank, the default value of ${UserConfigPath}/save will be used");
     ConfigSetDefaultString(g_CoreConfig, "SharedDataPath", "", "Path to a directory to search when looking for shared data files");
+    ConfigSetDefaultBool(g_CoreConfig, "DelaySI", 1, "Delay interrupt after DMA SI read/write");
+    ConfigSetDefaultInt(g_CoreConfig, "CountPerOp", 0, "Force number of cycles per emulated instruction");
 
     /* handle upgrades */
     if (bUpgrade)
@@ -670,7 +673,7 @@ void new_frame(void)
         StateChanged(M64CORE_EMU_STATE, M64EMU_PAUSED);
     }
 }
-#ifndef IN_OPENEMU
+
 void new_vi(void)
 {
     int Dif;
@@ -721,7 +724,7 @@ void new_vi(void)
     LastFPSTime = CurrentFPSTime ;
     end_section(IDLE_SECTION);
 }
-#endif
+
 /*********************************************************************************************************
 * emulation thread - runs the core
 */
@@ -734,6 +737,11 @@ m64p_error main_run(void)
     savestates_set_autoinc_slot(ConfigGetParamBool(g_CoreConfig, "AutoStateSlotIncrement"));
     savestates_select_slot(ConfigGetParamInt(g_CoreConfig, "CurrentStateSlot"));
     no_compiled_jump = ConfigGetParamBool(g_CoreConfig, "NoCompiledJump");
+    delay_si = ConfigGetParamBool(g_CoreConfig, "DelaySI");
+    count_per_op = ConfigGetParamInt(g_CoreConfig, "CountPerOp");
+    if (count_per_op <= 0)
+        count_per_op = ROM_PARAMS.countperop;
+    cheat_add_hacks();
 
     // initialize memory, and do byte-swapping if it's not been done yet
     if (g_MemHasBeenBSwapped == 0)
@@ -859,12 +867,3 @@ void main_stop(void)
     }
 #endif        
 }
-
-/*********************************************************************************************************
-* main function
-*/
-int main(int argc, char *argv[])
-{
-    return 1;
-}
-

@@ -42,6 +42,7 @@
 
 // local definitions
 #define CHEAT_CODE_MAGIC_VALUE 0xDEAD0000
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
 typedef struct cheat_code {
     unsigned int address;
@@ -201,32 +202,8 @@ void cheat_apply_cheats(int entry)
 {
     cheat_t *cheat;
     cheat_code_t *code;
-    int skip;
-    int execute_next;
+    int cond_failed;
 
-    // If game is Zelda OOT, apply subscreen delay fix
-    if (strncmp((char *)ROM_HEADER.Name, "THE LEGEND OF ZELDA", 19) == 0 && entry == ENTRY_VI) {
-        if (sl(ROM_HEADER.CRC1) == 0xEC7011B7 && sl(ROM_HEADER.CRC2) == 0x7616D72B) {
-            // Legend of Zelda, The - Ocarina of Time (U) + (J) (V1.0)
-            execute_cheat(0x801DA5CB, 0x0002, NULL);
-        } else if (sl(ROM_HEADER.CRC1) == 0xD43DA81F && sl(ROM_HEADER.CRC2) == 0x021E1E19) {
-            // Legend of Zelda, The - Ocarina of Time (U) + (J) (V1.1)
-            execute_cheat(0x801DA78B, 0x0002, NULL);
-        } else if (sl(ROM_HEADER.CRC1) == 0x693BA2AE && sl(ROM_HEADER.CRC2) == 0xB7F14E9F) {
-            // Legend of Zelda, The - Ocarina of Time (U) + (J) (V1.2)
-            execute_cheat(0x801DAE8B, 0x0002, NULL);
-        } else if (sl(ROM_HEADER.CRC1) == 0xB044B569 && sl(ROM_HEADER.CRC2) == 0x373C1985) {
-            // Legend of Zelda, The - Ocarina of Time (E) (V1.0)
-            execute_cheat(0x801D860B, 0x0002, NULL);
-        } else if (sl(ROM_HEADER.CRC1) == 0xB2055FBD && sl(ROM_HEADER.CRC2) == 0x0BAB4E0C) {
-            // Legend of Zelda, The - Ocarina of Time (E) (V1.1)
-            execute_cheat(0x801D864B, 0x0002, NULL);
-        } else {
-            // Legend of Zelda, The - Ocarina of Time Master Quest
-            execute_cheat(0x801D8F4B, 0x0002, NULL);
-        }
-    }
-    
     if (list_empty(&active_cheats))
         return;
 
@@ -250,66 +227,51 @@ void cheat_apply_cheats(int entry)
                     }
                     break;
                 case ENTRY_VI:
-                    skip = 0;
-                    execute_next = 0;
+                    /* a cheat starts without failed preconditions */
+                    cond_failed = 0;
+
                     list_for_each_entry(code, &cheat->cheat_codes, cheat_code_t, list) {
-                        if (skip) {
-                            skip = 0;
-                            continue;
-                        }
-                        if (execute_next) {
-                            execute_next = 0;
-
-                            // if code needs GS button pressed, don't save old value
-                            if(((code->address & 0xFF000000) == 0xD8000000 ||
-                                (code->address & 0xFF000000) == 0xD9000000 ||
-                                (code->address & 0xFF000000) == 0xDA000000 ||
-                                (code->address & 0xFF000000) == 0xDB000000))
-                               execute_cheat(code->address, code->value, NULL);
-                            else
-                               execute_cheat(code->address, code->value, &code->old_value);
-
-                            continue;
-                        }
-                        // conditional cheat codes
+                        /* conditional cheat codes */
                         if((code->address & 0xF0000000) == 0xD0000000)
                         {
-                            // if code needs GS button pressed and it's not, skip it
+                            /* if code needs GS button pressed and it's not, skip it */
                             if(((code->address & 0xFF000000) == 0xD8000000 ||
                                 (code->address & 0xFF000000) == 0xD9000000 ||
                                 (code->address & 0xFF000000) == 0xDA000000 ||
                                 (code->address & 0xFF000000) == 0xDB000000) &&
                                !event_gameshark_active())
-                            {
-                                // skip next code
-                                skip = 1;
+                                /* if condition false, skip next code non-test code */
+                                cond_failed = 1;
+
+                            /* if condition false, skip next code non-test code */
+                            if (!execute_cheat(code->address, code->value, NULL))
+                                cond_failed = 1;
+                        }
+                        else {
+                            /* preconditions were false for this non-test code
+                             * reset the condition state and skip the cheat
+                             */
+                            if (cond_failed) {
+                                cond_failed = 0;
                                 continue;
                             }
 
-                            if (execute_cheat(code->address, code->value, NULL)) {
-                                // if condition true, execute next cheat code
-                                execute_next = 1;
-                            } else {
-                                // if condition false, skip next code
-                                skip = 1;
-                                continue;
+                            switch (code->address & 0xFF000000) {
+                            /* GS button triggers cheat code */
+                            case 0x88000000:
+                            case 0x89000000:
+                            case 0xA8000000:
+                            case 0xA9000000:
+                                if(event_gameshark_active())
+                                    execute_cheat(code->address, code->value, NULL);
+                                break;
+                            /* normal cheat code */
+                            default:
+                                /* exclude boot-time cheat codes */
+                                if((code->address & 0xF0000000) != 0xF0000000)
+                                    execute_cheat(code->address, code->value, &code->old_value);
+                                break;
                             }
-                        }
-                        // GS button triggers cheat code
-                        else if((code->address & 0xFF000000) == 0x88000000 ||
-                                (code->address & 0xFF000000) == 0x89000000 ||
-                                (code->address & 0xFF000000) == 0xA8000000 ||
-                                (code->address & 0xFF000000) == 0xA9000000)
-                        {
-                            if(event_gameshark_active())
-                                execute_cheat(code->address, code->value, NULL);
-                        }
-                        // normal cheat code
-                        else
-                        {
-                            // exclude boot-time cheat codes
-                            if((code->address & 0xF0000000) != 0xF0000000)
-                                execute_cheat(code->address, code->value, &code->old_value);
                         }
                     }
                     break;
@@ -454,4 +416,105 @@ int cheat_add_new(const char *name, m64p_cheat_code *code_list, int num_codes)
     return 1;
 }
 
+static char *strtok_compat(char *str, const char *delim, char **saveptr)
+{
+    char *p;
 
+    if (str == NULL)
+        str = *saveptr;
+
+    if (str == NULL)
+        return NULL;
+
+    str += strspn(str, delim);
+    if ((p = strpbrk(str, delim)) != NULL) {
+        *saveptr = p + 1;
+        *p = '\0';
+    } else {
+        *saveptr = NULL;
+    }
+    return str;
+}
+
+static int cheat_parse_hacks_code(char *code, m64p_cheat_code **hack)
+{
+    char *input, *token, *saveptr;
+    int num_codes;
+    m64p_cheat_code *hackbuf;
+    int ret;
+
+    *hack = NULL;
+
+    /* count number of possible cheatcodes */
+    input = code;
+    num_codes = 0;
+    while ((strchr(input, ','))) {
+        input++;
+        num_codes++;
+    }
+    num_codes++;
+
+    /* allocate buffer */
+    hackbuf = malloc(sizeof(*hackbuf) * num_codes);
+    if (!num_codes)
+        return 0;
+
+    /* parse cheatcodes */
+    input = code;
+    num_codes = 0;
+    while ((token = strtok_compat(input, ",", &saveptr))) {
+        input = NULL;
+
+        ret = sscanf(token, "%08X %04X", &hackbuf[num_codes].address,
+                     &hackbuf[num_codes].value);
+        if (ret == 2)
+            num_codes++;
+    }
+
+    if (num_codes == 0)
+        free(hackbuf);
+    else
+        *hack = hackbuf;
+
+    return num_codes;
+}
+
+int cheat_add_hacks(void)
+{
+    char *cheat_raw = NULL;
+    char *input, *token, *saveptr;
+    unsigned int i = 0;
+    int num_codes;
+    char cheatname[32];
+    m64p_cheat_code *hack;
+
+    if (!ROM_PARAMS.cheats)
+        return 0;
+
+    /* copy ini entry for tokenizing */
+    cheat_raw = strdup(ROM_PARAMS.cheats);
+    if (!cheat_raw)
+        goto out;
+
+    /* split into cheats for the cheat engine */
+    input = cheat_raw;
+    while ((token = strtok_compat(input, ";", &saveptr))) {
+        input = NULL;
+
+        snprintf(cheatname, sizeof(cheatname), "HACK%u", i);
+        cheatname[sizeof(cheatname) - 1] = '\0';
+
+        /* parse and add cheat */
+        num_codes = cheat_parse_hacks_code(token, &hack);
+        if (num_codes <= 0)
+            continue;
+
+        cheat_add_new(cheatname, hack, num_codes);
+        free(hack);
+        i++;
+    }
+
+out:
+    free(cheat_raw);
+    return 0;
+}

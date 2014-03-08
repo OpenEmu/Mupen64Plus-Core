@@ -118,7 +118,7 @@ void savestates_select_slot(unsigned int s)
     if(s>9||s==slot)
         return;
     slot = s;
-    ConfigSetParameter(g_CoreConfig, "CurrentSaveSlot", M64TYPE_INT, &s);
+    ConfigSetParameter(g_CoreConfig, "CurrentStateSlot", M64TYPE_INT, &s);
     StateChanged(M64CORE_SAVESTATE_SLOT, slot);
 
     main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Selected state slot: %d", slot);
@@ -970,7 +970,6 @@ static void savestates_save_m64p_work(struct work_struct *work)
     }
 
     gzclose(f);
-    StateChanged(M64CORE_STATE_SAVECOMPLETE, 1);
     main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Saved state to: %s", namefrompath(save->filepath));
     free(save->data);
     free(save->filepath);
@@ -1513,7 +1512,7 @@ int savestates_save(void)
     }
 
     // deliver callback to indicate completion of state saving operation
-    //StateChanged(M64CORE_STATE_SAVECOMPLETE, ret);
+    StateChanged(M64CORE_STATE_SAVECOMPLETE, ret);
 
     savestates_clear_job();
     return ret;

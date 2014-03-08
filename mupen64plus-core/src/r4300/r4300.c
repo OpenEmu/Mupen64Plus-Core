@@ -45,6 +45,7 @@
 
 unsigned int r4300emu = 0;
 int no_compiled_jump = 0;
+unsigned int count_per_op = COUNT_PER_OP_DEFAULT;
 int llbit, rompause;
 #if NEW_DYNAREC != NEW_DYNAREC_ARM
 int stop;
@@ -60,7 +61,6 @@ long long int local_rs;
 long long int reg_cop1_fgr_64[32];
 tlb tlb_e[32];
 unsigned int delay_slot, skip_jump = 0, dyna_interp = 0, last_addr;
-unsigned long long int debug_count = 0;
 unsigned int CIC_Chip;
 char invalid_code[0x100000];
 
@@ -88,6 +88,11 @@ int rounding_mode = 0x33F, trunc_mode = 0xF3F, round_mode = 0x33F,
       const unsigned int jump_target = (destination); \
       long long int *link_register = (link); \
       if (cop1 && check_cop1_unusable()) return; \
+      if (link_register != &reg[0]) \
+      { \
+         *link_register=PC->addr + 8; \
+         sign_extended(*link_register); \
+      } \
       if (!likely || take_jump) \
       { \
          PC++; \
@@ -98,11 +103,6 @@ int rounding_mode = 0x33F, trunc_mode = 0xF3F, round_mode = 0x33F,
          delay_slot=0; \
          if (take_jump && !skip_jump) \
          { \
-            if (link_register != &reg[0]) \
-            { \
-               *link_register=PC->addr; \
-               sign_extended(*link_register); \
-            } \
             PC=actual->block+((jump_target-actual->start)>>2); \
          } \
       } \
@@ -120,6 +120,11 @@ int rounding_mode = 0x33F, trunc_mode = 0xF3F, round_mode = 0x33F,
       const unsigned int jump_target = (destination); \
       long long int *link_register = (link); \
       if (cop1 && check_cop1_unusable()) return; \
+      if (link_register != &reg[0]) \
+      { \
+         *link_register=PC->addr + 8; \
+         sign_extended(*link_register); \
+      } \
       if (!likely || take_jump) \
       { \
          PC++; \
@@ -130,11 +135,6 @@ int rounding_mode = 0x33F, trunc_mode = 0xF3F, round_mode = 0x33F,
          delay_slot=0; \
          if (take_jump && !skip_jump) \
          { \
-            if (link_register != &reg[0]) \
-            { \
-               *link_register=PC->addr; \
-               sign_extended(*link_register); \
-            } \
             jump_to(jump_target); \
          } \
       } \
@@ -167,14 +167,14 @@ int rounding_mode = 0x33F, trunc_mode = 0xF3F, round_mode = 0x33F,
           current_instruction_table.NOTCOMPILED) \
          invalid_code[address>>12] = 1;
 
-#include "interpreter.def"
-
 // two functions are defined from the macros above but never used
 // these prototype declarations will prevent a warning
 #if defined(__GNUC__)
-  void JR_IDLE(void) __attribute__((used));
-  void JALR_IDLE(void) __attribute__((used));
+  static void JR_IDLE(void) __attribute__((used));
+  static void JALR_IDLE(void) __attribute__((used));
 #endif
+
+#include "interpreter.def"
 
 // -----------------------------------------------------------
 // Flow control 'fake' instructions
@@ -530,16 +530,10 @@ cpu_instruction_table current_instruction_table;
 
 static unsigned int update_invalid_addr(unsigned int addr)
 {
-   if (addr >= 0x80000000 && addr < 0xa0000000)
+   if (addr >= 0x80000000 && addr < 0xc0000000)
      {
-    if (invalid_code[addr>>12]) invalid_code[(addr+0x20000000)>>12] = 1;
-    if (invalid_code[(addr+0x20000000)>>12]) invalid_code[addr>>12] = 1;
-    return addr;
-     }
-   else if (addr >= 0xa0000000 && addr < 0xc0000000)
-     {
-    if (invalid_code[addr>>12]) invalid_code[(addr-0x20000000)>>12] = 1;
-    if (invalid_code[(addr-0x20000000)>>12]) invalid_code[addr>>12] = 1;
+    if (invalid_code[addr>>12]) invalid_code[(addr^0x20000000)>>12] = 1;
+    if (invalid_code[(addr^0x20000000)>>12]) invalid_code[addr>>12] = 1;
     return addr;
      }
    else
@@ -705,7 +699,7 @@ void update_count(void)
     if (r4300emu != CORE_DYNAREC)
     {
 #endif
-        Count = Count + (PC->addr - last_addr)/2;
+        Count += ((PC->addr - last_addr) >> 2) * count_per_op;
         last_addr = PC->addr;
 #ifdef NEW_DYNAREC
     }
@@ -982,7 +976,6 @@ void r4300_execute(void)
 
     current_instruction_table = cached_interpreter_table;
 
-    debug_count = 0;
     delay_slot=0;
     stop = 0;
     rompause = 0;
@@ -1066,7 +1059,6 @@ void r4300_execute(void)
         free_blocks();
     }
 
-    debug_count+= Count;
     DebugMessage(M64MSG_INFO, "R4300 emulator finished.");
 
     /* print instruction counts */
