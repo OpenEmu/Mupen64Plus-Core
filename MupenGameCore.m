@@ -63,6 +63,7 @@ static void (*ptr_OE_ForceUpdateWindowSize)(int width, int height);
 
 static void MupenDebugCallback(void *context, int level, const char *message)
 {
+    if (level >= 5) return;
     NSLog(@"Mupen (%d): %s", level, message);
 }
 
@@ -275,20 +276,22 @@ static void MupenSetAudioSpeed(int percent)
 
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
+    // Load ROM
+    romData = [NSData dataWithContentsOfMappedFile:path];
     NSBundle *coreBundle = [NSBundle bundleForClass:[self class]];
     const char *dataPath;
 
     NSString *configPath = [[self supportDirectoryPath] stringByAppendingString:@"/"];
     dataPath = [[coreBundle resourcePath] fileSystemRepresentation];
-    
+
     [[NSFileManager defaultManager] createDirectoryAtPath:configPath withIntermediateDirectories:YES attributes:nil error:nil];
-    
+
     NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
     [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
-    
+
     // open core here
     CoreStartup(FRONTEND_API_VERSION, [configPath fileSystemRepresentation], dataPath, (__bridge void *)self, MupenDebugCallback, (__bridge void *)self, MupenStateCallback);
-    
+
     // set SRAM path
     m64p_handle config;
     ConfigOpenSection("Core", &config);
@@ -303,49 +306,53 @@ static void MupenSetAudioSpeed(int percent)
 #else
     int ival = 2;
 #endif
-    
+
     ConfigOpenSection("Core", &section);
     ConfigSetParameter(section, "R4300Emulator", M64TYPE_INT, &ival);
-        
-    // Load ROM
-    romData = [NSData dataWithContentsOfMappedFile:path];
-    
-    if (CoreDoCommand(M64CMD_ROM_OPEN, [romData length], (void *)[romData bytes]) != M64ERR_SUCCESS)
+
+    if (CoreDoCommand(M64CMD_ROM_OPEN, (int)[romData length], (void *)[romData bytes]) != M64ERR_SUCCESS)
         return NO;
-    
+
+    return YES;
+}
+
+- (void)setupEmulation
+{
+    NSBundle *coreBundle = [NSBundle bundleForClass:[self class]];
+
     m64p_dynlib_handle core_handle = dlopen_myself();
-    
+
     void (^LoadPlugin)(m64p_plugin_type, NSString *) = ^(m64p_plugin_type pluginType, NSString *pluginName){
         m64p_dynlib_handle rsp_handle;
         NSString *rspPath = [[coreBundle builtInPlugInsPath] stringByAppendingPathComponent:pluginName];
-        
+
         rsp_handle = dlopen([rspPath fileSystemRepresentation], RTLD_NOW);
         ptr_PluginStartup rsp_start = osal_dynlib_getproc(rsp_handle, "PluginStartup");
         rsp_start(core_handle, (__bridge void *)self, MupenDebugCallback);
+        
         CoreAttachPlugin(pluginType, rsp_handle);
     };
-    
+
     // Load Video
     LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-rice.so");
     //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-glide64mk2.so");
-    
+
     ptr_OE_ForceUpdateWindowSize = dlsym(RTLD_DEFAULT, "_OE_ForceUpdateWindowSize");
-    
+
     // Load Audio
     audio.aiDacrateChanged = MupenAudioSampleRateChanged;
     audio.aiLenChanged = MupenAudioLenChanged;
     audio.initiateAudio = MupenOpenAudio;
     audio.setSpeedFactor = MupenSetAudioSpeed;
     plugin_start(M64PLUGIN_AUDIO);
-    
+
     // Load Input
     input.getKeys = MupenGetKeys;
     input.initiateControllers = MupenInitiateControllers;
     plugin_start(M64PLUGIN_INPUT);
+
     // Load RSP
     LoadPlugin(M64PLUGIN_RSP, @"mupen64plus-rsp-hle.so");
-    
-    return YES;
 }
 
 - (void)startEmulation
@@ -512,7 +519,7 @@ static void MupenSetAudioSpeed(int percent)
 - (void) tryToResizeVideoTo:(OEIntSize)size
 {
     VidExt_SetVideoMode(size.width, size.height, 32, M64VIDEO_WINDOWED, 0);
-    ptr_OE_ForceUpdateWindowSize(size.width, size.height);
+    if (ptr_OE_ForceUpdateWindowSize) ptr_OE_ForceUpdateWindowSize(size.width, size.height);
 }
 
 - (BOOL)rendersToOpenGL

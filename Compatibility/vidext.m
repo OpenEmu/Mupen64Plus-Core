@@ -105,6 +105,12 @@ m64p_error OverrideVideoFunctions(m64p_video_extension_functions *VideoFunctionS
     return M64ERR_SUCCESS;
 }
 
+EXPORT m64p_error CALL VidExt_ResizeWindow(int width, int height)
+{
+    DLog(@"Mupen wants to resize to %d x %d", width, height);
+    return M64ERR_SUCCESS;
+}
+
 int VidExt_InFullscreenMode(void)
 {
     return 0;

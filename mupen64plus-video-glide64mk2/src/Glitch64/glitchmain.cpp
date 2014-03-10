@@ -1561,7 +1561,7 @@ grRenderBuffer( GrBuffer_t buffer )
 #endif
       render_to_texture = 0;
     }
-    glDrawBuffer(GL_BACK);
+//    glDrawBuffer(GL_BACK);
     break;
   case 6: // RENDER TO TEXTURE
     if(!render_to_texture)
