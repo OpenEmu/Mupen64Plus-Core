@@ -190,6 +190,10 @@
 		94D58CA316BE33EC0093CD72 /* geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C6D16BE33EC0093CD72 /* geometry.cpp */; };
 		94D58CA516BE33EC0093CD72 /* textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C7816BE33EC0093CD72 /* textures.cpp */; };
 		94D58CAC16BE5DAD0093CD72 /* Glide64mk2.ini in Resources */ = {isa = PBXBuildFile; fileRef = 94D58BE716BE33EC0093CD72 /* Glide64mk2.ini */; };
+		94E1B8F918D0F61F003ACCFF /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
+		94E1B93E18D0F6A9003ACCFF /* osal_dynamiclib_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 94E1B90518D0F6A9003ACCFF /* osal_dynamiclib_unix.c */; };
+		94E1B94118D0F6A9003ACCFF /* rsp.c in Sources */ = {isa = PBXBuildFile; fileRef = 94E1B90B18D0F6A9003ACCFF /* rsp.c */; };
+		94E1B94418D0F707003ACCFF /* mupen64plus-rsp-cxd4.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94E1B8FD18D0F61F003ACCFF /* mupen64plus-rsp-cxd4.so */; };
 		C62301A7171227AE00576081 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
 		C62301A8171227B300576081 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
 		C62301A9171227B900576081 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
@@ -232,6 +236,13 @@
 			remoteGlobalIDString = 8D5B49AC048680CD000E48DA;
 			remoteInfo = Mupen64Plus;
 		};
+		94E1B94218D0F6F7003ACCFF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 94E1B8EA18D0F61F003ACCFF;
+			remoteInfo = "mupen64plus-rsp-cxd4";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -241,6 +252,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
+				94E1B94418D0F707003ACCFF /* mupen64plus-rsp-cxd4.so in CopyFiles */,
 				942130D71793E90800E57482 /* mupen64plus-video-glide64mk2.so in CopyFiles */,
 				3DC21457166C6BB90014251E /* mupen64plus-video-rice.so in CopyFiles */,
 				3DCABDC2166C4CB2002F2066 /* mupen64plus-rsp-hle.so in CopyFiles */,
@@ -644,6 +656,67 @@
 		94D58C7816BE33EC0093CD72 /* textures.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = textures.cpp; sourceTree = "<group>"; };
 		94D58C7916BE33EC0093CD72 /* video_api_export.ver */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = video_api_export.ver; sourceTree = "<group>"; };
 		94D58C7A16BE33EC0093CD72 /* todo!.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "todo!.txt"; sourceTree = "<group>"; };
+		94E1B8FD18D0F61F003ACCFF /* mupen64plus-rsp-cxd4.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-rsp-cxd4.so"; sourceTree = BUILT_PRODUCTS_DIR; };
+		94E1B8FF18D0F6A9003ACCFF /* bench.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bench.h; sourceTree = "<group>"; };
+		94E1B90018D0F6A9003ACCFF /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		94E1B90118D0F6A9003ACCFF /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
+		94E1B90218D0F6A9003ACCFF /* execute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = execute.h; sourceTree = "<group>"; };
+		94E1B90318D0F6A9003ACCFF /* matrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = matrix.h; sourceTree = "<group>"; };
+		94E1B90418D0F6A9003ACCFF /* osal_dynamiclib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_dynamiclib.h; sourceTree = "<group>"; };
+		94E1B90518D0F6A9003ACCFF /* osal_dynamiclib_unix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = osal_dynamiclib_unix.c; sourceTree = "<group>"; };
+		94E1B90618D0F6A9003ACCFF /* osal_dynamiclib_win32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = osal_dynamiclib_win32.c; sourceTree = "<group>"; };
+		94E1B90918D0F6A9003ACCFF /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		94E1B90A18D0F6A9003ACCFF /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		94E1B90B18D0F6A9003ACCFF /* rsp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = rsp.c; sourceTree = "<group>"; };
+		94E1B90C18D0F6A9003ACCFF /* rsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rsp.h; sourceTree = "<group>"; };
+		94E1B90D18D0F6A9003ACCFF /* Rsp_#1.1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Rsp_#1.1.h"; sourceTree = "<group>"; };
+		94E1B90E18D0F6A9003ACCFF /* su.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = su.h; sourceTree = "<group>"; };
+		94E1B91018D0F6A9003ACCFF /* cf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cf.h; sourceTree = "<group>"; };
+		94E1B91118D0F6A9003ACCFF /* clamp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = clamp.h; sourceTree = "<group>"; };
+		94E1B91218D0F6A9003ACCFF /* divrom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = divrom.h; sourceTree = "<group>"; };
+		94E1B91318D0F6A9003ACCFF /* shuffle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shuffle.h; sourceTree = "<group>"; };
+		94E1B91418D0F6A9003ACCFF /* vabs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vabs.h; sourceTree = "<group>"; };
+		94E1B91518D0F6A9003ACCFF /* vadd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vadd.h; sourceTree = "<group>"; };
+		94E1B91618D0F6A9003ACCFF /* vaddc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vaddc.h; sourceTree = "<group>"; };
+		94E1B91718D0F6A9003ACCFF /* vand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vand.h; sourceTree = "<group>"; };
+		94E1B91818D0F6A9003ACCFF /* vch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vch.h; sourceTree = "<group>"; };
+		94E1B91918D0F6A9003ACCFF /* vcl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vcl.h; sourceTree = "<group>"; };
+		94E1B91A18D0F6A9003ACCFF /* vcr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vcr.h; sourceTree = "<group>"; };
+		94E1B91B18D0F6A9003ACCFF /* veq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = veq.h; sourceTree = "<group>"; };
+		94E1B91C18D0F6A9003ACCFF /* vge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vge.h; sourceTree = "<group>"; };
+		94E1B91D18D0F6A9003ACCFF /* vlt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vlt.h; sourceTree = "<group>"; };
+		94E1B91E18D0F6A9003ACCFF /* vmacf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmacf.h; sourceTree = "<group>"; };
+		94E1B91F18D0F6A9003ACCFF /* vmacq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmacq.h; sourceTree = "<group>"; };
+		94E1B92018D0F6A9003ACCFF /* vmacu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmacu.h; sourceTree = "<group>"; };
+		94E1B92118D0F6A9003ACCFF /* vmadh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmadh.h; sourceTree = "<group>"; };
+		94E1B92218D0F6A9003ACCFF /* vmadl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmadl.h; sourceTree = "<group>"; };
+		94E1B92318D0F6A9003ACCFF /* vmadm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmadm.h; sourceTree = "<group>"; };
+		94E1B92418D0F6A9003ACCFF /* vmadn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmadn.h; sourceTree = "<group>"; };
+		94E1B92518D0F6A9003ACCFF /* vmov.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmov.h; sourceTree = "<group>"; };
+		94E1B92618D0F6A9003ACCFF /* vmrg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmrg.h; sourceTree = "<group>"; };
+		94E1B92718D0F6A9003ACCFF /* vmudh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmudh.h; sourceTree = "<group>"; };
+		94E1B92818D0F6A9003ACCFF /* vmudl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmudl.h; sourceTree = "<group>"; };
+		94E1B92918D0F6A9003ACCFF /* vmudm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmudm.h; sourceTree = "<group>"; };
+		94E1B92A18D0F6A9003ACCFF /* vmudn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmudn.h; sourceTree = "<group>"; };
+		94E1B92B18D0F6A9003ACCFF /* vmulf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmulf.h; sourceTree = "<group>"; };
+		94E1B92C18D0F6A9003ACCFF /* vmulu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vmulu.h; sourceTree = "<group>"; };
+		94E1B92D18D0F6A9003ACCFF /* vnand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vnand.h; sourceTree = "<group>"; };
+		94E1B92E18D0F6A9003ACCFF /* vne.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vne.h; sourceTree = "<group>"; };
+		94E1B92F18D0F6A9003ACCFF /* vnop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vnop.h; sourceTree = "<group>"; };
+		94E1B93018D0F6A9003ACCFF /* vnor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vnor.h; sourceTree = "<group>"; };
+		94E1B93118D0F6A9003ACCFF /* vnxor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vnxor.h; sourceTree = "<group>"; };
+		94E1B93218D0F6A9003ACCFF /* vor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vor.h; sourceTree = "<group>"; };
+		94E1B93318D0F6A9003ACCFF /* vrcp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vrcp.h; sourceTree = "<group>"; };
+		94E1B93418D0F6A9003ACCFF /* vrcph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vrcph.h; sourceTree = "<group>"; };
+		94E1B93518D0F6A9003ACCFF /* vrcpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vrcpl.h; sourceTree = "<group>"; };
+		94E1B93618D0F6A9003ACCFF /* vrsq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vrsq.h; sourceTree = "<group>"; };
+		94E1B93718D0F6A9003ACCFF /* vrsqh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vrsqh.h; sourceTree = "<group>"; };
+		94E1B93818D0F6A9003ACCFF /* vrsql.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vrsql.h; sourceTree = "<group>"; };
+		94E1B93918D0F6A9003ACCFF /* vsaw.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vsaw.h; sourceTree = "<group>"; };
+		94E1B93A18D0F6A9003ACCFF /* vsub.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vsub.h; sourceTree = "<group>"; };
+		94E1B93B18D0F6A9003ACCFF /* vsubc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vsubc.h; sourceTree = "<group>"; };
+		94E1B93C18D0F6A9003ACCFF /* vu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vu.h; sourceTree = "<group>"; };
+		94E1B93D18D0F6A9003ACCFF /* vxor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vxor.h; sourceTree = "<group>"; };
 		94E6B83E166C2A0A00082F27 /* INSTALL */ = {isa = PBXFileReference; lastKnownFileType = text; path = INSTALL; sourceTree = "<group>"; };
 		94E6B83F166C2A0A00082F27 /* LICENSES */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSES; sourceTree = "<group>"; };
 		94E6B842166C2A0A00082F27 /* mupen64plus-audio-sdl.vcproj */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "mupen64plus-audio-sdl.vcproj"; sourceTree = "<group>"; };
@@ -853,6 +926,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		94E1B8F818D0F61F003ACCFF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				94E1B8F918D0F61F003ACCFF /* OpenEmuBase.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -927,6 +1008,7 @@
 				3DCABDB3166C4ACB002F2066 /* mupen64plus-rsp-hle.so */,
 				3DCABE0E166C6A20002F2066 /* mupen64plus-video-rice.so */,
 				94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */,
+				94E1B8FD18D0F61F003ACCFF /* mupen64plus-rsp-cxd4.so */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -937,6 +1019,7 @@
 				3D2090581182D92800BEAA42 /* Compatibility */,
 				94E6B83D166C2A0A00082F27 /* mupen64plus-audio-sdl */,
 				94E6B84F166C2A0A00082F27 /* mupen64plus-input-sdl */,
+				94E1B8FE18D0F6A9003ACCFF /* mupen64plus-rsp-cxd4 */,
 				94E6B869166C2A0A00082F27 /* mupen64plus-rsp-hle */,
 				94D58BE516BE33EC0093CD72 /* mupen64plus-video-glide64mk2 */,
 				94E6B87C166C2A0A00082F27 /* mupen64plus-video-rice */,
@@ -1626,6 +1709,97 @@
 			path = inc;
 			sourceTree = "<group>";
 		};
+		94E1B8FE18D0F6A9003ACCFF /* mupen64plus-rsp-cxd4 */ = {
+			isa = PBXGroup;
+			children = (
+				94E1B8FF18D0F6A9003ACCFF /* bench.h */,
+				94E1B90018D0F6A9003ACCFF /* config.h */,
+				94E1B90118D0F6A9003ACCFF /* COPYING */,
+				94E1B90218D0F6A9003ACCFF /* execute.h */,
+				94E1B90318D0F6A9003ACCFF /* matrix.h */,
+				94E1B90418D0F6A9003ACCFF /* osal_dynamiclib.h */,
+				94E1B90518D0F6A9003ACCFF /* osal_dynamiclib_unix.c */,
+				94E1B90618D0F6A9003ACCFF /* osal_dynamiclib_win32.c */,
+				94E1B90718D0F6A9003ACCFF /* projects */,
+				94E1B90A18D0F6A9003ACCFF /* README.md */,
+				94E1B90B18D0F6A9003ACCFF /* rsp.c */,
+				94E1B90C18D0F6A9003ACCFF /* rsp.h */,
+				94E1B90D18D0F6A9003ACCFF /* Rsp_#1.1.h */,
+				94E1B90E18D0F6A9003ACCFF /* su.h */,
+				94E1B90F18D0F6A9003ACCFF /* vu */,
+			);
+			path = "mupen64plus-rsp-cxd4";
+			sourceTree = "<group>";
+		};
+		94E1B90718D0F6A9003ACCFF /* projects */ = {
+			isa = PBXGroup;
+			children = (
+				94E1B90818D0F6A9003ACCFF /* unix */,
+			);
+			path = projects;
+			sourceTree = "<group>";
+		};
+		94E1B90818D0F6A9003ACCFF /* unix */ = {
+			isa = PBXGroup;
+			children = (
+				94E1B90918D0F6A9003ACCFF /* Makefile */,
+			);
+			path = unix;
+			sourceTree = "<group>";
+		};
+		94E1B90F18D0F6A9003ACCFF /* vu */ = {
+			isa = PBXGroup;
+			children = (
+				94E1B91018D0F6A9003ACCFF /* cf.h */,
+				94E1B91118D0F6A9003ACCFF /* clamp.h */,
+				94E1B91218D0F6A9003ACCFF /* divrom.h */,
+				94E1B91318D0F6A9003ACCFF /* shuffle.h */,
+				94E1B91418D0F6A9003ACCFF /* vabs.h */,
+				94E1B91518D0F6A9003ACCFF /* vadd.h */,
+				94E1B91618D0F6A9003ACCFF /* vaddc.h */,
+				94E1B91718D0F6A9003ACCFF /* vand.h */,
+				94E1B91818D0F6A9003ACCFF /* vch.h */,
+				94E1B91918D0F6A9003ACCFF /* vcl.h */,
+				94E1B91A18D0F6A9003ACCFF /* vcr.h */,
+				94E1B91B18D0F6A9003ACCFF /* veq.h */,
+				94E1B91C18D0F6A9003ACCFF /* vge.h */,
+				94E1B91D18D0F6A9003ACCFF /* vlt.h */,
+				94E1B91E18D0F6A9003ACCFF /* vmacf.h */,
+				94E1B91F18D0F6A9003ACCFF /* vmacq.h */,
+				94E1B92018D0F6A9003ACCFF /* vmacu.h */,
+				94E1B92118D0F6A9003ACCFF /* vmadh.h */,
+				94E1B92218D0F6A9003ACCFF /* vmadl.h */,
+				94E1B92318D0F6A9003ACCFF /* vmadm.h */,
+				94E1B92418D0F6A9003ACCFF /* vmadn.h */,
+				94E1B92518D0F6A9003ACCFF /* vmov.h */,
+				94E1B92618D0F6A9003ACCFF /* vmrg.h */,
+				94E1B92718D0F6A9003ACCFF /* vmudh.h */,
+				94E1B92818D0F6A9003ACCFF /* vmudl.h */,
+				94E1B92918D0F6A9003ACCFF /* vmudm.h */,
+				94E1B92A18D0F6A9003ACCFF /* vmudn.h */,
+				94E1B92B18D0F6A9003ACCFF /* vmulf.h */,
+				94E1B92C18D0F6A9003ACCFF /* vmulu.h */,
+				94E1B92D18D0F6A9003ACCFF /* vnand.h */,
+				94E1B92E18D0F6A9003ACCFF /* vne.h */,
+				94E1B92F18D0F6A9003ACCFF /* vnop.h */,
+				94E1B93018D0F6A9003ACCFF /* vnor.h */,
+				94E1B93118D0F6A9003ACCFF /* vnxor.h */,
+				94E1B93218D0F6A9003ACCFF /* vor.h */,
+				94E1B93318D0F6A9003ACCFF /* vrcp.h */,
+				94E1B93418D0F6A9003ACCFF /* vrcph.h */,
+				94E1B93518D0F6A9003ACCFF /* vrcpl.h */,
+				94E1B93618D0F6A9003ACCFF /* vrsq.h */,
+				94E1B93718D0F6A9003ACCFF /* vrsqh.h */,
+				94E1B93818D0F6A9003ACCFF /* vrsql.h */,
+				94E1B93918D0F6A9003ACCFF /* vsaw.h */,
+				94E1B93A18D0F6A9003ACCFF /* vsub.h */,
+				94E1B93B18D0F6A9003ACCFF /* vsubc.h */,
+				94E1B93C18D0F6A9003ACCFF /* vu.h */,
+				94E1B93D18D0F6A9003ACCFF /* vxor.h */,
+			);
+			path = vu;
+			sourceTree = "<group>";
+		};
 		94E6B83D166C2A0A00082F27 /* mupen64plus-audio-sdl */ = {
 			isa = PBXGroup;
 			children = (
@@ -2036,6 +2210,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				94E1B94318D0F6F7003ACCFF /* PBXTargetDependency */,
 				942130D61793E8FC00E57482 /* PBXTargetDependency */,
 				3DC21459166C6BE10014251E /* PBXTargetDependency */,
 				3DCABDC4166C4D86002F2066 /* PBXTargetDependency */,
@@ -2062,6 +2237,22 @@
 			productReference = 94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
+		94E1B8EA18D0F61F003ACCFF /* mupen64plus-rsp-cxd4 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 94E1B8FA18D0F61F003ACCFF /* Build configuration list for PBXNativeTarget "mupen64plus-rsp-cxd4" */;
+			buildPhases = (
+				94E1B8EB18D0F61F003ACCFF /* Sources */,
+				94E1B8F818D0F61F003ACCFF /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mupen64plus-rsp-cxd4";
+			productName = "mupen64plus-rsp-hle";
+			productReference = 94E1B8FD18D0F61F003ACCFF /* mupen64plus-rsp-cxd4.so */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2085,6 +2276,7 @@
 				8D5B49AC048680CD000E48DA /* Mupen64Plus */,
 				3D2091111183B8E900BEAA42 /* Build & Install Mupen64Plus */,
 				9449518214D8F95F00FC80E7 /* Distribution */,
+				94E1B8EA18D0F61F003ACCFF /* mupen64plus-rsp-cxd4 */,
 				3DCABDB2166C4ACB002F2066 /* mupen64plus-rsp-hle */,
 				3DCABE0D166C6A20002F2066 /* mupen64plus-video-rice */,
 				94D58BAD16BE327A0093CD72 /* mupen64plus-video-glide64mk2 */,
@@ -2303,6 +2495,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		94E1B8EB18D0F61F003ACCFF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				94E1B93E18D0F6A9003ACCFF /* osal_dynamiclib_unix.c in Sources */,
+				94E1B94118D0F6A9003ACCFF /* rsp.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2330,6 +2531,11 @@
 			isa = PBXTargetDependency;
 			target = 8D5B49AC048680CD000E48DA /* Mupen64Plus */;
 			targetProxy = 9449518414D8F95F00FC80E7 /* PBXContainerItemProxy */;
+		};
+		94E1B94318D0F6F7003ACCFF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 94E1B8EA18D0F61F003ACCFF /* mupen64plus-rsp-cxd4 */;
+			targetProxy = 94E1B94218D0F6F7003ACCFF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2744,6 +2950,84 @@
 			};
 			name = Release;
 		};
+		94E1B8FB18D0F61F003ACCFF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_EXTENSION = so;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				INSTALL_PATH = "";
+				LD_DYLIB_INSTALL_NAME = "";
+				MACH_O_TYPE = mh_bundle;
+				OTHER_CFLAGS = (
+					"-ffast-math",
+					"-fno-strict-aliasing",
+					"-fvisibility=hidden",
+					"-DGCC",
+					"-pthread",
+					"-mmmx",
+					"-mssse3",
+					"-fPIC",
+					"-D__unix__",
+					"-DM64P_PLUGIN_API",
+					"-DARCH_MIN_SSSE3",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility-inlines-hidden",
+				);
+				PRIVATE_HEADERS_FOLDER_PATH = "";
+				PRODUCT_NAME = "mupen64plus-rsp-cxd4";
+				PUBLIC_HEADERS_FOLDER_PATH = "";
+			};
+			name = Debug;
+		};
+		94E1B8FC18D0F61F003ACCFF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_EXTENSION = so;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				INSTALL_PATH = "";
+				LD_DYLIB_INSTALL_NAME = "";
+				MACH_O_TYPE = mh_bundle;
+				OTHER_CFLAGS = (
+					"-ffast-math",
+					"-fno-strict-aliasing",
+					"-fvisibility=hidden",
+					"-DGCC",
+					"-pthread",
+					"-mmmx",
+					"-mssse3",
+					"-fPIC",
+					"-D__unix__",
+					"-DM64P_PLUGIN_API",
+					"-DARCH_MIN_SSSE3",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility-inlines-hidden",
+				);
+				PRIVATE_HEADERS_FOLDER_PATH = "";
+				PRODUCT_NAME = "mupen64plus-rsp-cxd4";
+				PUBLIC_HEADERS_FOLDER_PATH = "";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2806,6 +3090,15 @@
 			buildConfigurations = (
 				94D58BE216BE327A0093CD72 /* Debug */,
 				94D58BE316BE327A0093CD72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		94E1B8FA18D0F61F003ACCFF /* Build configuration list for PBXNativeTarget "mupen64plus-rsp-cxd4" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94E1B8FB18D0F61F003ACCFF /* Debug */,
+				94E1B8FC18D0F61F003ACCFF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -352,7 +352,8 @@ static void MupenSetAudioSpeed(int percent)
     plugin_start(M64PLUGIN_INPUT);
 
     // Load RSP
-    LoadPlugin(M64PLUGIN_RSP, @"mupen64plus-rsp-hle.so");
+    //LoadPlugin(M64PLUGIN_RSP, @"mupen64plus-rsp-hle.so");
+    LoadPlugin(M64PLUGIN_RSP, @"mupen64plus-rsp-cxd4.so");
 }
 
 - (void)startEmulation
