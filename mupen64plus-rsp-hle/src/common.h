@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *   Mupen64plus-rsp-hle - plugin.h                                        *
+ *   Mupen64plus-rsp-hle - common.h                                        *
  *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
  *   Copyright (C) 2014 Bobby Smiles                                       *
  *                                                                         *
@@ -19,15 +19,15 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef PLUGIN_H
-#define PLUGIN_H
+#ifndef COMMON_H
+#define COMMON_H
 
-#include "m64p_types.h"
-#include "m64p_plugin.h"
-
-extern RSP_INFO g_RspInfo;
-
-void DebugMessage(int level, const char *message, ...);
+/* macro for unused variable warning suppression */
+#ifdef __GNUC__
+#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+#  define UNUSED(x) UNUSED_ ## x
+#endif
 
 #endif
 

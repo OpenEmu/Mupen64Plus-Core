@@ -105,7 +105,6 @@
 		3DC2145F166C6D7F0014251E /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC2145C166C6D7F0014251E /* libpng.a */; };
 		3DC21460166C6F170014251E /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E9D1182551500BEAA42 /* libz.dylib */; };
 		3DCABDBB166C4B89002F2066 /* jpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B875166C2A0A00082F27 /* jpeg.c */; };
-		3DCABDBC166C4B89002F2066 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B876166C2A0A00082F27 /* main.c */; };
 		3DCABDC2166C4CB2002F2066 /* mupen64plus-rsp-hle.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DCABDB3166C4ACB002F2066 /* mupen64plus-rsp-hle.so */; };
 		3DCABDC8166C5BE2002F2066 /* RiceVideoLinux.ini in Resources */ = {isa = PBXBuildFile; fileRef = 94E6B87E166C2A0A00082F27 /* RiceVideoLinux.ini */; };
 		3DCABE12166C6AB6002F2066 /* Blender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B889166C2A0A00082F27 /* Blender.cpp */; };
@@ -159,6 +158,7 @@
 		942130D71793E90800E57482 /* mupen64plus-video-glide64mk2.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */; };
 		942130D91793E96600E57482 /* glitchmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 942130D81793E96600E57482 /* glitchmain.cpp */; };
 		944951E414D912BE00FC80E7 /* n64_cic_nus_6105.c in Sources */ = {isa = PBXBuildFile; fileRef = 944951E214D912BE00FC80E7 /* n64_cic_nus_6105.c */; };
+		94A5322118E273DD00AE11B3 /* hle.c in Sources */ = {isa = PBXBuildFile; fileRef = 94A5322018E273DD00AE11B3 /* hle.c */; };
 		94B5C87F18CAC2FB0088DA62 /* alist_audio.c in Sources */ = {isa = PBXBuildFile; fileRef = 94B5C87118CAC2FB0088DA62 /* alist_audio.c */; };
 		94B5C88018CAC2FB0088DA62 /* alist_naudio.c in Sources */ = {isa = PBXBuildFile; fileRef = 94B5C87218CAC2FB0088DA62 /* alist_naudio.c */; };
 		94B5C88118CAC2FB0088DA62 /* alist_nead.c in Sources */ = {isa = PBXBuildFile; fileRef = 94B5C87318CAC2FB0088DA62 /* alist_nead.c */; };
@@ -505,18 +505,21 @@
 		8D5B49B6048680CD000E48DA /* Mupen64Plus.oecoreplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Mupen64Plus.oecoreplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		942130C61793D30000E57482 /* osal_opengl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_opengl.h; sourceTree = "<group>"; };
-		942130CA1793DD8F00E57482 /* alist_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = alist_internal.h; sourceTree = "<group>"; };
 		942130CB1793DD8F00E57482 /* alist.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = alist.c; sourceTree = "<group>"; };
 		942130CC1793DD8F00E57482 /* alist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = alist.h; sourceTree = "<group>"; };
 		942130CD1793DD8F00E57482 /* cicx105.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cicx105.c; sourceTree = "<group>"; };
-		942130CE1793DD8F00E57482 /* cicx105.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cicx105.h; sourceTree = "<group>"; };
-		942130CF1793DD8F00E57482 /* jpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jpeg.h; sourceTree = "<group>"; };
 		942130D81793E96600E57482 /* glitchmain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glitchmain.cpp; sourceTree = "<group>"; };
 		942597D0151470840074E3A3 /* OpenEmuBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenEmuBase.framework; path = ../OpenEmu/build/Release/OpenEmuBase.framework; sourceTree = "<group>"; };
 		9449518E14D8FE6100FC80E7 /* OEN64SystemResponderClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OEN64SystemResponderClient.h; path = ../OpenEmu/N64/OEN64SystemResponderClient.h; sourceTree = "<group>"; };
 		944951E214D912BE00FC80E7 /* n64_cic_nus_6105.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = n64_cic_nus_6105.c; sourceTree = "<group>"; };
 		944951E314D912BE00FC80E7 /* n64_cic_nus_6105.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = n64_cic_nus_6105.h; sourceTree = "<group>"; };
 		944951E514D912E500FC80E7 /* fpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fpu.h; sourceTree = "<group>"; };
+		94A5321D18E2737600AE11B3 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
+		94A5321E18E273C800AE11B3 /* hle_external.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hle_external.h; sourceTree = "<group>"; };
+		94A5321F18E273C800AE11B3 /* hle_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hle_internal.h; sourceTree = "<group>"; };
+		94A5322018E273DD00AE11B3 /* hle.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hle.c; sourceTree = "<group>"; };
+		94A5322218E273EB00AE11B3 /* hle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hle.h; sourceTree = "<group>"; };
+		94A5322318E2740800AE11B3 /* ucodes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ucodes.h; sourceTree = "<group>"; };
 		94B5C86918CABB2C0088DA62 /* s2tc_algorithm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = s2tc_algorithm.cpp; sourceTree = "<group>"; };
 		94B5C86A18CABB2C0088DA62 /* s2tc_algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = s2tc_algorithm.h; sourceTree = "<group>"; };
 		94B5C86B18CABB2C0088DA62 /* s2tc_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = s2tc_common.h; sourceTree = "<group>"; };
@@ -529,14 +532,11 @@
 		94B5C87418CAC2FB0088DA62 /* arithmetics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arithmetics.h; sourceTree = "<group>"; };
 		94B5C87518CAC2FB0088DA62 /* audio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = audio.c; sourceTree = "<group>"; };
 		94B5C87618CAC2FB0088DA62 /* audio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = audio.h; sourceTree = "<group>"; };
-		94B5C87718CAC2FB0088DA62 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		94B5C87818CAC2FB0088DA62 /* memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = memory.c; sourceTree = "<group>"; };
 		94B5C87918CAC2FB0088DA62 /* memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = memory.h; sourceTree = "<group>"; };
 		94B5C87A18CAC2FB0088DA62 /* mp3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mp3.c; sourceTree = "<group>"; };
 		94B5C87B18CAC2FB0088DA62 /* musyx.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = musyx.c; sourceTree = "<group>"; };
-		94B5C87C18CAC2FB0088DA62 /* musyx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = musyx.h; sourceTree = "<group>"; };
 		94B5C87D18CAC2FB0088DA62 /* plugin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = plugin.c; sourceTree = "<group>"; };
-		94B5C87E18CAC2FB0088DA62 /* plugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = plugin.h; sourceTree = "<group>"; };
 		94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-video-glide64mk2.so"; sourceTree = BUILT_PRODUCTS_DIR; };
 		94D58BE716BE33EC0093CD72 /* Glide64mk2.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Glide64mk2.ini; sourceTree = "<group>"; };
 		94D58BEA16BE33EC0093CD72 /* mupen64plus-video-glide64mk2.vcxproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "mupen64plus-video-glide64mk2.vcxproj"; sourceTree = "<group>"; };
@@ -755,7 +755,6 @@
 		94E6B870166C2A0A00082F27 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		94E6B871166C2A0A00082F27 /* RELEASE */ = {isa = PBXFileReference; lastKnownFileType = text; path = RELEASE; sourceTree = "<group>"; };
 		94E6B875166C2A0A00082F27 /* jpeg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = jpeg.c; sourceTree = "<group>"; };
-		94E6B876166C2A0A00082F27 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		94E6B877166C2A0A00082F27 /* rsp_api_export.ver */ = {isa = PBXFileReference; lastKnownFileType = text; path = rsp_api_export.ver; sourceTree = "<group>"; };
 		94E6B87E166C2A0A00082F27 /* RiceVideoLinux.ini */ = {isa = PBXFileReference; lastKnownFileType = text; path = RiceVideoLinux.ini; sourceTree = "<group>"; };
 		94E6B87F166C2A0A00082F27 /* INSTALL */ = {isa = PBXFileReference; lastKnownFileType = text; path = INSTALL; sourceTree = "<group>"; };
@@ -1961,26 +1960,25 @@
 				942130CB1793DD8F00E57482 /* alist.c */,
 				942130CC1793DD8F00E57482 /* alist.h */,
 				94B5C87118CAC2FB0088DA62 /* alist_audio.c */,
-				942130CA1793DD8F00E57482 /* alist_internal.h */,
 				94B5C87218CAC2FB0088DA62 /* alist_naudio.c */,
 				94B5C87318CAC2FB0088DA62 /* alist_nead.c */,
 				94B5C87418CAC2FB0088DA62 /* arithmetics.h */,
 				94B5C87518CAC2FB0088DA62 /* audio.c */,
 				94B5C87618CAC2FB0088DA62 /* audio.h */,
 				942130CD1793DD8F00E57482 /* cicx105.c */,
-				942130CE1793DD8F00E57482 /* cicx105.h */,
+				94A5321D18E2737600AE11B3 /* common.h */,
+				94A5321E18E273C800AE11B3 /* hle_external.h */,
+				94A5321F18E273C800AE11B3 /* hle_internal.h */,
+				94A5322018E273DD00AE11B3 /* hle.c */,
+				94A5322218E273EB00AE11B3 /* hle.h */,
 				94E6B875166C2A0A00082F27 /* jpeg.c */,
-				942130CF1793DD8F00E57482 /* jpeg.h */,
-				94E6B876166C2A0A00082F27 /* main.c */,
-				94B5C87718CAC2FB0088DA62 /* main.h */,
 				94B5C87818CAC2FB0088DA62 /* memory.c */,
 				94B5C87918CAC2FB0088DA62 /* memory.h */,
 				94B5C87A18CAC2FB0088DA62 /* mp3.c */,
 				94B5C87B18CAC2FB0088DA62 /* musyx.c */,
-				94B5C87C18CAC2FB0088DA62 /* musyx.h */,
 				94B5C87D18CAC2FB0088DA62 /* plugin.c */,
-				94B5C87E18CAC2FB0088DA62 /* plugin.h */,
 				94E6B877166C2A0A00082F27 /* rsp_api_export.ver */,
+				94A5322318E2740800AE11B3 /* ucodes.h */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -2341,13 +2339,13 @@
 				94B5C88618CAC2FB0088DA62 /* plugin.c in Sources */,
 				94B5C88418CAC2FB0088DA62 /* mp3.c in Sources */,
 				94B5C88118CAC2FB0088DA62 /* alist_nead.c in Sources */,
+				94A5322118E273DD00AE11B3 /* hle.c in Sources */,
 				94B5C87F18CAC2FB0088DA62 /* alist_audio.c in Sources */,
 				94B5C88218CAC2FB0088DA62 /* audio.c in Sources */,
 				94B5C88018CAC2FB0088DA62 /* alist_naudio.c in Sources */,
 				94B5C88518CAC2FB0088DA62 /* musyx.c in Sources */,
 				94B5C88318CAC2FB0088DA62 /* memory.c in Sources */,
 				3DCABDBB166C4B89002F2066 /* jpeg.c in Sources */,
-				3DCABDBC166C4B89002F2066 /* main.c in Sources */,
 				942130D01793DD8F00E57482 /* alist.c in Sources */,
 				942130D11793DD8F00E57482 /* cicx105.c in Sources */,
 			);

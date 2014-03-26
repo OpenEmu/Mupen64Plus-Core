@@ -238,8 +238,8 @@ SOURCE = \
 	$(SRCDIR)/alist_nead.c \
 	$(SRCDIR)/audio.c \
 	$(SRCDIR)/cicx105.c \
+	$(SRCDIR)/hle.c \
 	$(SRCDIR)/jpeg.c \
-	$(SRCDIR)/main.c \
 	$(SRCDIR)/memory.c \
 	$(SRCDIR)/mp3.c \
 	$(SRCDIR)/musyx.c \

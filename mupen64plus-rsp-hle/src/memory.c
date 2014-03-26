@@ -24,100 +24,51 @@
 #include "memory.h"
 
 /* Global functions */
-void dmem_load_u8 (uint8_t*  dst, uint16_t address, size_t count)
+void load_u8(uint8_t* dst, const unsigned char* buffer, unsigned address, size_t count)
 {
     while (count != 0) {
-        *(dst++) = *dmem_u8(address);
+        *(dst++) = *u8(buffer, address);
         address += 1;
         --count;
     }
 }
 
-void dmem_load_u16(uint16_t* dst, uint16_t address, size_t count)
+void load_u16(uint16_t* dst, const unsigned char* buffer, unsigned address, size_t count)
 {
     while (count != 0) {
-        *(dst++) = *dmem_u16(address);
+        *(dst++) = *u16(buffer, address);
         address += 2;
         --count;
     }
 }
 
-void dmem_load_u32(uint32_t* dst, uint16_t address, size_t count)
+void load_u32(uint32_t* dst, const unsigned char* buffer, unsigned address, size_t count)
 {
     /* Optimization for uint32_t */
-    memcpy(dst, dmem_u32(address), count * sizeof(uint32_t));
+    memcpy(dst, u32(buffer, address), count * sizeof(uint32_t));
 }
 
-void dmem_store_u8 (const uint8_t*  src, uint16_t address, size_t count)
+void store_u8(unsigned char* buffer, unsigned address, const uint8_t* src, size_t count)
 {
     while (count != 0) {
-        *dmem_u8(address) = *(src++);
+        *u8(buffer, address) = *(src++);
         address += 1;
         --count;
     }
 }
 
-void dmem_store_u16(const uint16_t* src, uint16_t address, size_t count)
+void store_u16(unsigned char* buffer, unsigned address, const uint16_t* src, size_t count)
 {
     while (count != 0) {
-        *dmem_u16(address) = *(src++);
+        *u16(buffer, address) = *(src++);
         address += 2;
         --count;
     }
 }
 
-void dmem_store_u32(const uint32_t* src, uint16_t address, size_t count)
+void store_u32(unsigned char* buffer, unsigned address, const uint32_t* src, size_t count)
 {
     /* Optimization for uint32_t */
-    memcpy(dmem_u32(address), src, count * sizeof(uint32_t));
-}
-
-
-void dram_load_u8 (uint8_t*  dst, uint32_t address, size_t count)
-{
-    while (count != 0) {
-        *(dst++) = *dram_u8(address);
-        address += 1;
-        --count;
-    }
-}
-
-void dram_load_u16(uint16_t* dst, uint32_t address, size_t count)
-{
-    while (count != 0) {
-        *(dst++) = *dram_u16(address);
-        address += 2;
-        --count;
-    }
-}
-
-void dram_load_u32(uint32_t* dst, uint32_t address, size_t count)
-{
-    /* Optimization for uint32_t */
-    memcpy(dst, dram_u32(address), count * sizeof(uint32_t));
-}
-
-void dram_store_u8 (const uint8_t*  src, uint32_t address, size_t count)
-{
-    while (count != 0) {
-        *dram_u8(address) = *(src++);
-        address += 1;
-        --count;
-    }
-}
-
-void dram_store_u16(const uint16_t* src, uint32_t address, size_t count)
-{
-    while (count != 0) {
-        *dram_u16(address) = *(src++);
-        address += 2;
-        --count;
-    }
-}
-
-void dram_store_u32(const uint32_t* src, uint32_t address, size_t count)
-{
-    /* Optimization for uint32_t */
-    memcpy(dram_u32(address), src, count * sizeof(uint32_t));
+    memcpy(u32(buffer, address), src, count * sizeof(uint32_t));
 }
 

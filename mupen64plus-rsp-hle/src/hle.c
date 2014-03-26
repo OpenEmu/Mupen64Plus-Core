@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *   Mupen64plus-rsp-hle - main.c                                          *
+ *   Mupen64plus-rsp-hle - hle.c                                           *
  *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
  *   Copyright (C) 2012 Bobby Smiles                                       *
  *   Copyright (C) 2009 Richard Goedeken                                   *
@@ -28,13 +28,11 @@
 #include <stdio.h>
 #endif
 
+#include "hle_external.h"
+#include "hle_internal.h"
 #include "memory.h"
-#include "plugin.h"
 
-#include "alist.h"
-#include "cicx105.h"
-#include "jpeg.h"
-#include "musyx.h"
+#include "ucodes.h"
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 
@@ -53,37 +51,83 @@
 
 /* helper functions prototypes */
 static unsigned int sum_bytes(const unsigned char *bytes, unsigned int size);
-static bool is_task(void);
-static void rsp_break(unsigned int setbits);
-static void forward_gfx_task(void);
-static void forward_audio_task(void);
-static void show_cfb(void);
-static bool try_fast_audio_dispatching(void);
-static bool try_fast_task_dispatching(void);
-static void normal_task_dispatching(void);
-static void non_task_dispatching(void);
+static bool is_task(struct hle_t* hle);
+static void rsp_break(struct hle_t* hle, unsigned int setbits);
+static void forward_gfx_task(struct hle_t* hle);
+static bool try_fast_audio_dispatching(struct hle_t* hle);
+static bool try_fast_task_dispatching(struct hle_t* hle);
+static void normal_task_dispatching(struct hle_t* hle);
+static void non_task_dispatching(struct hle_t* hle);
 
 #ifdef ENABLE_TASK_DUMP
 static void dump_binary(const char *const filename, const unsigned char *const bytes,
                         unsigned int size);
-static void dump_task(const char *const filename);
-static void dump_unknown_task(unsigned int sum);
-static void dump_unknown_non_task(unsigned int sum);
+static void dump_task(struct hle_t* hle, const char *const filename);
+static void dump_unknown_task(struct hle_t* hle, unsigned int sum);
+static void dump_unknown_non_task(struct hle_t* hle, unsigned int sum);
 #endif
 
 /* local variables */
 static const bool FORWARD_AUDIO = false, FORWARD_GFX = true;
 
 /* Global functions */
-void hle_execute(void)
+void hle_init(struct hle_t* hle,
+    unsigned char* dram,
+    unsigned char* dmem,
+    unsigned char* imem,
+    unsigned int* mi_intr,
+    unsigned int* sp_mem_addr,
+    unsigned int* sp_dram_addr,
+    unsigned int* sp_rd_length,
+    unsigned int* sp_wr_length,
+    unsigned int* sp_status,
+    unsigned int* sp_dma_full,
+    unsigned int* sp_dma_busy,
+    unsigned int* sp_pc,
+    unsigned int* sp_semaphore,
+    unsigned int* dpc_start,
+    unsigned int* dpc_end,
+    unsigned int* dpc_current,
+    unsigned int* dpc_status,
+    unsigned int* dpc_clock,
+    unsigned int* dpc_bufbusy,
+    unsigned int* dpc_pipebusy,
+    unsigned int* dpc_tmem,
+    void* user_defined)
 {
-    if (is_task()) {
-        if (!try_fast_task_dispatching())
-            normal_task_dispatching();
-        rsp_break(SP_STATUS_TASKDONE);
+    hle->dram         = dram;
+    hle->dmem         = dmem;
+    hle->imem         = imem;
+    hle->mi_intr      = mi_intr;
+    hle->sp_mem_addr  = sp_mem_addr;
+    hle->sp_dram_addr = sp_dram_addr;
+    hle->sp_rd_length = sp_rd_length;
+    hle->sp_wr_length = sp_wr_length;
+    hle->sp_status    = sp_status;
+    hle->sp_dma_full  = sp_dma_full;
+    hle->sp_dma_busy  = sp_dma_busy;
+    hle->sp_pc        = sp_pc;
+    hle->sp_semaphore = sp_semaphore;
+    hle->dpc_start    = dpc_start;
+    hle->dpc_end      = dpc_end;
+    hle->dpc_current  = dpc_current;
+    hle->dpc_status   = dpc_status;
+    hle->dpc_clock    = dpc_clock;
+    hle->dpc_bufbusy  = dpc_bufbusy;
+    hle->dpc_pipebusy = dpc_pipebusy;
+    hle->dpc_tmem     = dpc_tmem;
+    hle->user_defined = user_defined;
+}
+
+void hle_execute(struct hle_t* hle)
+{
+    if (is_task(hle)) {
+        if (!try_fast_task_dispatching(hle))
+            normal_task_dispatching(hle);
+        rsp_break(hle, SP_STATUS_TASKDONE);
     } else {
-        non_task_dispatching();
-        rsp_break(0);
+        non_task_dispatching(hle);
+        rsp_break(hle, 0);
     }
 }
 
@@ -109,153 +153,139 @@ static unsigned int sum_bytes(const unsigned char *bytes, unsigned int size)
  *
  * Using ucode_boot_size should be more robust in this regard.
  **/
-static bool is_task(void)
+static bool is_task(struct hle_t* hle)
 {
-    return (*dmem_u32(TASK_UCODE_BOOT_SIZE) <= 0x1000);
+    return (*dmem_u32(hle, TASK_UCODE_BOOT_SIZE) <= 0x1000);
 }
 
-static void rsp_break(unsigned int setbits)
+static void rsp_break(struct hle_t* hle, unsigned int setbits)
 {
-    *g_RspInfo.SP_STATUS_REG |= setbits | SP_STATUS_BROKE | SP_STATUS_HALT;
+    *hle->sp_status |= setbits | SP_STATUS_BROKE | SP_STATUS_HALT;
 
-    if ((*g_RspInfo.SP_STATUS_REG & SP_STATUS_INTR_ON_BREAK)) {
-        *g_RspInfo.MI_INTR_REG |= MI_INTR_SP;
-        g_RspInfo.CheckInterrupts();
+    if ((*hle->sp_status & SP_STATUS_INTR_ON_BREAK)) {
+        *hle->mi_intr |= MI_INTR_SP;
+        HleCheckInterrupts(hle->user_defined);
     }
 }
 
-static void forward_gfx_task(void)
+static void forward_gfx_task(struct hle_t* hle)
 {
-    if (g_RspInfo.ProcessDlistList != NULL) {
-        g_RspInfo.ProcessDlistList();
-        *g_RspInfo.DPC_STATUS_REG &= ~DP_STATUS_FREEZE;
-    }
+    HleProcessDlistList(hle->user_defined);
+    *hle->dpc_status &= ~DP_STATUS_FREEZE;
 }
 
-static void forward_audio_task(void)
-{
-    if (g_RspInfo.ProcessAlistList != NULL)
-        g_RspInfo.ProcessAlistList();
-}
-
-static void show_cfb(void)
-{
-    if (g_RspInfo.ShowCFB != NULL)
-        g_RspInfo.ShowCFB();
-}
-
-static bool try_fast_audio_dispatching(void)
+static bool try_fast_audio_dispatching(struct hle_t* hle)
 {
     /* identify audio ucode by using the content of ucode_data */
-    uint32_t ucode_data = *dmem_u32(TASK_UCODE_DATA);
+    uint32_t ucode_data = *dmem_u32(hle, TASK_UCODE_DATA);
     uint32_t v;
 
-    if (*dram_u32(ucode_data) == 0x00000001) {
-        if (*dram_u32(ucode_data + 0x30) == 0xf0000f00) {
-            v = *dram_u32(ucode_data + 0x28);
+    if (*dram_u32(hle, ucode_data) == 0x00000001) {
+        if (*dram_u32(hle, ucode_data + 0x30) == 0xf0000f00) {
+            v = *dram_u32(hle, ucode_data + 0x28);
             switch(v)
             {
             case 0x1e24138c: /* audio ABI (most common) */
-                alist_process_audio(); return true;
+                alist_process_audio(hle); return true;
             case 0x1dc8138c: /* GoldenEye */
-                alist_process_audio_ge(); return true;
+                alist_process_audio_ge(hle); return true;
             case 0x1e3c1390: /* BlastCorp, DiddyKongRacing */
-                alist_process_audio_bc(); return true;
+                alist_process_audio_bc(hle); return true;
             default:
-                DebugMessage(M64MSG_WARNING, "ABI1 identification regression: v=%08x", v);
+                HleWarnMessage(hle->user_defined, "ABI1 identification regression: v=%08x", v);
             }
         } else {
-            v = *dram_u32(ucode_data + 0x10);
+            v = *dram_u32(hle, ucode_data + 0x10);
             switch(v)
             {
             case 0x11181350: /* MarioKart, WaveRace (E) */
-                alist_process_nead_mk(); return true;
+                alist_process_nead_mk(hle); return true;
             case 0x111812e0: /* StarFox (J) */
-                alist_process_nead_sfj(); return true;
+                alist_process_nead_sfj(hle); return true;
             case 0x110412ac: /* WaveRace (J RevB) */
-                alist_process_nead_wrjb(); return true;
+                alist_process_nead_wrjb(hle); return true;
             case 0x110412cc: /* StarFox/LylatWars (except J) */
-                alist_process_nead_sf(); return true;
+                alist_process_nead_sf(hle); return true;
             case 0x1cd01250: /* FZeroX */
-                alist_process_nead_fz(); return true;
+                alist_process_nead_fz(hle); return true;
             case 0x1f08122c: /* YoshisStory */
-                alist_process_nead_ys(); return true;
+                alist_process_nead_ys(hle); return true;
             case 0x1f38122c: /* 1080° Snowboarding */
-                alist_process_nead_1080(); return true;
+                alist_process_nead_1080(hle); return true;
             case 0x1f681230: /* Zelda OoT / Zelda MM (J, J RevA) */
-                alist_process_nead_oot(); return true;
+                alist_process_nead_oot(hle); return true;
             case 0x1f801250: /* Zelda MM (except J, J RevA, E Beta), PokemonStadium 2 */
-                alist_process_nead_mm(); return true;
+                alist_process_nead_mm(hle); return true;
             case 0x109411f8: /* Zelda MM (E Beta) */
-                alist_process_nead_mmb(); return true;
+                alist_process_nead_mmb(hle); return true;
             case 0x1eac11b8: /* AnimalCrossing */
-                alist_process_nead_ac(); return true;
+                alist_process_nead_ac(hle); return true;
             case 0x00010010: /* MusyX v2 (IndianaJones, BattleForNaboo) */
-                musyx_v2_task(); return true;
+                musyx_v2_task(hle); return true;
 
             default:
-                DebugMessage(M64MSG_WARNING, "ABI2 identification regression: v=%08x", v);
+                HleWarnMessage(hle->user_defined, "ABI2 identification regression: v=%08x", v);
             }
         }
     } else {
-        v = *dram_u32(ucode_data + 0x10);
+        v = *dram_u32(hle, ucode_data + 0x10);
         switch(v)
         {
         case 0x00000001: /* MusyX v1
             RogueSquadron, ResidentEvil2, PolarisSnoCross,
             TheWorldIsNotEnough, RugratsInParis, NBAShowTime,
             HydroThunder, Tarzan, GauntletLegend, Rush2049 */
-            musyx_v1_task(); return true;
+            musyx_v1_task(hle); return true;
         case 0x0000127c: /* naudio (many games) */
-            alist_process_naudio(); return true;
+            alist_process_naudio(hle); return true;
         case 0x00001280: /* BanjoKazooie */
-            alist_process_naudio_bk(); return true;
+            alist_process_naudio_bk(hle); return true;
         case 0x1c58126c: /* DonkeyKong */
-            alist_process_naudio_dk(); return true;
+            alist_process_naudio_dk(hle); return true;
         case 0x1ae8143c: /* BanjoTooie, JetForceGemini, MickeySpeedWayUSA, PerfectDark */
-            alist_process_naudio_mp3(); return true;
+            alist_process_naudio_mp3(hle); return true;
         case 0x1ab0140c: /* ConkerBadFurDay */
-            alist_process_naudio_cbfd(); return true;
+            alist_process_naudio_cbfd(hle); return true;
 
         default:
-            DebugMessage(M64MSG_WARNING, "ABI3 identification regression: v=%08x", v);
+            HleWarnMessage(hle->user_defined, "ABI3 identification regression: v=%08x", v);
         }
     }
 
     return false;
 }
 
-static bool try_fast_task_dispatching(void)
+static bool try_fast_task_dispatching(struct hle_t* hle)
 {
     /* identify task ucode by its type */
-    switch (*dmem_u32(TASK_TYPE)) {
+    switch (*dmem_u32(hle, TASK_TYPE)) {
     case 1:
         if (FORWARD_GFX) {
-            forward_gfx_task();
+            forward_gfx_task(hle);
             return true;
         }
         break;
 
     case 2:
         if (FORWARD_AUDIO) {
-            forward_audio_task();
+            HleProcessAlistList(hle->user_defined);
             return true;
-        } else if (try_fast_audio_dispatching())
+        } else if (try_fast_audio_dispatching(hle))
             return true;
         break;
 
     case 7:
-        show_cfb();
+        HleShowCFB(hle->user_defined);
         return true;
     }
 
     return false;
 }
 
-static void normal_task_dispatching(void)
+static void normal_task_dispatching(struct hle_t* hle)
 {
     const unsigned int sum =
-        sum_bytes((void*)dram_u32(*dmem_u32(TASK_UCODE)), min(*dmem_u32(TASK_UCODE_SIZE), 0xf80) >> 1);
+        sum_bytes((void*)dram_u32(hle, *dmem_u32(hle, TASK_UCODE)), min(*dmem_u32(hle, TASK_UCODE_SIZE), 0xf80) >> 1);
 
     switch (sum) {
     /* StoreVe12: found in Zelda Ocarina of Time [misleading task->type == 4] */
@@ -266,97 +296,97 @@ static void normal_task_dispatching(void)
     /* GFX: Twintris [misleading task->type == 0] */
     case 0x212ee:
         if (FORWARD_GFX) {
-            forward_gfx_task();
+            forward_gfx_task(hle);
             return;
         }
         break;
 
     /* JPEG: found in Pokemon Stadium J */
     case 0x2c85a:
-        jpeg_decode_PS0();
+        jpeg_decode_PS0(hle);
         return;
 
     /* JPEG: found in Zelda Ocarina of Time, Pokemon Stadium 1, Pokemon Stadium 2 */
     case 0x2caa6:
-        jpeg_decode_PS();
+        jpeg_decode_PS(hle);
         return;
 
     /* JPEG: found in Ogre Battle, Bottom of the 9th */
     case 0x130de:
     case 0x278b0:
-        jpeg_decode_OB();
+        jpeg_decode_OB(hle);
         return;
     }
 
-    DebugMessage(M64MSG_WARNING, "unknown OSTask: sum: %x PC:%x", sum, *g_RspInfo.SP_PC_REG);
+    HleWarnMessage(hle->user_defined, "unknown OSTask: sum: %x PC:%x", sum, *hle->sp_pc);
 #ifdef ENABLE_TASK_DUMP
-    dump_unknown_task(sum);
+    dump_unknown_task(hle, sum);
 #endif
 }
 
-static void non_task_dispatching(void)
+static void non_task_dispatching(struct hle_t* hle)
 {
-    const unsigned int sum = sum_bytes(g_RspInfo.IMEM, 0x1000 >> 1);
+    const unsigned int sum = sum_bytes(hle->imem, 0x1000 >> 1);
 
     switch (sum) {
     /* CIC x105 ucode (used during boot of CIC x105 games) */
     case 0x9e2: /* CIC 6105 */
     case 0x9f2: /* CIC 7105 */
-        cicx105_ucode();
+        cicx105_ucode(hle);
         return;
     }
 
-    DebugMessage(M64MSG_WARNING, "unknown RSP code: sum: %x PC:%x", sum, *g_RspInfo.SP_PC_REG);
+    HleWarnMessage(hle->user_defined, "unknown RSP code: sum: %x PC:%x", sum, *hle->sp_pc);
 #ifdef ENABLE_TASK_DUMP
-    dump_unknown_non_task(sum);
+    dump_unknown_non_task(hle, sum);
 #endif
 }
 
 
 #ifdef ENABLE_TASK_DUMP
-static void dump_unknown_task(unsigned int sum)
+static void dump_unknown_task(struct hle_t* hle, unsigned int sum)
 {
     char filename[256];
-    uint32_t ucode = *dmem_u32(TASK_UCODE);
-    uint32_t ucode_data = *dmem_u32(TASK_UCODE_DATA);
-    uint32_t data_ptr = *dmem_u32(TASK_DATA_PTR);
+    uint32_t ucode = *dmem_u32(hle, TASK_UCODE);
+    uint32_t ucode_data = *dmem_u32(hle, TASK_UCODE_DATA);
+    uint32_t data_ptr = *dmem_u32(hle, TASK_DATA_PTR);
 
     sprintf(&filename[0], "task_%x.log", sum);
-    dump_task(filename);
+    dump_task(hle, filename);
 
     /* dump ucode_boot */
     sprintf(&filename[0], "ucode_boot_%x.bin", sum);
-    dump_binary(filename, (void*)dram_u32(*dmem_u32(TASK_UCODE_BOOT)), *dmem_u32(TASK_UCODE_BOOT_SIZE));
+    dump_binary(filename, (void*)dram_u32(hle, *dmem_u32(hle, TASK_UCODE_BOOT)), *dmem_u32(hle, TASK_UCODE_BOOT_SIZE));
 
     /* dump ucode */
     if (ucode != 0) {
         sprintf(&filename[0], "ucode_%x.bin", sum);
-        dump_binary(filename, (void*)dram_u32(ucode), 0xf80);
+        dump_binary(filename, (void*)dram_u32(hle, ucode), 0xf80);
     }
 
     /* dump ucode_data */
     if (ucode_data != 0) {
         sprintf(&filename[0], "ucode_data_%x.bin", sum);
-        dump_binary(filename, (void*)dram_u32(ucode_data), *dmem_u32(TASK_UCODE_DATA_SIZE));
+        dump_binary(filename, (void*)dram_u32(hle, ucode_data), *dmem_u32(hle, TASK_UCODE_DATA_SIZE));
     }
 
     /* dump data */
     if (data_ptr != 0) {
         sprintf(&filename[0], "data_%x.bin", sum);
-        dump_binary(filename, (void*)dram_u32(data_ptr), *dmem_u32(TASK_DATA_SIZE));
+        dump_binary(filename, (void*)dram_u32(hle, data_ptr), *dmem_u32(hle, TASK_DATA_SIZE));
     }
 }
 
-static void dump_unknown_non_task(unsigned int sum)
+static void dump_unknown_non_task(struct hle_t* hle, unsigned int sum)
 {
     char filename[256];
 
     /* dump IMEM & DMEM for further analysis */
     sprintf(&filename[0], "imem_%x.bin", sum);
-    dump_binary(filename, g_RspInfo.IMEM, 0x1000);
+    dump_binary(filename, hle->imem, 0x1000);
 
     sprintf(&filename[0], "dmem_%x.bin", sum);
-    dump_binary(filename, g_RspInfo.DMEM, 0x1000);
+    dump_binary(filename, hle->dmem, 0x1000);
 }
 
 static void dump_binary(const char *const filename, const unsigned char *const bytes,
@@ -371,15 +401,15 @@ static void dump_binary(const char *const filename, const unsigned char *const b
         f = fopen(filename, "wb");
         if (f != NULL) {
             if (fwrite(bytes, 1, size, f) != size)
-                DebugMessage(M64MSG_ERROR, "Writing error on %s", filename);
+                hleErrorMessage(hle->user_defined, "Writing error on %s", filename);
             fclose(f);
         } else
-            DebugMessage(M64MSG_ERROR, "Couldn't open %s for writing !", filename);
+            hleErrorMessage(hle->user_defined, "Couldn't open %s for writing !", filename);
     } else
         fclose(f);
 }
 
-static void dump_task(const char *const filename)
+static void dump_task(struct hle_t* hle, const char *const filename)
 {
     FILE *f;
 
@@ -396,15 +426,15 @@ static void dump_task(const char *const filename)
                 "output_buff = %#08x *size = %#x\n"
                 "data        = %#08x size  = %#x\n"
                 "yield_data  = %#08x size  = %#x\n",
-                *dmem_u32(TASK_TYPE),
-                *dmem_u32(TASK_FLAGS),
-                *dmem_u32(TASK_UCODE_BOOT),     *dmem_u32(TASK_UCODE_BOOT_SIZE),
-                *dmem_u32(TASK_UCODE),          *dmem_u32(TASK_UCODE_SIZE),
-                *dmem_u32(TASK_UCODE_DATA),     *dmem_u32(TASK_UCODE_DATA_SIZE),
-                *dmem_u32(TASK_DRAM_STACK),     *dmem_u32(TASK_DRAM_STACK_SIZE),
-                *dmem_u32(TASK_OUTPUT_BUFF),    *dmem_u32(TASK_OUTPUT_BUFF_SIZE),
-                *dmem_u32(TASK_DATA_PTR),       *dmem_u32(TASK_DATA_SIZE),
-                *dmem_u32(TASK_YIELD_DATA_PTR), *dmem_u32(TASK_YIELD_DATA_SIZE));
+                *dmem_u32(hle, TASK_TYPE),
+                *dmem_u32(hle, TASK_FLAGS),
+                *dmem_u32(hle, TASK_UCODE_BOOT),     *dmem_u32(hle, TASK_UCODE_BOOT_SIZE),
+                *dmem_u32(hle, TASK_UCODE),          *dmem_u32(hle, TASK_UCODE_SIZE),
+                *dmem_u32(hle, TASK_UCODE_DATA),     *dmem_u32(hle, TASK_UCODE_DATA_SIZE),
+                *dmem_u32(hle, TASK_DRAM_STACK),     *dmem_u32(hle, TASK_DRAM_STACK_SIZE),
+                *dmem_u32(hle, TASK_OUTPUT_BUFF),    *dmem_u32(hle, TASK_OUTPUT_BUFF_SIZE),
+                *dmem_u32(hle, TASK_DATA_PTR),       *dmem_u32(hle, TASK_DATA_SIZE),
+                *dmem_u32(hle, TASK_YIELD_DATA_PTR), *dmem_u32(hle, TASK_YIELD_DATA_SIZE));
         fclose(f);
     } else
         fclose(f);

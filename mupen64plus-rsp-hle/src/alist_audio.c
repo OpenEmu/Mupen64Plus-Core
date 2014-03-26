@@ -25,65 +25,36 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "alist_internal.h"
+#include "common.h"
+
+#include "alist.h"
+#include "hle_internal.h"
 #include "memory.h"
 
 enum { DMEM_BASE = 0x5c0 };
-enum { N_SEGMENTS = 16 };
-
-/* alist audio state */
-static struct {
-    /* segments */
-    uint32_t segments[N_SEGMENTS];
-
-    /* main buffers */
-    uint16_t in;
-    uint16_t out;
-    uint16_t count;
-
-    /* auxiliary buffers */
-    uint16_t dry_right;
-    uint16_t wet_left;
-    uint16_t wet_right;
-
-    /* gains */
-    int16_t dry;
-    int16_t wet;
-
-    /* envelopes (0:left, 1:right) */
-    int16_t vol[2];
-    int16_t target[2];
-    int32_t rate[2];
-
-    /* ADPCM loop point address */
-    uint32_t loop;
-
-    /* storage for ADPCM table and polef coefficients */
-    int16_t table[16 * 8];
-} l_alist;
 
 /* helper functions */
-static uint32_t get_address(uint32_t so)
+static uint32_t get_address(struct hle_t* hle, uint32_t so)
 {
-    return alist_get_address(so, l_alist.segments, N_SEGMENTS);
+    return alist_get_address(hle, so, hle->alist_audio.segments, N_SEGMENTS);
 }
 
-static void set_address(uint32_t so)
+static void set_address(struct hle_t* hle, uint32_t so)
 {
-    alist_set_address(so, l_alist.segments, N_SEGMENTS);
+    alist_set_address(hle, so, hle->alist_audio.segments, N_SEGMENTS);
 }
 
-static void clear_segments()
+static void clear_segments(struct hle_t* hle)
 {
-    memset(l_alist.segments, 0, N_SEGMENTS*sizeof(l_alist.segments[0]));
+    memset(hle->alist_audio.segments, 0, N_SEGMENTS*sizeof(hle->alist_audio.segments[0]));
 }
 
 /* audio commands definition */
-static void SPNOOP(uint32_t w1, uint32_t w2)
+static void SPNOOP(struct hle_t* UNUSED(hle), uint32_t UNUSED(w1), uint32_t UNUSED(w2))
 {
 }
 
-static void CLEARBUFF(uint32_t w1, uint32_t w2)
+static void CLEARBUFF(struct hle_t* hle, uint32_t w1, uint32_t w2)
 {
     uint16_t dmem  = w1 + DMEM_BASE;
     uint16_t count = w2;
@@ -91,121 +62,124 @@ static void CLEARBUFF(uint32_t w1, uint32_t w2)
     if (count == 0)
         return;
 
-    alist_clear(dmem, align(count, 16));
+    alist_clear(hle, dmem, align(count, 16));
 }
 
-static void ENVMIXER(uint32_t w1, uint32_t w2)
+static void ENVMIXER(struct hle_t* hle, uint32_t w1, uint32_t w2)
 {
     uint8_t  flags   = (w1 >> 16);
-    uint32_t address = get_address(w2);
+    uint32_t address = get_address(hle, w2);
 
     alist_envmix_exp(
+            hle,
             flags & A_INIT,
             flags & A_AUX,
-            l_alist.out, l_alist.dry_right,
-            l_alist.wet_left, l_alist.wet_right,
-            l_alist.in, l_alist.count,
-            l_alist.dry, l_alist.wet,
-            l_alist.vol,
-            l_alist.target,
-            l_alist.rate,
+            hle->alist_audio.out, hle->alist_audio.dry_right,
+            hle->alist_audio.wet_left, hle->alist_audio.wet_right,
+            hle->alist_audio.in, hle->alist_audio.count,
+            hle->alist_audio.dry, hle->alist_audio.wet,
+            hle->alist_audio.vol,
+            hle->alist_audio.target,
+            hle->alist_audio.rate,
             address);
 }
 
-static void RESAMPLE(uint32_t w1, uint32_t w2)
+static void RESAMPLE(struct hle_t* hle, uint32_t w1, uint32_t w2)
 {
     uint8_t  flags   = (w1 >> 16);
     uint16_t pitch   = w1;
-    uint32_t address = get_address(w2);
+    uint32_t address = get_address(hle, w2);
 
     alist_resample(
+            hle,
             flags & 0x1,
             flags & 0x2,
-            l_alist.out,
-            l_alist.in,
-            align(l_alist.count, 16),
+            hle->alist_audio.out,
+            hle->alist_audio.in,
+            align(hle->alist_audio.count, 16),
             pitch << 1,
             address);
 }
 
-static void SETVOL(uint32_t w1, uint32_t w2)
+static void SETVOL(struct hle_t* hle, uint32_t w1, uint32_t w2)
 {
     uint8_t flags = (w1 >> 16);
 
     if (flags & A_AUX) {
-        l_alist.dry = w1;
-        l_alist.wet = w2;
+        hle->alist_audio.dry = w1;
+        hle->alist_audio.wet = w2;
     }
     else {
         unsigned lr = (flags & A_LEFT) ? 0 : 1;
 
         if (flags & A_VOL)
-            l_alist.vol[lr] = w1;
+            hle->alist_audio.vol[lr] = w1;
         else {
-            l_alist.target[lr] = w1;
-            l_alist.rate[lr]   = w2;
+            hle->alist_audio.target[lr] = w1;
+            hle->alist_audio.rate[lr]   = w2;
         }
     }
 }
 
-static void SETLOOP(uint32_t w1, uint32_t w2)
+static void SETLOOP(struct hle_t* hle, uint32_t UNUSED(w1), uint32_t w2)
 {
-    l_alist.loop = get_address(w2);
+    hle->alist_audio.loop = get_address(hle, w2);
 }
 
-static void ADPCM(uint32_t w1, uint32_t w2)
+static void ADPCM(struct hle_t* hle, uint32_t w1, uint32_t w2)
 {
     uint8_t  flags   = (w1 >> 16);
-    uint32_t address = get_address(w2);
+    uint32_t address = get_address(hle, w2);
 
     alist_adpcm(
+            hle,
             flags & 0x1,
             flags & 0x2,
             false,          /* unsupported in this ucode */
-            l_alist.out,
-            l_alist.in,
-            align(l_alist.count, 32),
-            l_alist.table,
-            l_alist.loop,
+            hle->alist_audio.out,
+            hle->alist_audio.in,
+            align(hle->alist_audio.count, 32),
+            hle->alist_audio.table,
+            hle->alist_audio.loop,
             address);
 }
 
-static void LOADBUFF(uint32_t w1, uint32_t w2)
+static void LOADBUFF(struct hle_t* hle, uint32_t UNUSED(w1), uint32_t w2)
 {
-    uint32_t address = get_address(w2);
+    uint32_t address = get_address(hle, w2);
 
-    if (l_alist.count == 0)
+    if (hle->alist_audio.count == 0)
         return;
 
-    alist_load(l_alist.in, address, l_alist.count);
+    alist_load(hle, hle->alist_audio.in, address, hle->alist_audio.count);
 }
 
-static void SAVEBUFF(uint32_t w1, uint32_t w2)
+static void SAVEBUFF(struct hle_t* hle, uint32_t UNUSED(w1), uint32_t w2)
 {
-    uint32_t address = get_address(w2);
+    uint32_t address = get_address(hle, w2);
 
-    if (l_alist.count == 0)
+    if (hle->alist_audio.count == 0)
         return;
 
-    alist_save(l_alist.out, address, l_alist.count);
+    alist_save(hle, hle->alist_audio.out, address, hle->alist_audio.count);
 }
 
-static void SETBUFF(uint32_t w1, uint32_t w2)
+static void SETBUFF(struct hle_t* hle, uint32_t w1, uint32_t w2)
 {
     uint8_t flags = (w1 >> 16);
 
     if (flags & A_AUX) {
-        l_alist.dry_right = w1 + DMEM_BASE;
-        l_alist.wet_left  = (w2 >> 16) + DMEM_BASE;
-        l_alist.wet_right = w2 + DMEM_BASE;
+        hle->alist_audio.dry_right = w1 + DMEM_BASE;
+        hle->alist_audio.wet_left  = (w2 >> 16) + DMEM_BASE;
+        hle->alist_audio.wet_right = w2 + DMEM_BASE;
     } else {
-        l_alist.in    = w1 + DMEM_BASE;
-        l_alist.out   = (w2 >> 16) + DMEM_BASE;
-        l_alist.count = w2;
+        hle->alist_audio.in    = w1 + DMEM_BASE;
+        hle->alist_audio.out   = (w2 >> 16) + DMEM_BASE;
+        hle->alist_audio.count = w2;
     }
 }
 
-static void DMEMMOVE(uint32_t w1, uint32_t w2)
+static void DMEMMOVE(struct hle_t* hle, uint32_t w1, uint32_t w2)
 {
     uint16_t dmemi = w1 + DMEM_BASE;
     uint16_t dmemo = (w2 >> 16) + DMEM_BASE;
@@ -214,66 +188,67 @@ static void DMEMMOVE(uint32_t w1, uint32_t w2)
     if (count == 0)
         return;
 
-    alist_move(dmemo, dmemi, align(count, 16));
+    alist_move(hle, dmemo, dmemi, align(count, 16));
 }
 
-static void LOADADPCM(uint32_t w1, uint32_t w2)
+static void LOADADPCM(struct hle_t* hle, uint32_t w1, uint32_t w2)
 {
     uint16_t count   = w1;
-    uint32_t address = get_address(w2);
+    uint32_t address = get_address(hle, w2);
 
-    dram_load_u16((uint16_t*)l_alist.table, address, align(count, 8) >> 1);
+    dram_load_u16(hle, (uint16_t*)hle->alist_audio.table, address, align(count, 8) >> 1);
 }
 
-static void INTERLEAVE(uint32_t w1, uint32_t w2)
+static void INTERLEAVE(struct hle_t* hle, uint32_t UNUSED(w1), uint32_t w2)
 {
     uint16_t left  = (w2 >> 16) + DMEM_BASE;
     uint16_t right = w2 + DMEM_BASE;
 
-    if (l_alist.count == 0)
+    if (hle->alist_audio.count == 0)
         return;
 
-    alist_interleave(l_alist.out, left, right, align(l_alist.count, 16));
+    alist_interleave(hle, hle->alist_audio.out, left, right, align(hle->alist_audio.count, 16));
 }
 
-static void MIXER(uint32_t w1, uint32_t w2)
+static void MIXER(struct hle_t* hle, uint32_t w1, uint32_t w2)
 {
     int16_t  gain  = w1;
     uint16_t dmemi = (w2 >> 16) + DMEM_BASE;
     uint16_t dmemo = w2 + DMEM_BASE;
 
-    if (l_alist.count == 0)
+    if (hle->alist_audio.count == 0)
         return;
 
-    alist_mix(dmemo, dmemi, align(l_alist.count, 32), gain);
+    alist_mix(hle, dmemo, dmemi, align(hle->alist_audio.count, 32), gain);
 }
 
-static void SEGMENT(uint32_t w1, uint32_t w2)
+static void SEGMENT(struct hle_t* hle, uint32_t UNUSED(w1), uint32_t w2)
 {
-    set_address(w2);
+    set_address(hle, w2);
 }
 
-static void POLEF(uint32_t w1, uint32_t w2)
+static void POLEF(struct hle_t* hle, uint32_t w1, uint32_t w2)
 {
     uint8_t  flags   = (w1 >> 16);
     uint16_t gain    = w1;
-    uint32_t address = get_address(w2);
+    uint32_t address = get_address(hle, w2);
 
-    if (l_alist.count == 0)
+    if (hle->alist_audio.count == 0)
         return;
 
     alist_polef(
+            hle,
             flags & A_INIT,
-            l_alist.out,
-            l_alist.in,
-            align(l_alist.count, 16),
+            hle->alist_audio.out,
+            hle->alist_audio.in,
+            align(hle->alist_audio.count, 16),
             gain,
-            l_alist.table,
+            hle->alist_audio.table,
             address);
 }
 
 /* global functions */
-void alist_process_audio(void)
+void alist_process_audio(struct hle_t* hle)
 {
     static const acmd_callback_t ABI[0x10] = {
         SPNOOP,         ADPCM ,         CLEARBUFF,      ENVMIXER,
@@ -282,11 +257,11 @@ void alist_process_audio(void)
         MIXER,          INTERLEAVE,     POLEF,          SETLOOP
     };
 
-    clear_segments();
-    alist_process(ABI, 0x10);
+    clear_segments(hle);
+    alist_process(hle, ABI, 0x10);
 }
 
-void alist_process_audio_ge(void)
+void alist_process_audio_ge(struct hle_t* hle)
 {
     /* TODO: see what differs from alist_process_audio */
     static const acmd_callback_t ABI[0x10] = {
@@ -296,11 +271,11 @@ void alist_process_audio_ge(void)
         MIXER,          INTERLEAVE,     POLEF,          SETLOOP
     };
 
-    clear_segments();
-    alist_process(ABI, 0x10);
+    clear_segments(hle);
+    alist_process(hle, ABI, 0x10);
 }
 
-void alist_process_audio_bc(void)
+void alist_process_audio_bc(struct hle_t* hle)
 {
     /* TODO: see what differs from alist_process_audio */
     static const acmd_callback_t ABI[0x10] = {
@@ -310,6 +285,6 @@ void alist_process_audio_bc(void)
         MIXER,          INTERLEAVE,     POLEF,          SETLOOP
     };
 
-    clear_segments();
-    alist_process(ABI, 0x10);
+    clear_segments(hle);
+    alist_process(hle, ABI, 0x10);
 }

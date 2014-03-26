@@ -203,11 +203,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\jpeg.c"
+				RelativePath="..\..\src\hle.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\main.c"
+				RelativePath="..\..\src\jpeg.c"
 				>
 			</File>
 			<File
@@ -237,10 +237,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\alist_internal.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\audio.h"
 				>
 			</File>
@@ -249,15 +245,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\cicx105.h"
+				RelativePath="..\..\src\common.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\jpeg.h"
+				RelativePath="..\..\src\hle.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\main.h"
+				RelativePath="..\..\src\hle_external.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\hle_internal.h"
 				>
 			</File>
 			<File
@@ -265,11 +265,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\musyx.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\plugin.h"
+				RelativePath="..\..\src\ucodes.h"
 				>
 			</File>
 		</Filter>
