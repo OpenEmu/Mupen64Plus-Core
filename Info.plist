@@ -24,10 +24,18 @@
 	<string>OEGameCoreController</string>
 	<key>OEGameCoreClass</key>
 	<string>MupenGameCore</string>
+	<key>OEGameCoreOptions</key>
+	<dict>
+		<key>openemu.system.n64</key>
+		<dict>
+			<key>OEGameCoreHasGlitches</key>
+			<true/>
+			<key>OEGameCoreSupportsCheatCode</key>
+			<true/>
+		</dict>
+	</dict>
 	<key>OEGameCorePlayerCount</key>
 	<string>8</string>
-	<key>OEGameCoreSupportsCheatCode</key>
-	<true/>
 	<key>OEProjectURL</key>
 	<string>http://bitbucket.org/richard42/</string>
 	<key>OESystemIdentifiers</key>
