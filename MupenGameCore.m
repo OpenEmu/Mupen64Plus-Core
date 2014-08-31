@@ -609,8 +609,7 @@ static void MupenSetAudioSpeed(int percent)
     code = [code stringByReplacingOccurrencesOfString:@" " withString:@""];
     
     NSString *singleCode;
-    NSArray *multipleCodes = [[NSArray alloc] init];
-    multipleCodes = [code componentsSeparatedByString:@"+"];
+    NSArray *multipleCodes = [code componentsSeparatedByString:@"+"];
     m64p_cheat_code *gsCode = (m64p_cheat_code*) calloc([multipleCodes count], sizeof(m64p_cheat_code));
     int codeCounter = 0;
     
