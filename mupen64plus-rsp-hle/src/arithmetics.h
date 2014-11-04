@@ -24,6 +24,8 @@
 
 #include <stdint.h>
 
+#include "common.h"
+
 static inline int16_t clamp_s16(int_fast32_t x)
 {
     x = (x < INT16_MIN) ? INT16_MIN: x;

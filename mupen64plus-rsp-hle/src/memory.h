@@ -26,6 +26,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "common.h"
 #include "hle_internal.h"
 
 #ifdef M64P_BIG_ENDIAN

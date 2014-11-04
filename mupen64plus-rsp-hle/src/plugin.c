@@ -22,7 +22,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <stdarg.h>
-#include <string.h>
 #include <stdio.h>
 
 #include "common.h"
@@ -218,6 +217,5 @@ EXPORT void CALL InitiateRSP(RSP_INFO Rsp_Info, unsigned int* UNUSED(CycleCount)
 
 EXPORT void CALL RomClosed(void)
 {
-    memset(g_hle.dmem, 0, 0x1000);
-    memset(g_hle.imem, 0, 0x1000);
+    /* do nothing */
 }

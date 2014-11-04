@@ -60,8 +60,8 @@ static void normal_task_dispatching(struct hle_t* hle);
 static void non_task_dispatching(struct hle_t* hle);
 
 #ifdef ENABLE_TASK_DUMP
-static void dump_binary(const char *const filename, const unsigned char *const bytes,
-                        unsigned int size);
+static void dump_binary(struct hle_t* hle, const char *const filename,
+                        const unsigned char *const bytes, unsigned int size);
 static void dump_task(struct hle_t* hle, const char *const filename);
 static void dump_unknown_task(struct hle_t* hle, unsigned int sum);
 static void dump_unknown_non_task(struct hle_t* hle, unsigned int sum);
@@ -326,12 +326,11 @@ static void normal_task_dispatching(struct hle_t* hle)
 
 static void non_task_dispatching(struct hle_t* hle)
 {
-    const unsigned int sum = sum_bytes(hle->imem, 0x1000 >> 1);
+    const unsigned int sum = sum_bytes(hle->imem, 44);
 
-    switch (sum) {
-    /* CIC x105 ucode (used during boot of CIC x105 games) */
-    case 0x9e2: /* CIC 6105 */
-    case 0x9f2: /* CIC 7105 */
+    if (sum == 0x9e2)
+    {
+        /* CIC x105 ucode (used during boot of CIC x105 games) */
         cicx105_ucode(hle);
         return;
     }
@@ -356,24 +355,24 @@ static void dump_unknown_task(struct hle_t* hle, unsigned int sum)
 
     /* dump ucode_boot */
     sprintf(&filename[0], "ucode_boot_%x.bin", sum);
-    dump_binary(filename, (void*)dram_u32(hle, *dmem_u32(hle, TASK_UCODE_BOOT)), *dmem_u32(hle, TASK_UCODE_BOOT_SIZE));
+    dump_binary(hle, filename, (void*)dram_u32(hle, *dmem_u32(hle, TASK_UCODE_BOOT)), *dmem_u32(hle, TASK_UCODE_BOOT_SIZE));
 
     /* dump ucode */
     if (ucode != 0) {
         sprintf(&filename[0], "ucode_%x.bin", sum);
-        dump_binary(filename, (void*)dram_u32(hle, ucode), 0xf80);
+        dump_binary(hle, filename, (void*)dram_u32(hle, ucode), 0xf80);
     }
 
     /* dump ucode_data */
     if (ucode_data != 0) {
         sprintf(&filename[0], "ucode_data_%x.bin", sum);
-        dump_binary(filename, (void*)dram_u32(hle, ucode_data), *dmem_u32(hle, TASK_UCODE_DATA_SIZE));
+        dump_binary(hle, filename, (void*)dram_u32(hle, ucode_data), *dmem_u32(hle, TASK_UCODE_DATA_SIZE));
     }
 
     /* dump data */
     if (data_ptr != 0) {
         sprintf(&filename[0], "data_%x.bin", sum);
-        dump_binary(filename, (void*)dram_u32(hle, data_ptr), *dmem_u32(hle, TASK_DATA_SIZE));
+        dump_binary(hle, filename, (void*)dram_u32(hle, data_ptr), *dmem_u32(hle, TASK_DATA_SIZE));
     }
 }
 
@@ -383,14 +382,14 @@ static void dump_unknown_non_task(struct hle_t* hle, unsigned int sum)
 
     /* dump IMEM & DMEM for further analysis */
     sprintf(&filename[0], "imem_%x.bin", sum);
-    dump_binary(filename, hle->imem, 0x1000);
+    dump_binary(hle, filename, hle->imem, 0x1000);
 
     sprintf(&filename[0], "dmem_%x.bin", sum);
-    dump_binary(filename, hle->dmem, 0x1000);
+    dump_binary(hle, filename, hle->dmem, 0x1000);
 }
 
-static void dump_binary(const char *const filename, const unsigned char *const bytes,
-                        unsigned int size)
+static void dump_binary(struct hle_t* hle, const char *const filename,
+                        const unsigned char *const bytes, unsigned int size)
 {
     FILE *f;
 
@@ -401,10 +400,10 @@ static void dump_binary(const char *const filename, const unsigned char *const b
         f = fopen(filename, "wb");
         if (f != NULL) {
             if (fwrite(bytes, 1, size, f) != size)
-                hleErrorMessage(hle->user_defined, "Writing error on %s", filename);
+                HleErrorMessage(hle->user_defined, "Writing error on %s", filename);
             fclose(f);
         } else
-            hleErrorMessage(hle->user_defined, "Couldn't open %s for writing !", filename);
+            HleErrorMessage(hle->user_defined, "Couldn't open %s for writing !", filename);
     } else
         fclose(f);
 }

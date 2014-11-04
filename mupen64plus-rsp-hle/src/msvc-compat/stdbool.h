@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *   Mupen64plus-rsp-hle - common.h                                        *
+ *   Mupen64plus-rsp-hle - stdbool.h                                       *
  *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
  *   Copyright (C) 2014 Bobby Smiles                                       *
  *                                                                         *
@@ -19,20 +19,19 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef COMMON_H
-#define COMMON_H
+/* This header is only intended to be used with msvc compilers */
 
-/* macro for unused variable warning suppression */
-#ifdef __GNUC__
-#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
-#else
-#  define UNUSED(x) UNUSED_ ## x
-#endif
+#pragma once
 
-/* macro for inline keyword */
-#ifdef _MSC_VER
-#define inline __inline
-#endif
+typedef int _Bool;
 
-#endif
+/**
+ * The standard states that "an application may undefine and then possibly redefine the macro
+ * bool, true and false". However, such feature might be withdrawn in a future version.
+ **/
+#define bool _Bool
+#define true 1
+#define false 0
+
+#define __bool_true_false_are_defined 1
 
