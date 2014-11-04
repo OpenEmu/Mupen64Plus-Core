@@ -22,7 +22,7 @@ RSP_INFO RSP;
 #define NOINLINE    __declspec(noinline)
 #define ALIGNED     _declspec(align(16))
 #else
-#define INLINE      static inline
+#define INLINE      
 #define NOINLINE    __attribute__((noinline))
 #define ALIGNED     __attribute__((aligned(16)))
 #endif

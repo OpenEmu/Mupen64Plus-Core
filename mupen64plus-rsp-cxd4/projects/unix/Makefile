@@ -164,6 +164,9 @@ endif
 ifeq ($(OS), FREEBSD)
   LDLIBS += -lc
 endif
+ifeq ($(OS), LINUX)
+  LDLIBS += -ldl
+endif
 ifeq ($(OS), OSX)
   # Select the proper SDK
   # Also, SDKs are stored in a different location since XCode 4.3
@@ -174,7 +177,7 @@ ifeq ($(OS), OSX)
   ifeq ($(OSX_XCODEGE43), 11)
     OSX_SYSROOT := /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
   else
-    OSX_SYSROOT := /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+    OSX_SYSROOT := /Developer/SDKs
   endif
 
   ifeq ($(CPU), X86)
