@@ -65,35 +65,3 @@ see a line printed out which says:
 Video: Texture loading option is enabled. Finding all hires textures
 
 
-N64 game
-        0 = RGBA
-        1 = YUV
-        2 = CI
-        3 = IA
-        4 = I
-    part 4: Texture size in N64 game
-        0 = 4 bit
-        1 = 8 bit
-        2 = 16 bit
-        3 = 32 bit
-    part 5: dumpped texture format
-        rgb = 24 bit RGB format
-        a   = 24 bit alpha channel only in 24 bit RGB intensity
-        all = 32 bit RGB format
-        ci  = color indexed (BMP) format
-    extension:
-        PNG
-        BMP
-
-5. How to make your own hi-rez textures
-   a. The hi-rez texture size could be 2, 3 or 4 times as the orginal N64 texture size
-   b. Don't use other customerized texture sizes
-   c. If the original texture has alpha channel, you MUST also provide the alpha channel by
-      - Use *_all.png 32bit format
-      - use both *_rgb and *_a files to provide RGB and alpha separately
-   d. Color indexed textures must be prepared in color indexed format, not in RGB/A format
-   e. Instead of *_rgb.png and *_a.png, you can provide your textures in *_rgb.bmp and *_a.bmp.
-      BMP files are uncompressed, can be loaded faster
-   f. *_rgb.png, *_a.png, *_rgb.bmp, *_a.bmp must be provided in 24 bit RGB format, not in other
-      formats. Alpha *_a.* files must be 24 bit, only in 2 bit or 8 bit
-   g. Filename must be kept the same as the original dumped texture filenames

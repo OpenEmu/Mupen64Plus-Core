@@ -52,8 +52,15 @@ class COGL_FragmentProgramCombiner : public COGLColorCombiner4
 {
 public:
     bool Initialize(void);
-    float m_AlphaRef;
-    void UpdateFog(bool bEnable);
+
+    void SetFogState(bool bEnable)
+    {
+        bFogState = bEnable;
+    }
+    void SetAlphaTestState(bool bEnable)
+    {
+        bAlphaTestState = bEnable;
+    }
 
 protected:
     friend class OGLDeviceBuilder;
@@ -75,39 +82,17 @@ private:
     int FindCompiledMux();
     virtual void GenerateCombinerSetting(int index);
     virtual void GenerateCombinerSettingConstants(int index);
+    float m_AlphaRef;
+    bool bAlphaTestState;
+    bool bAlphaTestPreviousState;
+    bool bFogState;
+    bool bFogPreviousState;
 
 #ifdef DEBUGGER
     void DisplaySimpleMuxString(void);
 #endif
 
 };
-
-
-
-class COGLFragmentShaderCombiner : public COGLColorCombiner
-{
-public:
-    bool Initialize(void);
-    void InitCombinerBlenderForSimpleTextureDraw(uint32 tile=0);
-protected:
-    friend class OGLDeviceBuilder;
-
-    void DisableCombiner(void);
-    void InitCombinerCycleCopy(void);
-    void InitCombinerCycleFill(void);
-    void InitCombinerCycle12(void);
-
-    COGLFragmentShaderCombiner(CRender *pRender);
-    ~COGLFragmentShaderCombiner();
-
-    bool m_bShaderIsSupported;
-
-#ifdef DEBUGGER
-    void DisplaySimpleMuxString(void);
-#endif
-
-};
-
 
 #endif
 

@@ -105,7 +105,6 @@
 		3DCABDC2166C4CB2002F2066 /* mupen64plus-rsp-hle.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DCABDB3166C4ACB002F2066 /* mupen64plus-rsp-hle.so */; };
 		3DCABDC8166C5BE2002F2066 /* RiceVideoLinux.ini in Resources */ = {isa = PBXBuildFile; fileRef = 94E6B87E166C2A0A00082F27 /* RiceVideoLinux.ini */; };
 		3DCABE12166C6AB6002F2066 /* Blender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B889166C2A0A00082F27 /* Blender.cpp */; };
-		3DCABE14166C6AB6002F2066 /* CNvTNTCombiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B88B166C2A0A00082F27 /* CNvTNTCombiner.cpp */; };
 		3DCABE17166C6AB6002F2066 /* Combiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B88E166C2A0A00082F27 /* Combiner.cpp */; };
 		3DCABE1A166C6AB6002F2066 /* CombinerTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B891166C2A0A00082F27 /* CombinerTable.cpp */; };
 		3DCABE1B166C6AB6002F2066 /* Config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B892166C2A0A00082F27 /* Config.cpp */; };
@@ -114,7 +113,6 @@
 		3DCABE22166C6AB6002F2066 /* Debugger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B899166C2A0A00082F27 /* Debugger.cpp */; };
 		3DCABE24166C6AB6002F2066 /* DecodedMux.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B89B166C2A0A00082F27 /* DecodedMux.cpp */; };
 		3DCABE26166C6AB6002F2066 /* DeviceBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B89D166C2A0A00082F27 /* DeviceBuilder.cpp */; };
-		3DCABE28166C6AB6002F2066 /* DirectXDecodedMux.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B89F166C2A0A00082F27 /* DirectXDecodedMux.cpp */; };
 		3DCABE2B166C6AB6002F2066 /* FrameBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B8A2166C2A0A00082F27 /* FrameBuffer.cpp */; };
 		3DCABE2D166C6AB6002F2066 /* GeneralCombiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B8A4166C2A0A00082F27 /* GeneralCombiner.cpp */; };
 		3DCABE2F166C6AB6002F2066 /* GraphicsContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B8A6166C2A0A00082F27 /* GraphicsContext.cpp */; };
@@ -777,8 +775,6 @@
 		94E6B887166C2A0A00082F27 /* RELEASE */ = {isa = PBXFileReference; lastKnownFileType = text; path = RELEASE; sourceTree = "<group>"; };
 		94E6B889166C2A0A00082F27 /* Blender.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Blender.cpp; sourceTree = "<group>"; };
 		94E6B88A166C2A0A00082F27 /* Blender.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Blender.h; sourceTree = "<group>"; };
-		94E6B88B166C2A0A00082F27 /* CNvTNTCombiner.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CNvTNTCombiner.cpp; sourceTree = "<group>"; };
-		94E6B88C166C2A0A00082F27 /* CNvTNTCombiner.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CNvTNTCombiner.h; sourceTree = "<group>"; };
 		94E6B88D166C2A0A00082F27 /* COLOR.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = COLOR.h; sourceTree = "<group>"; };
 		94E6B88E166C2A0A00082F27 /* Combiner.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Combiner.cpp; sourceTree = "<group>"; };
 		94E6B88F166C2A0A00082F27 /* Combiner.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Combiner.h; sourceTree = "<group>"; };
@@ -797,8 +793,6 @@
 		94E6B89C166C2A0A00082F27 /* DecodedMux.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DecodedMux.h; sourceTree = "<group>"; };
 		94E6B89D166C2A0A00082F27 /* DeviceBuilder.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceBuilder.cpp; sourceTree = "<group>"; };
 		94E6B89E166C2A0A00082F27 /* DeviceBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceBuilder.h; sourceTree = "<group>"; };
-		94E6B89F166C2A0A00082F27 /* DirectXDecodedMux.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DirectXDecodedMux.cpp; sourceTree = "<group>"; };
-		94E6B8A0166C2A0A00082F27 /* DirectXDecodedMux.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DirectXDecodedMux.h; sourceTree = "<group>"; };
 		94E6B8A1166C2A0A00082F27 /* ExtendedRender.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ExtendedRender.h; sourceTree = "<group>"; };
 		94E6B8A2166C2A0A00082F27 /* FrameBuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FrameBuffer.cpp; sourceTree = "<group>"; };
 		94E6B8A3166C2A0A00082F27 /* FrameBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FrameBuffer.h; sourceTree = "<group>"; };
@@ -820,10 +814,6 @@
 		94E6B8B4166C2A0A00082F27 /* tiffrw.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tiffrw.h; sourceTree = "<group>"; };
 		94E6B8B5166C2A0A00082F27 /* OGLCombiner.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OGLCombiner.cpp; sourceTree = "<group>"; };
 		94E6B8B6166C2A0A00082F27 /* OGLCombiner.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OGLCombiner.h; sourceTree = "<group>"; };
-		94E6B8B7166C2A0A00082F27 /* OGLCombinerNV.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OGLCombinerNV.cpp; sourceTree = "<group>"; };
-		94E6B8B8166C2A0A00082F27 /* OGLCombinerNV.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OGLCombinerNV.h; sourceTree = "<group>"; };
-		94E6B8B9166C2A0A00082F27 /* OGLCombinerTNT2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OGLCombinerTNT2.cpp; sourceTree = "<group>"; };
-		94E6B8BA166C2A0A00082F27 /* OGLCombinerTNT2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OGLCombinerTNT2.h; sourceTree = "<group>"; };
 		94E6B8BB166C2A0A00082F27 /* OGLDebug.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OGLDebug.h; sourceTree = "<group>"; };
 		94E6B8BC166C2A0A00082F27 /* OGLDecodedMux.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OGLDecodedMux.cpp; sourceTree = "<group>"; };
 		94E6B8BD166C2A0A00082F27 /* OGLDecodedMux.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OGLDecodedMux.h; sourceTree = "<group>"; };
@@ -886,7 +876,6 @@
 		94E6B8F6166C2A0A00082F27 /* VectorMath.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = VectorMath.cpp; sourceTree = "<group>"; };
 		94E6B8F7166C2A0A00082F27 /* VectorMath.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VectorMath.h; sourceTree = "<group>"; };
 		94E6B8F8166C2A0A00082F27 /* version.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };
-		94E6B8F9166C2A0A00082F27 /* VertexShaderConstantDef.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VertexShaderConstantDef.h; sourceTree = "<group>"; };
 		94E6B8FA166C2A0A00082F27 /* Video.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Video.cpp; sourceTree = "<group>"; };
 		94E6B8FB166C2A0A00082F27 /* Video.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Video.h; sourceTree = "<group>"; };
 		94E6B8FC166C2A0A00082F27 /* video_api_export.ver */ = {isa = PBXFileReference; lastKnownFileType = text; path = video_api_export.ver; sourceTree = "<group>"; };
@@ -2056,8 +2045,6 @@
 			children = (
 				94E6B889166C2A0A00082F27 /* Blender.cpp */,
 				94E6B88A166C2A0A00082F27 /* Blender.h */,
-				94E6B88B166C2A0A00082F27 /* CNvTNTCombiner.cpp */,
-				94E6B88C166C2A0A00082F27 /* CNvTNTCombiner.h */,
 				94E6B88D166C2A0A00082F27 /* COLOR.h */,
 				94E6B88E166C2A0A00082F27 /* Combiner.cpp */,
 				94E6B88F166C2A0A00082F27 /* Combiner.h */,
@@ -2076,8 +2063,6 @@
 				94E6B89C166C2A0A00082F27 /* DecodedMux.h */,
 				94E6B89D166C2A0A00082F27 /* DeviceBuilder.cpp */,
 				94E6B89E166C2A0A00082F27 /* DeviceBuilder.h */,
-				94E6B89F166C2A0A00082F27 /* DirectXDecodedMux.cpp */,
-				94E6B8A0166C2A0A00082F27 /* DirectXDecodedMux.h */,
 				94E6B8A1166C2A0A00082F27 /* ExtendedRender.h */,
 				94E6B8A2166C2A0A00082F27 /* FrameBuffer.cpp */,
 				94E6B8A3166C2A0A00082F27 /* FrameBuffer.h */,
@@ -2089,10 +2074,6 @@
 				94E6B8A9166C2A0A00082F27 /* liblinux */,
 				94E6B8B5166C2A0A00082F27 /* OGLCombiner.cpp */,
 				94E6B8B6166C2A0A00082F27 /* OGLCombiner.h */,
-				94E6B8B7166C2A0A00082F27 /* OGLCombinerNV.cpp */,
-				94E6B8B8166C2A0A00082F27 /* OGLCombinerNV.h */,
-				94E6B8B9166C2A0A00082F27 /* OGLCombinerTNT2.cpp */,
-				94E6B8BA166C2A0A00082F27 /* OGLCombinerTNT2.h */,
 				94E6B8BB166C2A0A00082F27 /* OGLDebug.h */,
 				94E6B8BC166C2A0A00082F27 /* OGLDecodedMux.cpp */,
 				94E6B8BD166C2A0A00082F27 /* OGLDecodedMux.h */,
@@ -2156,7 +2137,6 @@
 				94E6B8F6166C2A0A00082F27 /* VectorMath.cpp */,
 				94E6B8F7166C2A0A00082F27 /* VectorMath.h */,
 				94E6B8F8166C2A0A00082F27 /* version.h */,
-				94E6B8F9166C2A0A00082F27 /* VertexShaderConstantDef.h */,
 				94E6B8FA166C2A0A00082F27 /* Video.cpp */,
 				94E6B8FB166C2A0A00082F27 /* Video.h */,
 				94E6B8FC166C2A0A00082F27 /* video_api_export.ver */,
@@ -2376,7 +2356,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				3DCABE12166C6AB6002F2066 /* Blender.cpp in Sources */,
-				3DCABE14166C6AB6002F2066 /* CNvTNTCombiner.cpp in Sources */,
 				3DCABE17166C6AB6002F2066 /* Combiner.cpp in Sources */,
 				3DCABE1A166C6AB6002F2066 /* CombinerTable.cpp in Sources */,
 				3DCABE1B166C6AB6002F2066 /* Config.cpp in Sources */,
@@ -2385,7 +2364,6 @@
 				3DCABE22166C6AB6002F2066 /* Debugger.cpp in Sources */,
 				3DCABE24166C6AB6002F2066 /* DecodedMux.cpp in Sources */,
 				3DCABE26166C6AB6002F2066 /* DeviceBuilder.cpp in Sources */,
-				3DCABE28166C6AB6002F2066 /* DirectXDecodedMux.cpp in Sources */,
 				3DCABE2B166C6AB6002F2066 /* FrameBuffer.cpp in Sources */,
 				3DCABE2D166C6AB6002F2066 /* GeneralCombiner.cpp in Sources */,
 				3DCABE2F166C6AB6002F2066 /* GraphicsContext.cpp in Sources */,

@@ -214,6 +214,20 @@ void CRender::SetWorldView(const Matrix & mat, bool bPush, bool bReplace)
         {
             // Load projection matrix
             gRSP.modelviewMtxs[gRSP.modelViewMtxTop] = mat;
+
+            // Hack needed to show flashing last heart and map arrows in Zelda OoT & MM
+            // It renders at Z cordinate = 0.0f that gets clipped away
+            // So we translate them a bit along Z to make them stick
+            if( options.enableHackForGames == HACK_FOR_ZELDA || options.enableHackForGames == HACK_FOR_ZELDA_MM) 
+            {
+                if(gRSP.modelviewMtxs[gRSP.modelViewMtxTop]._43 == 0.0f
+                    && gRSP.modelviewMtxs[gRSP.modelViewMtxTop]._42 != 0.0f
+                    && gRSP.modelviewMtxs[gRSP.modelViewMtxTop]._42 <= 94.5f
+                    && gRSP.modelviewMtxs[gRSP.modelViewMtxTop]._42 >= -94.5f)
+                {
+                    gRSP.modelviewMtxs[gRSP.modelViewMtxTop]._43 -= 10.1f;
+                }
+            }
         }
         else
         {
@@ -1083,29 +1097,6 @@ void CRender::SetTextureEnableAndScale(int dwTile, bool bEnable, float fScaleX, 
             gRSP.fTexScaleY = 1/32.0f;
         }
     }
-}
-
-void CRender::SetFogFlagForNegativeW()
-{
-    if( !gRSP.bFogEnabled ) return;
-
-    m_bFogStateSave = gRSP.bFogEnabled;
-
-    bool flag=gRSP.bFogEnabled;
-    
-    for (uint32 i = 0; i < gRSP.numVertices; i++) 
-    {
-        if( g_vtxBuffer[i].rhw < 0 )
-            flag = FALSE;
-    }
-
-    TurnFogOnOff(flag);
-}
-
-void CRender::RestoreFogFlag()
-{
-    if( !gRSP.bFogEnabled ) return;
-    TurnFogOnOff(m_bFogStateSave);
 }
 
 void CRender::SetViewport(int nLeft, int nTop, int nRight, int nBottom, int maxZ)
