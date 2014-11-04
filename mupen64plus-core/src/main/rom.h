@@ -32,7 +32,7 @@
 #define isset_bitmask(x, bitmask) ({ typeof(bitmask) _bitmask = (bitmask); \
                                      (_bitmask & (x)) == _bitmask; })
 #else
-#define isset_bitmask(x, bitmask) (bitmask & (x)) == bitmask)
+#define isset_bitmask(x, bitmask) ((bitmask & (x)) == bitmask)
 #endif
 
 /* ROM Loading and Saving functions */
@@ -136,7 +136,7 @@ enum romdatabase_entry_set_flags {
     ROMDATABASE_ENTRY_PLAYERS = BIT(4),
     ROMDATABASE_ENTRY_RUMBLE = BIT(5),
     ROMDATABASE_ENTRY_COUNTEROP = BIT(6),
-    ROMDATABASE_ENTRY_CHEATS = BIT(7),
+    ROMDATABASE_ENTRY_CHEATS = BIT(7)
 };
 
 typedef struct _romdatabase_search

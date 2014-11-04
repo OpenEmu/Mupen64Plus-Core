@@ -1,6 +1,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *   Mupen64plus - exception.h                                             *
+ *   Mupen64plus - profile.h                                               *
  *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Copyright (C) 2014 Bobby Smiles                                       *
+ *   Copyright (C) 2012 CasualJames                                        *
  *   Copyright (C) 2002 Hacktarux                                          *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -19,11 +21,27 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef M64P_R4300_EXCEPTION_H
-#define M64P_R4300_EXCEPTION_H
+#ifndef PROFILE_H
+#define PROFILE_H
 
-void TLB_refill_exception(unsigned int addresse, int w);
-void exception_general(void);
+enum timed_section
+{
+    TIMED_SECTION_ALL,
+    TIMED_SECTION_GFX,
+    TIMED_SECTION_AUDIO,
+    TIMED_SECTION_COMPILER,
+    TIMED_SECTION_IDLE,
+    NUM_TIMED_SECTIONS
+};
 
-#endif /* M64P_R4300_EXCEPTION_H */
+#ifdef PROFILE
+  void timed_section_start(enum timed_section section);
+  void timed_section_end(enum timed_section section);
+  void timed_sections_refresh(void);
+#else
+  #define timed_section_start(a)
+  #define timed_section_end(a)
+  #define timed_sections_refresh()
+#endif
 
+#endif
