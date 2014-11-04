@@ -110,6 +110,7 @@ PFNGLCREATEPROGRAMOBJECTARBPROC glCreateProgramObjectARB;
 PFNGLATTACHOBJECTARBPROC glAttachObjectARB;
 PFNGLLINKPROGRAMARBPROC glLinkProgramARB;
 PFNGLUSEPROGRAMOBJECTARBPROC glUseProgramObjectARB;
+PFNGLGETHANDLEARBPROC glGetHandleARB;
 PFNGLGETUNIFORMLOCATIONARBPROC glGetUniformLocationARB;
 PFNGLUNIFORM1IARBPROC glUniform1iARB;
 PFNGLUNIFORM4IARBPROC glUniform4iARB;
@@ -489,10 +490,16 @@ grSstWinOpen(
     printf("Could not open video settings");
     return false;
   }
+  // Load Glide64mk2 settings to get AA option [Willrandship]
+  m64p_handle video_glide64mk2_section;
+  ConfigOpenSection("Video-Glide64mk2", &video_glide64mk2_section);
+  int aalevel = ConfigGetParamInt(video_glide64mk2_section, "wrpAntiAliasing");
+
   width = ConfigGetParamInt(video_general_section, "ScreenWidth");
   height = ConfigGetParamInt(video_general_section, "ScreenHeight");
   fullscreen = ConfigGetParamBool(video_general_section, "Fullscreen");
   int vsync = ConfigGetParamBool(video_general_section, "VerticalSync");
+
   //viewport_offset = ((screen_resolution>>2) > 20) ? screen_resolution >> 2 : 20;
   // ZIGGY viewport_offset is WIN32 specific, with SDL just set it to zero
   viewport_offset = 0; //-10 //-20;
@@ -507,6 +514,11 @@ grSstWinOpen(
   //   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
   //   SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
   CoreVideo_GL_SetAttribute(M64P_GL_DEPTH_SIZE, 16);
+
+  if(aalevel > 0){
+    CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLEBUFFERS, 1);
+    CoreVideo_GL_SetAttribute(M64P_GL_MULTISAMPLESAMPLES, aalevel);
+  }
 
   printf("(II) Setting video mode %dx%d...\n", width, height);
   if(CoreVideo_SetVideoMode(width, height, 0, fullscreen ? M64VIDEO_FULLSCREEN : M64VIDEO_WINDOWED, (m64p_video_flags) 0) != M64ERR_SUCCESS)
@@ -626,6 +638,7 @@ grSstWinOpen(
     glAttachObjectARB = (PFNGLATTACHOBJECTARBPROC)wglGetProcAddress("glAttachObjectARB");
     glLinkProgramARB = (PFNGLLINKPROGRAMARBPROC)wglGetProcAddress("glLinkProgramARB");
     glUseProgramObjectARB = (PFNGLUSEPROGRAMOBJECTARBPROC)wglGetProcAddress("glUseProgramObjectARB");
+    glGetHandleARB = (PFNGLGETHANDLEARBPROC)wglGetProcAddress("glGetHandleARB");
     glGetUniformLocationARB = (PFNGLGETUNIFORMLOCATIONARBPROC)wglGetProcAddress("glGetUniformLocationARB");
     glUniform1iARB = (PFNGLUNIFORM1IARBPROC)wglGetProcAddress("glUniform1iARB");
     glUniform4iARB = (PFNGLUNIFORM4IARBPROC)wglGetProcAddress("glUniform4iARB");
@@ -1561,7 +1574,8 @@ grRenderBuffer( GrBuffer_t buffer )
 #endif
       render_to_texture = 0;
     }
-//    glDrawBuffer(GL_BACK);
+    // OpenEmu
+    //glDrawBuffer(GL_BACK);
     break;
   case 6: // RENDER TO TEXTURE
     if(!render_to_texture)

@@ -92,7 +92,7 @@ ifneq ("$(filter pentium i%86,$(HOST_CPU))","")
   ARCH_DETECTED := 32BITS
   PIC ?= 0
 endif
-ifneq ("$(filter ppc powerpc,$(HOST_CPU))","")
+ifneq ("$(filter ppc macppc socppc powerpc,$(HOST_CPU))","")
   CPU := PPC
   ARCH_DETECTED := 32BITS
   BIG_ENDIAN := 1
@@ -230,13 +230,18 @@ LDLIBS += $(GL_LDLIBS)
 
 # test for presence of SDL
 ifeq ($(origin SDL_CFLAGS) $(origin SDL_LDLIBS), undefined undefined)
-  SDL_CONFIG = $(CROSS_COMPILE)sdl-config
+  SDL_CONFIG = $(CROSS_COMPILE)sdl2-config
   ifeq ($(shell which $(SDL_CONFIG) 2>/dev/null),)
-    $(error No SDL development libraries found!)
+    SDL_CONFIG = $(CROSS_COMPILE)sdl-config
+    ifeq ($(shell which $(SDL_CONFIG) 2>/dev/null),)
+      $(error No SDL development libraries found!)
+    else
+      $(warning Using SDL 1.2 libraries)
+    endif
   endif
   ifeq ($(OS),OSX)
     SDL_CFLAGS  += $(shell $(SDL_CONFIG) --cflags)
-    # sdl-config on mac screws up when we're trying to build a library and not an executable
+    # sdl2-config on mac screws up when we're trying to build a library and not an executable
     # SDL 1.3 is supposed to fix that, if it's ever released
     SDL_LDLIBS += -L/usr/local/lib -lSDL -Wl,-framework,Cocoa
   else

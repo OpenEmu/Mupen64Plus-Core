@@ -256,8 +256,9 @@ void FindBestDepthBias()
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_ALWAYS);
   glEnable(GL_POLYGON_OFFSET_FILL);
-//  glDrawBuffer(GL_BACK);
-//  glReadBuffer(GL_BACK);
+  // OpenEmu
+  //glDrawBuffer(GL_BACK);
+  //glReadBuffer(GL_BACK);
   glDisable(GL_BLEND);
   glDisable(GL_ALPHA_TEST);
   glColor4ub(255,255,255,255);
