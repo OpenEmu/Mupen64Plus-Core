@@ -212,6 +212,10 @@ CFLAGS += $(LIBPNG_CFLAGS)
 LDLIBS += $(LIBPNG_LDLIBS)
 
 # search for OpenGL libraries
+ifeq ($(USE_GLES), 1)
+  CFLAGS += -DUSE_GLES
+  GL_LDLIBS = -lGLESv2
+endif
 ifeq ($(OS), OSX)
   GL_LDLIBS = -framework OpenGL
 endif
@@ -309,6 +313,9 @@ endif
 ifeq ($(NO_ASM), 1)
   CFLAGS += -DNO_ASM
 endif
+ifeq ($(NO_SSE), 1)
+  CFLAGS += -DNOSSE
+endif
 
 # set installation options
 ifeq ($(PREFIX),)
@@ -329,10 +336,6 @@ OBJDIR = _obj$(POSTFIX)
 
 # list of source files to compile
 SOURCE = \
-	$(SRCDIR)/Glitch64/combiner.cpp \
-	$(SRCDIR)/Glitch64/geometry.cpp \
-	$(SRCDIR)/Glitch64/glitchmain.cpp \
-	$(SRCDIR)/Glitch64/textures.cpp \
 	$(SRCDIR)/Glide64/3dmath.cpp \
 	$(SRCDIR)/Glide64/Combine.cpp \
 	$(SRCDIR)/Glide64/Config.cpp \
@@ -347,6 +350,20 @@ SOURCE = \
 	$(SRCDIR)/Glide64/TexBuffer.cpp \
 	$(SRCDIR)/Glide64/TexCache.cpp \
 	$(SRCDIR)/Glide64/Util.cpp
+
+ifeq ($(USE_GLES), 1)
+	SOURCE += \
+		$(SRCDIR)/Glitch64/OGLEScombiner.cpp \
+		$(SRCDIR)/Glitch64/OGLESgeometry.cpp \
+		$(SRCDIR)/Glitch64/OGLESglitchmain.cpp \
+		$(SRCDIR)/Glitch64/OGLEStextures.cpp
+else
+	SOURCE += \
+		$(SRCDIR)/Glitch64/OGLcombiner.cpp \
+		$(SRCDIR)/Glitch64/OGLgeometry.cpp \
+		$(SRCDIR)/Glitch64/OGLglitchmain.cpp \
+		$(SRCDIR)/Glitch64/OGLtextures.cpp
+endif
 
 ifneq ($(HIRES), 0)
 SOURCE += \
@@ -409,6 +426,8 @@ targets:
 	@echo "  Options:"
 	@echo "    BITS=32       == build 32-bit binaries on 64-bit machine"
 	@echo "    NO_ASM=1      == build without inline assembly code (x86 MMX/SSE)"
+	@echo "    USE_GLES=1    == build against GLESv2 instead of OpenGL"
+	@echo "    NO_SSE=1      == build without SSE support"
 	@echo "    APIDIR=path   == path to find Mupen64Plus Core headers"
 	@echo "    OPTFLAGS=flag == compiler optimization (default: -O3 -flto)"
 	@echo "    WARNFLAGS=flag == compiler warning levels (default: -Wall)"

@@ -157,9 +157,12 @@
 		942130D01793DD8F00E57482 /* alist.c in Sources */ = {isa = PBXBuildFile; fileRef = 942130CB1793DD8F00E57482 /* alist.c */; };
 		942130D11793DD8F00E57482 /* cicx105.c in Sources */ = {isa = PBXBuildFile; fileRef = 942130CD1793DD8F00E57482 /* cicx105.c */; };
 		942130D71793E90800E57482 /* mupen64plus-video-glide64mk2.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */; };
-		942130D91793E96600E57482 /* glitchmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 942130D81793E96600E57482 /* glitchmain.cpp */; };
 		944951E414D912BE00FC80E7 /* n64_cic_nus_6105.c in Sources */ = {isa = PBXBuildFile; fileRef = 944951E214D912BE00FC80E7 /* n64_cic_nus_6105.c */; };
 		94A5322118E273DD00AE11B3 /* hle.c in Sources */ = {isa = PBXBuildFile; fileRef = 94A5322018E273DD00AE11B3 /* hle.c */; };
+		94B096621A0C71A500EA1825 /* OGLcombiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94B0965A1A0C71A500EA1825 /* OGLcombiner.cpp */; };
+		94B096671A0C71A500EA1825 /* OGLgeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94B0965F1A0C71A500EA1825 /* OGLgeometry.cpp */; };
+		94B096681A0C71A500EA1825 /* OGLglitchmain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94B096601A0C71A500EA1825 /* OGLglitchmain.cpp */; };
+		94B096691A0C71A500EA1825 /* OGLtextures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94B096611A0C71A500EA1825 /* OGLtextures.cpp */; };
 		94B5C87F18CAC2FB0088DA62 /* alist_audio.c in Sources */ = {isa = PBXBuildFile; fileRef = 94B5C87118CAC2FB0088DA62 /* alist_audio.c */; };
 		94B5C88018CAC2FB0088DA62 /* alist_naudio.c in Sources */ = {isa = PBXBuildFile; fileRef = 94B5C87218CAC2FB0088DA62 /* alist_naudio.c */; };
 		94B5C88118CAC2FB0088DA62 /* alist_nead.c in Sources */ = {isa = PBXBuildFile; fileRef = 94B5C87318CAC2FB0088DA62 /* alist_nead.c */; };
@@ -187,9 +190,6 @@
 		94D58C8B16BE33EC0093CD72 /* TexBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C2116BE33EC0093CD72 /* TexBuffer.cpp */; };
 		94D58C8C16BE33EC0093CD72 /* TexCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C2316BE33EC0093CD72 /* TexCache.cpp */; };
 		94D58C8E16BE33EC0093CD72 /* Util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C3C16BE33EC0093CD72 /* Util.cpp */; };
-		94D58CA216BE33EC0093CD72 /* combiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C6C16BE33EC0093CD72 /* combiner.cpp */; };
-		94D58CA316BE33EC0093CD72 /* geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C6D16BE33EC0093CD72 /* geometry.cpp */; };
-		94D58CA516BE33EC0093CD72 /* textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94D58C7816BE33EC0093CD72 /* textures.cpp */; };
 		94D58CAC16BE5DAD0093CD72 /* Glide64mk2.ini in Resources */ = {isa = PBXBuildFile; fileRef = 94D58BE716BE33EC0093CD72 /* Glide64mk2.ini */; };
 		94E1B8F918D0F61F003ACCFF /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
 		94E1B93E18D0F6A9003ACCFF /* osal_dynamiclib_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 94E1B90518D0F6A9003ACCFF /* osal_dynamiclib_unix.c */; };
@@ -518,7 +518,6 @@
 		942130CB1793DD8F00E57482 /* alist.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = alist.c; sourceTree = "<group>"; };
 		942130CC1793DD8F00E57482 /* alist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = alist.h; sourceTree = "<group>"; };
 		942130CD1793DD8F00E57482 /* cicx105.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cicx105.c; sourceTree = "<group>"; };
-		942130D81793E96600E57482 /* glitchmain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glitchmain.cpp; sourceTree = "<group>"; };
 		942597D0151470840074E3A3 /* OpenEmuBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenEmuBase.framework; path = ../OpenEmu/build/Release/OpenEmuBase.framework; sourceTree = "<group>"; };
 		9449518E14D8FE6100FC80E7 /* OEN64SystemResponderClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OEN64SystemResponderClient.h; path = ../OpenEmu/N64/OEN64SystemResponderClient.h; sourceTree = "<group>"; };
 		944951E214D912BE00FC80E7 /* n64_cic_nus_6105.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = n64_cic_nus_6105.c; sourceTree = "<group>"; };
@@ -530,6 +529,14 @@
 		94A5322018E273DD00AE11B3 /* hle.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hle.c; sourceTree = "<group>"; };
 		94A5322218E273EB00AE11B3 /* hle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hle.h; sourceTree = "<group>"; };
 		94A5322318E2740800AE11B3 /* ucodes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ucodes.h; sourceTree = "<group>"; };
+		94B0965A1A0C71A500EA1825 /* OGLcombiner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGLcombiner.cpp; sourceTree = "<group>"; };
+		94B0965B1A0C71A500EA1825 /* OGLEScombiner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGLEScombiner.cpp; sourceTree = "<group>"; };
+		94B0965C1A0C71A500EA1825 /* OGLESgeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGLESgeometry.cpp; sourceTree = "<group>"; };
+		94B0965D1A0C71A500EA1825 /* OGLESglitchmain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGLESglitchmain.cpp; sourceTree = "<group>"; };
+		94B0965E1A0C71A500EA1825 /* OGLEStextures.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGLEStextures.cpp; sourceTree = "<group>"; };
+		94B0965F1A0C71A500EA1825 /* OGLgeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGLgeometry.cpp; sourceTree = "<group>"; };
+		94B096601A0C71A500EA1825 /* OGLglitchmain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGLglitchmain.cpp; sourceTree = "<group>"; };
+		94B096611A0C71A500EA1825 /* OGLtextures.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGLtextures.cpp; sourceTree = "<group>"; };
 		94B5C86918CABB2C0088DA62 /* s2tc_algorithm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = s2tc_algorithm.cpp; sourceTree = "<group>"; };
 		94B5C86A18CABB2C0088DA62 /* s2tc_algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = s2tc_algorithm.h; sourceTree = "<group>"; };
 		94B5C86B18CABB2C0088DA62 /* s2tc_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = s2tc_common.h; sourceTree = "<group>"; };
@@ -653,8 +660,6 @@
 		94D58C6816BE33EC0093CD72 /* TxTexCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TxTexCache.h; sourceTree = "<group>"; };
 		94D58C6916BE33EC0093CD72 /* TxUtil.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TxUtil.cpp; sourceTree = "<group>"; };
 		94D58C6A16BE33EC0093CD72 /* TxUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TxUtil.h; sourceTree = "<group>"; };
-		94D58C6C16BE33EC0093CD72 /* combiner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = combiner.cpp; sourceTree = "<group>"; };
-		94D58C6D16BE33EC0093CD72 /* geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = geometry.cpp; sourceTree = "<group>"; };
 		94D58C6F16BE33EC0093CD72 /* 3dfx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = 3dfx.h; sourceTree = "<group>"; };
 		94D58C7016BE33EC0093CD72 /* g3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = g3ext.h; sourceTree = "<group>"; };
 		94D58C7116BE33EC0093CD72 /* glide.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glide.h; sourceTree = "<group>"; };
@@ -663,7 +668,6 @@
 		94D58C7416BE33EC0093CD72 /* sst1vid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sst1vid.h; sourceTree = "<group>"; };
 		94D58C7516BE33EC0093CD72 /* m64p.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = m64p.h; sourceTree = "<group>"; };
 		94D58C7716BE33EC0093CD72 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
-		94D58C7816BE33EC0093CD72 /* textures.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = textures.cpp; sourceTree = "<group>"; };
 		94D58C7916BE33EC0093CD72 /* video_api_export.ver */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = video_api_export.ver; sourceTree = "<group>"; };
 		94D58C7A16BE33EC0093CD72 /* todo!.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "todo!.txt"; sourceTree = "<group>"; };
 		94E1B8FD18D0F61F003ACCFF /* mupen64plus-rsp-cxd4.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-rsp-cxd4.so"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1694,13 +1698,17 @@
 		94D58C6B16BE33EC0093CD72 /* Glitch64 */ = {
 			isa = PBXGroup;
 			children = (
-				94D58C6C16BE33EC0093CD72 /* combiner.cpp */,
-				942130D81793E96600E57482 /* glitchmain.cpp */,
-				94D58C6D16BE33EC0093CD72 /* geometry.cpp */,
+				94B0965B1A0C71A500EA1825 /* OGLEScombiner.cpp */,
+				94B0965C1A0C71A500EA1825 /* OGLESgeometry.cpp */,
+				94B0965D1A0C71A500EA1825 /* OGLESglitchmain.cpp */,
+				94B0965E1A0C71A500EA1825 /* OGLEStextures.cpp */,
+				94B0965A1A0C71A500EA1825 /* OGLcombiner.cpp */,
+				94B0965F1A0C71A500EA1825 /* OGLgeometry.cpp */,
+				94B096601A0C71A500EA1825 /* OGLglitchmain.cpp */,
+				94B096611A0C71A500EA1825 /* OGLtextures.cpp */,
 				94D58C6E16BE33EC0093CD72 /* inc */,
 				94D58C7516BE33EC0093CD72 /* m64p.h */,
 				94D58C7716BE33EC0093CD72 /* main.h */,
-				94D58C7816BE33EC0093CD72 /* textures.cpp */,
 			);
 			path = Glitch64;
 			sourceTree = "<group>";
@@ -2472,9 +2480,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94D58CA216BE33EC0093CD72 /* combiner.cpp in Sources */,
-				94D58CA316BE33EC0093CD72 /* geometry.cpp in Sources */,
-				94D58CA516BE33EC0093CD72 /* textures.cpp in Sources */,
+				94B096621A0C71A500EA1825 /* OGLcombiner.cpp in Sources */,
+				94B096671A0C71A500EA1825 /* OGLgeometry.cpp in Sources */,
+				94B096681A0C71A500EA1825 /* OGLglitchmain.cpp in Sources */,
+				94B096691A0C71A500EA1825 /* OGLtextures.cpp in Sources */,
 				94D58C7C16BE33EC0093CD72 /* 3dmath.cpp in Sources */,
 				94D58C7E16BE33EC0093CD72 /* Combine.cpp in Sources */,
 				94D58C7F16BE33EC0093CD72 /* Config.cpp in Sources */,
@@ -2491,7 +2500,6 @@
 				94D58C8E16BE33EC0093CD72 /* Util.cpp in Sources */,
 				94D58C8816BE33EC0093CD72 /* osal_dynamiclib_unix.c in Sources */,
 				94D58BDB16BE327A0093CD72 /* SDLStubs.m in Sources */,
-				942130D91793E96600E57482 /* glitchmain.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -24,6 +24,7 @@
 #include <m64p_types.h>
 
 #define LOG(...) WriteLog(M64MSG_VERBOSE, __VA_ARGS__)
+#define LOGINFO(...) WriteLog(M64MSG_VERBOSE, __VA_ARGS__)
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -109,7 +110,11 @@ extern "C" {
 #include <stdio.h>
 //#define printf(...)
 #define GL_GLEXT_PROTOTYPES
+#ifdef USE_GLES
+#include <SDL_opengles2.h>
+#else
 #include <SDL_opengl.h>
+#endif
 #endif // _WIN32
 #include "glide.h"
 
@@ -148,6 +153,17 @@ extern PFNGLGETINFOLOGARBPROC glGetInfoLogARB;
 extern PFNGLGETOBJECTPARAMETERIVARBPROC glGetObjectParameterivARB;
 extern PFNGLSECONDARYCOLOR3FPROC glSecondaryColor3f;
 #endif
+void check_compile(GLuint shader);
+void check_link(GLuint program);
+void vbo_enable();
+void vbo_disable();
+
+//Vertex Attribute Locations
+#define POSITION_ATTR 0
+#define COLOUR_ATTR 1
+#define TEXCOORD_0_ATTR 2
+#define TEXCOORD_1_ATTR 3
+#define FOG_ATTR 4
 
 extern int w_buffer_mode;
 extern int nbTextureUnits;
@@ -185,6 +201,7 @@ void free_combiners();
 void compile_shader();
 void set_lambda();
 void set_copy_shader();
+void disable_textureSizes();
 
 // config functions
 
@@ -276,6 +293,37 @@ FX_ENTRY void FX_CALL
 grConstantColorValueExt(GrChipID_t    tmu,
                         GrColor_t     value);
 
+#ifdef USE_GLES
+#define CHECK_FRAMEBUFFER_STATUS() \
+{\
+ GLenum status; \
+ status = glCheckFramebufferStatus(GL_FRAMEBUFFER); \
+ /*display_warning("%x\n", status);*/\
+ switch(status) { \
+ case GL_FRAMEBUFFER_COMPLETE: \
+   /*display_warning("framebuffer complete!\n");*/\
+   break; \
+ case GL_FRAMEBUFFER_UNSUPPORTED: \
+   display_warning("framebuffer GL_FRAMEBUFFER_UNSUPPORTED_EXT\n");\
+    /* you gotta choose different formats */ \
+   /*assert(0);*/ \
+   break; \
+ case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: \
+   display_warning("framebuffer INCOMPLETE_ATTACHMENT\n");\
+   break; \
+ case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: \
+   display_warning("framebuffer FRAMEBUFFER_MISSING_ATTACHMENT\n");\
+   break; \
+ case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS: \
+   display_warning("framebuffer FRAMEBUFFER_DIMENSIONS\n");\
+   break; \
+ default: \
+   break; \
+   /* programming error; will fail on all hardware */ \
+   /*assert(0);*/ \
+ }\
+}
+#else
 #define CHECK_FRAMEBUFFER_STATUS() \
 {\
  GLenum status; \
@@ -320,6 +368,7 @@ grConstantColorValueExt(GrChipID_t    tmu,
    /*assert(0);*/ \
  }\
 }
+#endif
 
 #ifdef VPDEBUG
 #define LOGGING

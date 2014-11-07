@@ -389,6 +389,7 @@ int grTexFormat2GLPackedFmt(int fmt, int * gltexfmt, int * glpixfmt, int * glpac
     *glpixfmt = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
     *glpackfmt = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
     break;
+// OpenEmu
 #ifndef __APPLE__
   case GR_TEXFMT_ARGB_CMP_FXT1:
     factor = 8;
@@ -611,6 +612,7 @@ grTexDownloadMipMap( GrChipID_t tmu,
       factor = 16;
       glformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
       break;
+// OpenEmu
 #ifndef __APPLE__
     case GR_TEXFMT_ARGB_CMP_FXT1:
       factor = 8;
