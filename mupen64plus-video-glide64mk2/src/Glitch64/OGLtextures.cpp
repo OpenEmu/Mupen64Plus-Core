@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #endif // _WIN32
 #include "glide.h"
-#include "main.h"
+#include "glitchmain.h"
 #include <stdio.h>
 
 /* Napalm extensions to GrTextureFormat_t */
@@ -147,7 +147,7 @@ void init_textures()
 
 void free_textures()
 {
-#ifndef WIN32
+#ifndef _WIN32
   // ZIGGY for some reasons, Pj64 doesn't like remove_tex on exit
   remove_tex(0x00000000, 0xFFFFFFFF);
 #endif

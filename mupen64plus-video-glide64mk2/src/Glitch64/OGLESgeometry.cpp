@@ -24,18 +24,12 @@
 #include <windows.h>
 #endif // _WIN32
 #include "glide.h"
-#include "main.h"
+#include "glitchmain.h"
 #include "../Glide64/winlnxdefs.h"
 #include "../Glide64/rdp.h"
 
 #define Z_MAX (65536.0f)
 #define VERTEX_SIZE sizeof(VERTEX) //Size of vertex struct
-
-#ifdef ANDROID_EDITION
-#include "ae_imports.h"
-static float polygonOffsetFactor;
-static float polygonOffsetUnits;
-#endif
 
 static int xy_off;
 static int xy_en;
@@ -335,10 +329,6 @@ float biasFactor = 0;
 #if 0
 void FindBestDepthBias()
 {
-#ifdef ANDROID_EDITION
-  int hardwareType = Android_JNI_GetHardwareType();
-  Android_JNI_GetPolygonOffset(hardwareType, 1, &polygonOffsetFactor, &polygonOffsetUnits);
-#else
   float f, bestz = 0.25f;
   int x;
   if (biasFactor) return;
@@ -374,7 +364,6 @@ void FindBestDepthBias()
   }
   //printf(" --> bias factor %g\n", biasFactor);
   glPopAttrib();
-#endif
 }
 #endif
 
@@ -384,14 +373,17 @@ grDepthBiasLevel( FxI32 level )
   LOG("grDepthBiasLevel(%d)\r\n", level);
   if (level)
   {
-    #ifdef ANDROID_EDITION
-    glPolygonOffset(polygonOffsetFactor, polygonOffsetUnits);
-    #else
-    if(w_buffer_mode)
-      glPolygonOffset(1.0f, -(float)level*zscale/255.0f);
+    if(settings.force_polygon_offset)
+    {
+      glPolygonOffset(settings.polygon_offset_factor, settings.polygon_offset_units);
+    }
     else
-      glPolygonOffset(0, (float)level*biasFactor);
-    #endif
+    {
+      if(w_buffer_mode)
+        glPolygonOffset(1.0f, -(float)level*zscale/255.0f);
+      else
+        glPolygonOffset(0, (float)level*biasFactor);
+    }
     glEnable(GL_POLYGON_OFFSET_FILL);
   }
   else

@@ -39,6 +39,7 @@ BOOL Config_Open()
     ConfigSetDefaultInt(video_general_section, "ScreenWidth", 640, "Width of output window or fullscreen width");
     ConfigSetDefaultInt(video_general_section, "ScreenHeight", 480, "Height of output window or fullscreen height");
     ConfigSetDefaultInt(video_glide64_section, "wrpAntiAliasing", 0, "Enable full-scene anti-aliasing by setting this to a value greater than 1");
+    ConfigSetDefaultInt(video_general_section, "Rotate", 0, "Rotate screen contents: 0=0 degree, 1=90 degree, 2 = 180 degree, 3=270 degree");
 
     return TRUE;
 }
@@ -73,6 +74,13 @@ BOOL Config_ReadInt(const char *itemname, const char *desc, int def_value, int c
         return ConfigGetParamInt(video_glide64_section, itemname);
     }
 
+}
+
+float Config_ReadFloat(const char *itemname, const char *desc, float def_value)
+{
+    VLOG("Getting value %s", itemname);
+    ConfigSetDefaultFloat(video_glide64_section, itemname, def_value, desc);
+    return ConfigGetParamFloat(video_glide64_section, itemname);
 }
 
 #ifdef TEXTURE_FILTER

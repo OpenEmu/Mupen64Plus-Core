@@ -523,6 +523,10 @@
 		944951E214D912BE00FC80E7 /* n64_cic_nus_6105.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = n64_cic_nus_6105.c; sourceTree = "<group>"; };
 		944951E314D912BE00FC80E7 /* n64_cic_nus_6105.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = n64_cic_nus_6105.h; sourceTree = "<group>"; };
 		944951E514D912E500FC80E7 /* fpu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fpu.h; sourceTree = "<group>"; };
+		948711981A6B48A6008CDA87 /* glitchmain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glitchmain.h; sourceTree = "<group>"; };
+		948711991A6B48A6008CDA87 /* OGLESwrappers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGLESwrappers.h; sourceTree = "<group>"; };
+		9487119A1A6B4CE7008CDA87 /* FrameSkipper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FrameSkipper.cpp; sourceTree = "<group>"; };
+		9487119B1A6B4CE7008CDA87 /* FrameSkipper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameSkipper.h; sourceTree = "<group>"; };
 		94A5321D18E2737600AE11B3 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
 		94A5321E18E273C800AE11B3 /* hle_external.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hle_external.h; sourceTree = "<group>"; };
 		94A5321F18E273C800AE11B3 /* hle_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = hle_internal.h; sourceTree = "<group>"; };
@@ -667,7 +671,6 @@
 		94D58C7316BE33EC0093CD72 /* glideutl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glideutl.h; sourceTree = "<group>"; };
 		94D58C7416BE33EC0093CD72 /* sst1vid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sst1vid.h; sourceTree = "<group>"; };
 		94D58C7516BE33EC0093CD72 /* m64p.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = m64p.h; sourceTree = "<group>"; };
-		94D58C7716BE33EC0093CD72 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		94D58C7916BE33EC0093CD72 /* video_api_export.ver */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = video_api_export.ver; sourceTree = "<group>"; };
 		94D58C7A16BE33EC0093CD72 /* todo!.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "todo!.txt"; sourceTree = "<group>"; };
 		94E1B8FD18D0F61F003ACCFF /* mupen64plus-rsp-cxd4.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-rsp-cxd4.so"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1581,6 +1584,8 @@
 				94D58BFE16BE33EC0093CD72 /* FBtoScreen.cpp */,
 				94D58BFF16BE33EC0093CD72 /* FBtoScreen.h */,
 				94D58C0116BE33EC0093CD72 /* font.h */,
+				9487119A1A6B4CE7008CDA87 /* FrameSkipper.cpp */,
+				9487119B1A6B4CE7008CDA87 /* FrameSkipper.h */,
 				94F2868616C6CFDB0075A73E /* Gfx_1.3.h */,
 				94D58C0316BE33EC0093CD72 /* GlideExtensions.h */,
 				94D58C0516BE33EC0093CD72 /* Help */,
@@ -1706,9 +1711,10 @@
 				94B0965F1A0C71A500EA1825 /* OGLgeometry.cpp */,
 				94B096601A0C71A500EA1825 /* OGLglitchmain.cpp */,
 				94B096611A0C71A500EA1825 /* OGLtextures.cpp */,
+				948711991A6B48A6008CDA87 /* OGLESwrappers.h */,
 				94D58C6E16BE33EC0093CD72 /* inc */,
 				94D58C7516BE33EC0093CD72 /* m64p.h */,
-				94D58C7716BE33EC0093CD72 /* main.h */,
+				948711981A6B48A6008CDA87 /* glitchmain.h */,
 			);
 			path = Glitch64;
 			sourceTree = "<group>";

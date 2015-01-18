@@ -36,11 +36,8 @@
 #include <math.h>
 #include "glide.h"
 #include "g3ext.h"
-#include "main.h"
+#include "glitchmain.h"
 #include "m64p.h"
-
-#include <SDL_opengles.h>
-//#include <GL/glext.h>
 
 #define OPENGL_CHECK_ERRORS { const GLenum errcode = glGetError(); if (errcode != GL_NO_ERROR) LOG("OpenGL Error code %i in '%s' line %i\n", errcode, __FILE__, __LINE__-1); }
 
@@ -206,8 +203,8 @@ struct texbuf_t {
 static texbuf_t texbufs[NB_TEXBUFS];
 static int texbuf_i;
 
-unsigned short frameBuffer[2048*2048];
-unsigned short depthBuffer[2048*2048];
+unsigned short frameBuffer[2048*2048*2]; // Support 2048x2048 screen resolution at 32 bits (RGBA) per pixel
+unsigned short depthBuffer[2048*2048];   // Support 2048x2048 screen resolution at 16 bits (depth) per pixel
 
 //#define VOODOO1
 
@@ -257,7 +254,7 @@ void display_error()
 #endif // _WIN32
 
 #ifdef LOGGING
-char out_buf[256];
+char log_buf[256];
 bool log_open = false;
 std::ofstream log_file;
 
@@ -288,8 +285,8 @@ void LOG(const char *text, ...)
     return;
 	va_list ap;
 	va_start(ap, text);
-	vsprintf(out_buf, text, ap);
-  log_file << out_buf;
+	vsprintf(log_buf, text, ap);
+  log_file << log_buf;
   log_file.flush();
 	va_end(ap);
 }
@@ -309,7 +306,7 @@ LogManager logManager;
 #else // LOGGING
 #define OPEN_LOG()
 #define CLOSE_LOG()
-//#define LOG
+#define LOG
 #endif // LOGGING
 
 FX_ENTRY void FX_CALL
@@ -456,7 +453,7 @@ grSstWinOpenExt(
     origin_location, nColBuffers, nAuxBuffers);
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 # include <fcntl.h>
 # ifndef ATTACH_PARENT_PROCESS
 #  define ATTACH_PARENT_PROCESS ((FxU32)-1)
@@ -758,7 +755,7 @@ grSstWinClose( GrContext_t context )
   }
 
   free_combiners();
-#ifndef WIN32
+#ifndef _WIN32
   try // I don't know why, but opengl can be killed before this function call when emulator is closed (Gonetz).
     // ZIGGY : I found the problem : it is a function pointer, when the extension isn't supported , it is then zero, so just need to check the pointer prior to do the call.
   {
@@ -783,7 +780,7 @@ grSstWinClose( GrContext_t context )
   nb_fb = 0;
 
   free_textures();
-#ifndef WIN32
+#ifndef _WIN32
   // ZIGGY for some reasons, Pj64 doesn't like remove_tex on exit
   remove_tex(0, 0xfffffff);
 #endif
@@ -1685,7 +1682,7 @@ grAuxBufferExt( GrBuffer_t buffer )
     need_to_compile = 1;
   }
 }
-void vbo_draw();
+
 FX_ENTRY void FX_CALL
 grBufferClear( GrColor_t color, GrAlpha_t alpha, FxU32 depth )
 {
@@ -1810,7 +1807,7 @@ grLfbLock( GrLock_t type, GrBuffer_t buffer, GrLfbWriteMode_t writeMode,
         info->strideInBytes = width*4;
         info->writeMode = GR_LFBWRITEMODE_888;
         info->origin = origin;
-        //glReadPixels(0, viewport_offset, width, height, GL_BGRA, GL_UNSIGNED_BYTE, frameBuffer);
+        glReadPixels(0, viewport_offset, width, height, GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer);
       } else {
         buf = (unsigned char*)malloc(width*height*4);
 
