@@ -1,6 +1,7 @@
 /******************************************************************************\
+* Project:  Instruction Mnemonics for Vector Unit Computational Adds           *
 * Authors:  Iconoclast                                                         *
-* Release:  2013.11.26                                                         *
+* Release:  2014.10.15                                                         *
 * License:  CC0 Public Domain Dedication                                       *
 *                                                                              *
 * To the extent possible under law, the author(s) have dedicated all copyright *
@@ -11,27 +12,23 @@
 * with this software.                                                          *
 * If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.             *
 \******************************************************************************/
+
+#ifndef _ADD_H_
+#define _ADD_H_
+
 #include "vu.h"
 
-INLINE static void do_mudh(short* VD, short* VS, short* VT)
-{
-    register int i;
+VECTOR_EXTERN
+    VADD   (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VSUB   (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VABS   (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VADDC  (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VSUBC  (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VSAW   (v16 vs, v16 vt);
 
-    for (i = 0; i < N; i++)
-        VACC_L[i] = 0x0000;
-    for (i = 0; i < N; i++)
-        VACC_M[i] = (short)(VS[i]*VT[i] >>  0);
-    for (i = 0; i < N; i++)
-        VACC_H[i] = (short)(VS[i]*VT[i] >> 16);
-    SIGNED_CLAMP_AM(VD);
-    return;
-}
-
-static void VMUDH(int vd, int vs, int vt, int e)
-{
-    short ST[N];
-
-    SHUFFLE_VECTOR(ST, VR[vt], e);
-    do_mudh(VR[vd], VR[vs], ST);
-    return;
-}
+#endif

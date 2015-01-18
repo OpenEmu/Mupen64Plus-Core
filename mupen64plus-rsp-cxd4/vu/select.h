@@ -1,6 +1,7 @@
 /******************************************************************************\
+* Project:  Instruction Mnemonics for Vector Unit Computational Test Selects   *
 * Authors:  Iconoclast                                                         *
-* Release:  2014.08.13                                                         *
+* Release:  2014.10.15                                                         *
 * License:  CC0 Public Domain Dedication                                       *
 *                                                                              *
 * To the extent possible under law, the author(s) have dedicated all copyright *
@@ -11,27 +12,29 @@
 * with this software.                                                          *
 * If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.             *
 \******************************************************************************/
+
+#ifndef _SELECT_H_
+#define _SELECT_H_
+
 #include "vu.h"
 
-INLINE static void clr_bi(short* VD, short* VS, short* VT)
-{ /* clear CARRY and borrow in to accumulators */
-    register int i;
+VECTOR_EXTERN
+    VLT    (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VEQ    (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VNE    (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VGE    (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VCL    (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VCH    (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VCR    (v16 vs, v16 vt);
+VECTOR_EXTERN
+    VMRG   (v16 vs, v16 vt);
 
-    for (i = 0; i < N; i++)
-        VACC_L[i] = VS[i] - VT[i] - co[i];
-    SIGNED_CLAMP_SUB(VD, VS, VT);
-    for (i = 0; i < N; i++)
-        ne[i] = 0;
-    for (i = 0; i < N; i++)
-        co[i] = 0;
-    return;
-}
+extern INLINE void merge(short* VD, short* cmp, short* pass, short* fail);
 
-static void VSUB(int vd, int vs, int vt, int e)
-{
-    ALIGNED short ST[N];
-
-    SHUFFLE_VECTOR(ST, VR[vt], e);
-    clr_bi(VR[vd], VR[vs], ST);
-    return;
-}
+#endif

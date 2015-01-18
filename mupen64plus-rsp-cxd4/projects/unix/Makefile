@@ -117,7 +117,7 @@ ifeq ("$(CPU)","NONE")
 endif
 
 # base CFLAGS, LDLIBS, and LDFLAGS
-OPTFLAGS ?= -O3
+OPTFLAGS ?= -O3 -flto
 WARNFLAGS ?= -Wall
 CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -fvisibility=hidden -I../../ -mstackrealign
 CPPFLAGS += -DM64P_PLUGIN_API
@@ -256,7 +256,14 @@ OBJDIR = _obj$(POSTFIX)
 
 # list of source files to compile
 SOURCE = \
-	$(SRCDIR)/rsp.c
+	$(SRCDIR)/su.c \
+	$(SRCDIR)/vu/add.c \
+	$(SRCDIR)/vu/divide.c \
+	$(SRCDIR)/vu/logical.c \
+	$(SRCDIR)/vu/multiply.c \
+	$(SRCDIR)/vu/select.c \
+	$(SRCDIR)/vu/vu.c \
+	$(SRCDIR)/module.c
 
 ifeq ($(OS),MINGW)
 SOURCE += $(SRCDIR)/osal_dynamiclib_win32.c

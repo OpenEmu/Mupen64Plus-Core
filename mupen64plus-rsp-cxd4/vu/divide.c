@@ -1,6 +1,7 @@
 /******************************************************************************\
+* Project:  MSP Simulation Layer for Vector Unit Computational Divides         *
 * Authors:  Iconoclast                                                         *
-* Release:  2013.11.26                                                         *
+* Release:  2014.10.17                                                         *
 * License:  CC0 Public Domain Dedication                                       *
 *                                                                              *
 * To the extent possible under law, the author(s) have dedicated all copyright *
@@ -11,32 +12,22 @@
 * with this software.                                                          *
 * If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.             *
 \******************************************************************************/
-#ifndef _DIVROM_H
-#define _DIVROM_H
 
-static int DivIn = 0; /* buffered numerator of division read from vector file */
-static int DivOut = 0; /* global division result set by VRCP/VRCPL/VRSQ/VRSQH */
+#include "divide.h"
+
+s32 DivIn = 0; /* buffered numerator of division read from vector file */
+s32 DivOut = 0; /* global division result set by VRCP/VRCPL/VRSQ/VRSQL */
 #if (0)
-static int MovIn; /* We do not emulate this register (obsolete, for VMOV). */
+s32 MovIn; /* We do not emulate this register (obsolete, for VMOV). */
 #endif
 
-static int DPH;
-/*
- * Boolean flag:  Double-precision high was the last vector divide op?
- *
- * if (lastDivideOp == VRCP, VRCPL, VRSQ, VRSQL)
- *     DPH = false; // single-precision or double-precision low, not high
- * else if (lastDivideOp == VRCPH, VRSQH)
- *     DPH = true; // double-precision high
- * else if (lastDivideOp == VMOV, VNOP)
- *     DPH = DPH; // no change, divide-group ops but not real divides
- */
+int DPH = 0;
 
 /*
  * 11-bit vector divide result look-up table
- * Thanks to MooglyGuy @ MESS for organizing.
+ * Thanks to MAME / MESS for organizing.
  */
-static const unsigned short div_ROM[1024] = {
+static const u16 div_ROM[1 << 10] = {
     0xFFFF,
     0xFF00,
     0xFE01,
@@ -1073,9 +1064,9 @@ enum {
     SP_DIV_PRECISION_CURRENT
 };
 
-INLINE static void do_div(int data, int sqrt, int precision)
+INLINE static void do_div(i32 data, int sqrt, int precision)
 {
-    int32_t addr;
+    i32 addr;
     int fetch;
     int shift;
 
@@ -1115,4 +1106,195 @@ INLINE static void do_div(int data, int sqrt, int precision)
         DivOut ^= (DivIn < 0) ? ~0 : 0;
     return;
 }
+
+VECTOR_OPERATION VRCP(v16 vs, v16 vt)
+{
+    const int result = (inst & 0x000007FF) >>  6;
+    const int source = (inst & 0x0000FFFF) >> 11;
+    const int target = (inst >> 16) & 31;
+    const unsigned int element = (inst >> 21) & 0x7;
+
+    DivIn = (i32)VR[target][element];
+    do_div(DivIn, SP_DIV_SQRT_NO, SP_DIV_PRECISION_SINGLE);
+#ifdef ARCH_MIN_SSE2
+    *(v16 *)VACC_L = vt;
+#else
+    vector_copy(VACC_L, vt);
 #endif
+    VR[result][source & 07] = (i16)DivOut;
+    DPH = SP_DIV_PRECISION_SINGLE;
+#ifdef ARCH_MIN_SSE2
+    vs = *(v16 *)VR[result];
+    return (vs);
+#else
+    vector_copy(V_result, VR[result]);
+    vs = vt; /* unused */
+    return;
+#endif
+}
+
+VECTOR_OPERATION VRCPL(v16 vs, v16 vt)
+{
+    const int result = (inst & 0x000007FF) >>  6;
+    const int source = (inst & 0x0000FFFF) >> 11;
+    const int target = (inst >> 16) & 31;
+    const unsigned int element = (inst >> 21) & 0x7;
+
+    DivIn &= -DPH;
+    DivIn |= (u16)VR[target][element];
+    do_div(DivIn, SP_DIV_SQRT_NO, DPH);
+#ifdef ARCH_MIN_SSE2
+    *(v16 *)VACC_L = vt;
+#else
+    vector_copy(VACC_L, vt);
+#endif
+    VR[result][source & 07] = (i16)DivOut;
+    DPH = SP_DIV_PRECISION_SINGLE;
+#ifdef ARCH_MIN_SSE2
+    vs = *(v16 *)VR[result];
+    return (vs);
+#else
+    vector_copy(V_result, VR[result]);
+    vs = vt; /* unused */
+    return;
+#endif
+}
+
+VECTOR_OPERATION VRCPH(v16 vs, v16 vt)
+{
+    const int result = (inst & 0x000007FF) >>  6;
+    const int source = (inst & 0x0000FFFF) >> 11;
+    const int target = (inst >> 16) & 31;
+    const unsigned int element = (inst >> 21) & 0x7;
+
+    DivIn = VR[target][element] << 16;
+#ifdef ARCH_MIN_SSE2
+    *(v16 *)VACC_L = vt;
+#else
+    vector_copy(VACC_L, vt);
+#endif
+    VR[result][source & 07] = DivOut >> 16;
+    DPH = SP_DIV_PRECISION_DOUBLE;
+#ifdef ARCH_MIN_SSE2
+    vs = *(v16 *)VR[result];
+    return (vs);
+#else
+    vector_copy(V_result, VR[result]);
+    vs = vt; /* unused */
+    return;
+#endif
+}
+
+VECTOR_OPERATION VMOV(v16 vs, v16 vt)
+{
+    const int result = (inst & 0x000007FF) >>  6;
+    const int source = (inst & 0x0000FFFF) >> 11;
+    const unsigned int element = (inst >> 21) & 0x7;
+
+#ifdef ARCH_MIN_SSE2
+    *(v16 *)VACC_L = vt;
+#else
+    vector_copy(VACC_L, vt);
+#endif
+    VR[result][source & 07] = VACC_L[element];
+#ifdef ARCH_MIN_SSE2
+    vs = *(v16 *)VR[result];
+    return (vs);
+#else
+    vector_copy(V_result, VR[result]);
+    vs = vt; /* unused */
+    return;
+#endif
+}
+
+VECTOR_OPERATION VRSQ(v16 vs, v16 vt)
+{
+    const int result = (inst & 0x000007FF) >>  6;
+    const int source = (inst & 0x0000FFFF) >> 11;
+    const int target = (inst >> 16) & 31;
+    const unsigned int element = (inst >> 21) & 0x7;
+
+    DivIn = (i32)VR[target][element];
+    do_div(DivIn, SP_DIV_SQRT_YES, SP_DIV_PRECISION_SINGLE);
+#ifdef ARCH_MIN_SSE2
+    *(v16 *)VACC_L = vt;
+#else
+    vector_copy(VACC_L, vt);
+#endif
+    VR[result][source & 07] = (i16)DivOut;
+    DPH = SP_DIV_PRECISION_SINGLE;
+#ifdef ARCH_MIN_SSE2
+    vs = *(v16 *)VR[result];
+    return (vs);
+#else
+    vector_copy(V_result, VR[result]);
+    vs = vt; /* unused */
+    return;
+#endif
+}
+
+VECTOR_OPERATION VRSQL(v16 vs, v16 vt)
+{
+    const int result = (inst & 0x000007FF) >>  6;
+    const int source = (inst & 0x0000FFFF) >> 11;
+    const int target = (inst >> 16) & 31;
+    const unsigned int element = (inst >> 21) & 0x7;
+
+    DivIn &= -DPH;
+    DivIn |= (u16)VR[target][element];
+    do_div(DivIn, SP_DIV_SQRT_YES, DPH);
+#ifdef ARCH_MIN_SSE2
+    *(v16 *)VACC_L = vt;
+#else
+    vector_copy(VACC_L, vt);
+#endif
+    VR[result][source & 07] = (i16)DivOut;
+    DPH = SP_DIV_PRECISION_SINGLE;
+#ifdef ARCH_MIN_SSE2
+    vs = *(v16 *)VR[result];
+    return (vs);
+#else
+    vector_copy(V_result, VR[result]);
+    vs = vt; /* unused */
+    return;
+#endif
+}
+
+VECTOR_OPERATION VRSQH(v16 vs, v16 vt)
+{
+    const int result = (inst & 0x000007FF) >>  6;
+    const int source = (inst & 0x0000FFFF) >> 11;
+    const int target = (inst >> 16) & 31;
+    const unsigned int element = (inst >> 21) & 0x7;
+
+    DivIn = VR[target][element] << 16;
+#ifdef ARCH_MIN_SSE2
+    *(v16 *)VACC_L = vt;
+#else
+    vector_copy(VACC_L, vt);
+#endif
+    VR[result][source & 07] = DivOut >> 16;
+    DPH = SP_DIV_PRECISION_DOUBLE;
+#ifdef ARCH_MIN_SSE2
+    vs = *(v16 *)VR[result];
+    return (vs);
+#else
+    vector_copy(V_result, VR[result]);
+    vs = vt; /* unused */
+    return;
+#endif
+}
+
+VECTOR_OPERATION VNOP(v16 vs, v16 vt)
+{
+    const int result = (inst & 0x000007FF) >>  6;
+
+    vt = vs; /* unused */
+#ifdef ARCH_MIN_SSE2
+    vs = *(v16 *)VR[result];
+    return (vs);
+#else
+    vector_copy(V_result, VR[result]);
+    return;
+#endif
+}

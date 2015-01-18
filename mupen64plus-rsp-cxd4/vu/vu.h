@@ -1,7 +1,7 @@
 /******************************************************************************\
 * Project:  MSP Emulation Layer for Vector Unit Computational Operations       *
 * Authors:  Iconoclast                                                         *
-* Release:  2013.11.26                                                         *
+* Release:  2014.12.13                                                         *
 * License:  CC0 Public Domain Dedication                                       *
 *                                                                              *
 * To the extent possible under law, the author(s) have dedicated all copyright *
@@ -12,11 +12,23 @@
 * with this software.                                                          *
 * If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.             *
 \******************************************************************************/
-#ifndef _VU_H
-#define _VU_H
+#ifndef _VU_H_
+#define _VU_H_
 
-#define N      8
+#ifdef ARCH_MIN_SSE2
+#include <emmintrin.h>
+#endif
+
+#include "../my_types.h"
+
+#define N       8
 /* N:  number of processor elements in SIMD processor */
+
+/*
+ * We are going to need this for vector operations doing scalar things.
+ * The divides and VSAW need bit-wise information from the instruction word.
+ */
+extern u32 inst;
 
 /*
  * RSP virtual registers (of vector unit)
@@ -26,98 +38,224 @@
  * For ?WC2 we may need to do byte-precision access just as directly.
  * This is amended by using the `VU_S` and `VU_B` macros defined in `rsp.h`.
  */
-ALIGNED short VR[32][N];
+ALIGNED extern i16 VR[32][N];
 
 /*
- * accumulator-indexing macros (inverted access dimensions, suited for SSE)
+ * The RSP accumulator is a vector of 3 48-bit integers.  Nearly all of the
+ * vector operations access it, but it's for multiply-accumulate operations.
+ *
+ * Access dimensions would be VACC[8][3] but are inverted for SIMD benefits.
+ */
+ALIGNED extern i16 VACC[3][N];
+
+/*
+ * When compiling without SSE2, we need to use a pointer to a destination
+ * vector instead of an XMM register in the return slot of the function.
+ * The vector "result" register will be emulated to serve this pointer
+ * as a shared global rather than the return slot of a function call.
+ */
+#ifndef ARCH_MIN_SSE2
+ALIGNED extern i16 V_result[N];
+#endif
+
+/*
+ * accumulator-indexing macros
  */
 #define HI      00
 #define MD      01
 #define LO      02
 
-ALIGNED static short VACC[3][N];
-
 #define VACC_L      (VACC[LO])
 #define VACC_M      (VACC[MD])
 #define VACC_H      (VACC[HI])
 
-#define ACC_L(i)    (VACC_L[i])
-#define ACC_M(i)    (VACC_M[i])
-#define ACC_H(i)    (VACC_H[i])
+#define ACC_L(i)    (VACC_L)[i]
+#define ACC_M(i)    (VACC_M)[i]
+#define ACC_H(i)    (VACC_H)[i]
 
-#include "shuffle.h"
-#include "clamp.h"
-#include "cf.h"
+#ifdef ARCH_MIN_SSE2
+typedef __m128i v16;
+#else
+typedef pi16 v16;
+#endif
 
-static void res_V(int vd, int vs, int vt, int e)
-{
-    register int i;
+#ifdef ARCH_MIN_SSE2
+#define VECTOR_OPERATION    v16
+#else
+#define VECTOR_OPERATION    void
+#endif
+#define VECTOR_EXTERN       extern VECTOR_OPERATION
 
-    vs = vt = e = 0;
-    if (vs != vt || vt != e)
-        return;
-    message("C2\nRESERVED", 2); /* uncertain how to handle reserved, untested */
-    for (i = 0; i < N; i++)
-        VR[vd][i] = 0x0000; /* override behavior (bpoint) */
-    return;
+NOINLINE extern void message(const char* body);
+
+VECTOR_EXTERN (*COP2_C2[8*7 + 8])(v16, v16);
+
+#ifdef ARCH_MIN_SSE2
+
+#define vector_copy(vd, vs) { \
+    *(v16 *)(vd) = *(v16 *)(vs); }
+#define vector_wipe(vd) { \
+    (vd) = _mm_xor_si128(vd, vd); }
+#define vector_fill(vd) { \
+    (vd) = _mm_cmpeq_epi16(vd, vd); }
+
+#define vector_and(vd, vs) { \
+    (vd) = _mm_and_si128    (vd, vs); }
+#define vector_or(vd, vs) { \
+    (vd) = _mm_or_si128     (vd, vs); }
+#define vector_xor(vd, vs) { \
+    (vd) = _mm_xor_si128    (vd, vs); }
+
+/*
+ * Every competent vector unit should have at least two vector comparison
+ * operations:  EQ and LT/GT.  (MMX makes us say GT; SSE's LT is just a GT.)
+ *
+ * Default examples when compiling for the x86 SSE2 architecture below.
+ */
+#define vector_cmplt(vd, vs) { \
+    (vd) = _mm_cmplt_epi16  (vd, vs); }
+#define vector_cmpeq(vd, vs) { \
+    (vd) = _mm_cmpeq_epi16  (vd, vs); }
+#define vector_cmpgt(vd, vs) { \
+    (vd) = _mm_cmpgt_epi16  (vd, vs); }
+
+#else
+
+#define vector_copy(vd, vs) { \
+    (vd)[0] = (vs)[0]; \
+    (vd)[1] = (vs)[1]; \
+    (vd)[2] = (vs)[2]; \
+    (vd)[3] = (vs)[3]; \
+    (vd)[4] = (vs)[4]; \
+    (vd)[5] = (vs)[5]; \
+    (vd)[6] = (vs)[6]; \
+    (vd)[7] = (vs)[7]; \
 }
-static void res_M(int vd, int vs, int vt, int e)
-{
-    message("VMUL IQ", 2);
-    res_V(vd, vs, vt, e);
-    return; /* Ultra64 OS did have these, so one could implement this ext. */
+#define vector_wipe(vd) { \
+    (vd)[0] =  0x0000; \
+    (vd)[1] =  0x0000; \
+    (vd)[2] =  0x0000; \
+    (vd)[3] =  0x0000; \
+    (vd)[4] =  0x0000; \
+    (vd)[5] =  0x0000; \
+    (vd)[6] =  0x0000; \
+    (vd)[7] =  0x0000; \
+}
+#define vector_fill(vd) { \
+    (vd)[0] = ~0x0000; \
+    (vd)[1] = ~0x0000; \
+    (vd)[2] = ~0x0000; \
+    (vd)[3] = ~0x0000; \
+    (vd)[4] = ~0x0000; \
+    (vd)[5] = ~0x0000; \
+    (vd)[6] = ~0x0000; \
+    (vd)[7] = ~0x0000; \
+}
+#define vector_and(vd, vs) { \
+    (vd)[0] &= (vs)[0]; \
+    (vd)[1] &= (vs)[1]; \
+    (vd)[2] &= (vs)[2]; \
+    (vd)[3] &= (vs)[3]; \
+    (vd)[4] &= (vs)[4]; \
+    (vd)[5] &= (vs)[5]; \
+    (vd)[6] &= (vs)[6]; \
+    (vd)[7] &= (vs)[7]; \
+}
+#define vector_or(vd, vs) { \
+    (vd)[0] |= (vs)[0]; \
+    (vd)[1] |= (vs)[1]; \
+    (vd)[2] |= (vs)[2]; \
+    (vd)[3] |= (vs)[3]; \
+    (vd)[4] |= (vs)[4]; \
+    (vd)[5] |= (vs)[5]; \
+    (vd)[6] |= (vs)[6]; \
+    (vd)[7] |= (vs)[7]; \
+}
+#define vector_xor(vd, vs) { \
+    (vd)[0] ^= (vs)[0]; \
+    (vd)[1] ^= (vs)[1]; \
+    (vd)[2] ^= (vs)[2]; \
+    (vd)[3] ^= (vs)[3]; \
+    (vd)[4] ^= (vs)[4]; \
+    (vd)[5] ^= (vs)[5]; \
+    (vd)[6] ^= (vs)[6]; \
+    (vd)[7] ^= (vs)[7]; \
 }
 
-#include "vabs.h"
-#include "vadd.h"
-#include "vaddc.h"
-#include "vand.h"
-#include "vch.h"
-#include "vcl.h"
-#include "vcr.h"
-#include "veq.h"
-#include "vge.h"
-#include "vlt.h"
-#include "vmacf.h"
-#include "vmacq.h"
-#include "vmacu.h"
-#include "vmadh.h"
-#include "vmadl.h"
-#include "vmadm.h"
-#include "vmadn.h"
-#include "vmov.h"
-#include "vmrg.h"
-#include "vmudh.h"
-#include "vmudl.h"
-#include "vmudm.h"
-#include "vmudn.h"
-#include "vmulf.h"
-#include "vmulu.h"
-#include "vnand.h"
-#include "vne.h"
-#include "vnop.h"
-#include "vnor.h"
-#include "vnxor.h"
-#include "vor.h"
-#include "vrcp.h"
-#include "vrcph.h"
-#include "vrcpl.h"
-#include "vrsq.h"
-#include "vrsqh.h"
-#include "vrsql.h"
-#include "vsaw.h"
-#include "vsub.h"
-#include "vsubc.h"
-#include "vxor.h"
+#define vector_cmplt(vd, vs) { \
+    (vd)[0] = ((vd)[0] < (vs)[0]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[1] < (vs)[1]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[2] < (vs)[2]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[3] < (vs)[3]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[4] < (vs)[4]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[5] < (vs)[5]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[6] < (vs)[6]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[7] < (vs)[7]) ? ~0x0000 :  0x0000; \
+}
+#define vector_cmpeq(vd, vs) { \
+    (vd)[0] = ((vd)[0] == (vs)[0]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[1] == (vs)[1]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[2] == (vs)[2]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[3] == (vs)[3]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[4] == (vs)[4]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[5] == (vs)[5]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[6] == (vs)[6]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[7] == (vs)[7]) ? ~0x0000 :  0x0000; \
+}
+#define vector_cmpgt(vd, vs) { \
+    (vd)[0] = ((vd)[0] > (vs)[0]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[1] > (vs)[1]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[2] > (vs)[2]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[3] > (vs)[3]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[4] > (vs)[4]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[5] > (vs)[5]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[6] > (vs)[6]) ? ~0x0000 :  0x0000; \
+    (vd)[0] = ((vd)[7] > (vs)[7]) ? ~0x0000 :  0x0000; \
+}
 
-static void (*COP2_C2[64])(int, int, int, int) = {
-    VMULF  ,VMULU  ,res_M  ,res_M  ,VMUDL  ,VMUDM  ,VMUDN  ,VMUDH  , /* 000 */
-    VMACF  ,VMACU  ,res_M  ,VMACQ  ,VMADL  ,VMADM  ,VMADN  ,VMADH  , /* 001 */
-    VADD   ,VSUB   ,res_V  ,VABS   ,VADDC  ,VSUBC  ,res_V  ,res_V  , /* 010 */
-    res_V  ,res_V  ,res_V  ,res_V  ,res_V  ,VSAW   ,res_V  ,res_V  , /* 011 */
-    VLT    ,VEQ    ,VNE    ,VGE    ,VCL    ,VCH    ,VCR    ,VMRG   , /* 100 */
-    VAND   ,VNAND  ,VOR    ,VNOR   ,VXOR   ,VNXOR  ,res_V  ,res_V  , /* 101 */
-    VRCP   ,VRCPL  ,VRCPH  ,VMOV   ,VRSQ   ,VRSQL  ,VRSQH  ,VNOP   , /* 110 */
-    res_V  ,res_V  ,res_V  ,res_V  ,res_V  ,res_V  ,res_V  ,res_V  , /* 111 */
-}; /* 000     001     010     011     100     101     110     111 */
+#endif
+
+/*
+ * Considering that almost all of the computational vector unit operations
+ * concern a shuffled, halfword-swapped target vector, a centralized method
+ * for shuffling said vector into a new vector temporary register,
+ * ST = VR[vt], should be pretty convenient.
+ */
+INLINE VECTOR_EXTERN SHUFFLE_VECTOR(v16 VD, const int e);
+
+/*
+ * Many vector units have pairs of "vector condition flags" registers.
+ * In SGI's vector unit implementation, these are denoted as the
+ * "vector control registers" under coprocessor 2.
+ *
+ * VCF-0 is the carry-out flags register:  $vco.
+ * VCF-1 is the compare code flags register:  $vcc.
+ * VCF-2 is the compare extension flags register:  $vce.
+ * There is no fourth RSP flags register.
+ */
+extern u16 VCO;
+extern u16 VCC;
+extern u8 VCE;
+
+ALIGNED extern i16 ne[8];
+ALIGNED extern i16 co[8];
+ALIGNED extern i16 clip[8];
+ALIGNED extern i16 comp[8];
+ALIGNED extern i16 vce[8];
+
+extern u16 get_VCO(void);
+extern u16 get_VCC(void);
+extern u8 get_VCE(void);
+
+extern void set_VCO(u16 VCO);
+extern void set_VCC(u16 VCC);
+extern void set_VCE(u8 VCE);
+
+/*
+ * shuffling convenience macros for Intel SIMD
+ * An 8-bit shuffle imm. of SHUFFLE(0, 1, 2, 3) should be a null operation.
+ */
+#define B(x)    ((x) & 3)
+#define SHUFFLE(a,b,c,d)    ((B(d)<<6) | (B(c)<<4) | (B(b)<<2) | (B(a)<<0))
+
 #endif
