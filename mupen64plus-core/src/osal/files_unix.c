@@ -23,16 +23,17 @@
  * functions
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <limits.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "files.h"
-#include "api/m64p_types.h"
 #include "api/callbacks.h"
+#include "api/m64p_types.h"
+#include "files.h"
 
 #ifdef __APPLE__
 /* OS X code for app bundle handling */
@@ -121,7 +122,8 @@ static int search_dir_file(char *destpath, const char *path, const char *filenam
 
     /* build the full filepath */
     strcpy(destpath, path);
-    if (destpath[strlen(destpath)-1] != '/')
+    /* if the path is empty, don't add / between it and the file name */
+    if (destpath[0] != '\0' && destpath[strlen(destpath)-1] != '/')
         strcat(destpath, "/");
     strcat(destpath, filename);
 

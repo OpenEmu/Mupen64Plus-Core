@@ -22,7 +22,10 @@
 #ifndef M64P_R4300_CP0_H
 #define M64P_R4300_CP0_H
 
-enum {
+#include <stdint.h>
+
+enum r4300_cp0_registers
+{
     CP0_INDEX_REG,
     CP0_RANDOM_REG,
     CP0_ENTRYLO0_REG,
@@ -52,9 +55,8 @@ enum {
     CP0_REGS_COUNT = 32
 };
 
-extern unsigned int g_cp0_regs[CP0_REGS_COUNT];
+uint32_t* r4300_cp0_regs(void);
 
-int check_cop1_unusable(void);
 void update_count(void);
 
 #endif /* M64P_R4300_CP0_H */

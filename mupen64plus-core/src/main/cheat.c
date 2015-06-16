@@ -24,21 +24,25 @@
 
 #include <SDL.h>
 #include <SDL_thread.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "api/m64p_types.h"
 #include "api/callbacks.h"
 #include "api/config.h"
-
-#include "memory/memory.h"
-#include "osal/preproc.h"
+#include "api/m64p_types.h"
 #include "cheat.h"
-#include "main.h"
-#include "rom.h"
 #include "eventloop.h"
 #include "list.h"
+#include "main.h"
+#include "memory/memory.h"
+#include "osal/preproc.h"
+#include "r4300/r4300_core.h"
+#include "rom.h"
 
-#include <stdio.h>
-#include <string.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 // local definitions
 #define CHEAT_CODE_MAGIC_VALUE 0xDEAD0000
@@ -66,35 +70,38 @@ static SDL_mutex *cheat_mutex = NULL;
 // private functions
 static unsigned short read_address_16bit(unsigned int address)
 {
-    return *(unsigned short *)((rdramb + ((address & 0xFFFFFF)^S16)));
+    return *(unsigned short *)(((unsigned char*)g_rdram + ((address & 0xFFFFFF)^S16)));
 }
 
 static unsigned char read_address_8bit(unsigned int address)
 {
-    return *(unsigned char *)((rdramb + ((address & 0xFFFFFF)^S8)));
+    return *(unsigned char *)(((unsigned char*)g_rdram + ((address & 0xFFFFFF)^S8)));
 }
 
 static void update_address_16bit(unsigned int address, unsigned short new_value)
 {
-    *(unsigned short *)((rdramb + ((address & 0xFFFFFF)^S16))) = new_value;
+    *(unsigned short *)(((unsigned char*)g_rdram + ((address & 0xFFFFFF)^S16))) = new_value;
+    address &= 0xfeffffff;  // mask out bit 24 which is used by GS codes to specify 8/16 bits
+    invalidate_r4300_cached_code(address, 2);
 }
 
 static void update_address_8bit(unsigned int address, unsigned char new_value)
 {
-    *(unsigned char *)((rdramb + ((address & 0xFFFFFF)^S8))) = new_value;
+    *(unsigned char *)(((unsigned char*)g_rdram + ((address & 0xFFFFFF)^S8))) = new_value;
+    invalidate_r4300_cached_code(address, 1);
 }
 
 static int address_equal_to_8bit(unsigned int address, unsigned char value)
 {
     unsigned char value_read;
-    value_read = *(unsigned char *)((rdramb + ((address & 0xFFFFFF)^S8)));
+    value_read = *(unsigned char *)(((unsigned char*)g_rdram + ((address & 0xFFFFFF)^S8)));
     return value_read == value;
 }
 
 static int address_equal_to_16bit(unsigned int address, unsigned short value)
 {
     unsigned short value_read;
-    value_read = *(unsigned short *)((rdramb + ((address & 0xFFFFFF)^S16)));
+    value_read = *(unsigned short *)(((unsigned char*)g_rdram + ((address & 0xFFFFFF)^S16)));
     return value_read == value;
 }
 
@@ -457,7 +464,7 @@ static int cheat_parse_hacks_code(char *code, m64p_cheat_code **hack)
 
     /* allocate buffer */
     hackbuf = malloc(sizeof(*hackbuf) * num_codes);
-    if (!num_codes)
+    if (!hackbuf)
         return 0;
 
     /* parse cheatcodes */
@@ -466,7 +473,7 @@ static int cheat_parse_hacks_code(char *code, m64p_cheat_code **hack)
     while ((token = strtok_compat(input, ",", &saveptr))) {
         input = NULL;
 
-        ret = sscanf(token, "%08X %04X", &hackbuf[num_codes].address,
+        ret = sscanf(token, "%08" SCNx32 " %04X", &hackbuf[num_codes].address,
                      &hackbuf[num_codes].value);
         if (ret == 2)
             num_codes++;

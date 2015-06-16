@@ -39,6 +39,7 @@
 #import "osal/dynamiclib.h"
 #import "version.h"
 #import "memory.h"
+#import "main.h"
 
 #import <OpenEmuBase/OERingBuffer.h>
 #import <OpenGL/gl.h>
@@ -464,52 +465,19 @@ static void MupenSetAudioSpeed(int percent)
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-    [self OE_addHandlerForType:M64CORE_STATE_LOADCOMPLETE usingBlock:
-     ^ BOOL (m64p_core_param paramType, int newValue)
-     {
-         NSAssert(paramType == M64CORE_STATE_LOADCOMPLETE, @"This block should only be called for load completion!");
-
-         [self setPauseEmulation:YES];
-         dispatch_async(dispatch_get_main_queue(), ^{
-             if(newValue == 0)
-             {
-                 NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:@{
-                     NSLocalizedDescriptionKey : @"Mupen Could not load the save state",
-                     NSLocalizedRecoverySuggestionErrorKey : @"The loaded file is probably corrupted.",
-                     NSFilePathErrorKey : fileName
-                 }];
-                 block(NO, error);
-                 return;
-             }
-
-             block(YES, nil);
-         });
-         return NO;
-     }];
-
-    BOOL (^scheduleLoadState)(void) =
-    ^ BOOL {
-        if(CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName fileSystemRepresentation]) == M64ERR_SUCCESS)
-        {
-            // Mupen needs to run for a bit for the state loading to take place.
-            [self setPauseEmulation:NO];
-            return YES;
-        }
-
-        return NO;
-    };
-
-    if(scheduleLoadState()) return;
-
-    [self OE_addHandlerForType:M64CORE_EMU_STATE usingBlock:
-     ^ BOOL (m64p_core_param paramType, int newValue)
-     {
-         NSAssert(paramType == M64CORE_EMU_STATE, @"This block should only be called for load completion!");
-         if(newValue != M64EMU_RUNNING && newValue != M64EMU_PAUSED)
-             return YES;
-
-         return !scheduleLoadState();
-     }];
+    // FIXME: investigate why old method stopped working for some games (Mario 64), since this is ugly
+    if(!g_EmulatorRunning)
+    {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1000 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+            int success = CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName fileSystemRepresentation]);
+            if(block) block(success==M64ERR_SUCCESS, nil);
+        });
+    }
+    else
+    {
+        int success = CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName fileSystemRepresentation]);
+        if(block) block(success==M64ERR_SUCCESS, nil);
+    }
 }
 
 - (OEIntSize)bufferSize
@@ -637,11 +605,11 @@ static void MupenSetAudioSpeed(int percent)
     // Update address directly if code needs GS button pressed
     if ((gsCode[0].address & 0xFF000000) == 0x88000000 || (gsCode[0].address & 0xFF000000) == 0xA8000000)
     {
-        *(unsigned char *)((rdramb + ((gsCode[0].address & 0xFFFFFF)^S8))) = (unsigned char)gsCode[0].value; // Update 8-bit address
+        *(unsigned char *)((g_rdram + ((gsCode[0].address & 0xFFFFFF)^S8))) = (unsigned char)gsCode[0].value; // Update 8-bit address
     }
     else if ((gsCode[0].address & 0xFF000000) == 0x89000000 || (gsCode[0].address & 0xFF000000) == 0xA9000000)
     {
-        *(unsigned short *)((rdramb + ((gsCode[0].address & 0xFFFFFF)^S16))) = (unsigned short)gsCode[0].value; // Update 16-bit address
+        *(unsigned short *)((g_rdram + ((gsCode[0].address & 0xFFFFFF)^S16))) = (unsigned short)gsCode[0].value; // Update 16-bit address
     }
     // Else add code as normal
     else

@@ -19,39 +19,34 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <string.h>
-
-#include <SDL.h>
-
 #define M64P_CORE_PROTOTYPES 1
-#include "api/m64p_types.h"
-#include "api/callbacks.h"
-#include "api/m64p_vidext.h"
-#include "api/vidext.h"
-#include "memory/memory.h"
-#include "main/rom.h"
-#include "main/main.h"
-#include "main/profile.h"
-#include "main/savestates.h"
-#include "main/cheat.h"
-#include "osd/osd.h"
-#include "plugin/plugin.h"
 
 #include "interupt.h"
-#include "r4300.h"
+
+#include <SDL.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "ai/ai_controller.h"
+#include "api/callbacks.h"
+#include "api/m64p_types.h"
 #include "cached_interp.h"
-#include "cp0.h"
+#include "cp0_private.h"
 #include "exception.h"
-#include "reset.h"
+#include "main/main.h"
+#include "main/savestates.h"
+#include "mi_controller.h"
 #include "new_dynarec/new_dynarec.h"
-
-#ifdef WITH_LIRC
-#include "main/lirc.h"
-#endif
-
-unsigned int next_vi;
-int vi_field=0;
-static int vi_counter=0;
+#include "pi/pi_controller.h"
+#include "r4300.h"
+#include "r4300_core.h"
+#include "rdp/rdp_core.h"
+#include "recomp.h"
+#include "reset.h"
+#include "rsp/rsp_core.h"
+#include "si/si_controller.h"
+#include "vi/vi_controller.h"
 
 int interupt_unsafe_state = 0;
 
@@ -138,16 +133,16 @@ static int SPECIAL_done = 0;
 
 static int before_event(unsigned int evt1, unsigned int evt2, int type2)
 {
-    if(evt1 - g_cp0_regs[CP0_COUNT_REG] < 0x80000000)
+    if(evt1 - g_cp0_regs[CP0_COUNT_REG] < UINT32_C(0x80000000))
     {
-        if(evt2 - g_cp0_regs[CP0_COUNT_REG] < 0x80000000)
+        if(evt2 - g_cp0_regs[CP0_COUNT_REG] < UINT32_C(0x80000000))
         {
             if((evt1 - g_cp0_regs[CP0_COUNT_REG]) < (evt2 - g_cp0_regs[CP0_COUNT_REG])) return 1;
             else return 0;
         }
         else
         {
-            if((g_cp0_regs[CP0_COUNT_REG] - evt2) < 0x10000000)
+            if((g_cp0_regs[CP0_COUNT_REG] - evt2) < UINT32_C(0x10000000))
             {
                 switch(type2)
                 {
@@ -178,7 +173,7 @@ void add_interupt_event_count(int type, unsigned int count)
 
     special = (type == SPECIAL_INT);
    
-    if(g_cp0_regs[CP0_COUNT_REG] > 0x80000000) SPECIAL_done = 0;
+    if(g_cp0_regs[CP0_COUNT_REG] > UINT32_C(0x80000000)) SPECIAL_done = 0;
    
     if (get_event(type)) {
         DebugMessage(M64MSG_WARNING, "two events of type 0x%x in interrupt queue", type);
@@ -238,16 +233,13 @@ static void remove_interupt_event(void)
 {
     struct node* e;
 
-    if (q.first->data.type == SPECIAL_INT)
-        SPECIAL_done = 1;
-
     e = q.first;
     q.first = e->next;
     free_node(&q.pool, e);
 
     next_interupt = (q.first != NULL
          && (q.first->data.count > g_cp0_regs[CP0_COUNT_REG]
-         || (g_cp0_regs[CP0_COUNT_REG] - q.first->data.count) < 0x80000000))
+         || (g_cp0_regs[CP0_COUNT_REG] - q.first->data.count) < UINT32_C(0x80000000)))
         ? q.first->data.count
         : 0;
 }
@@ -351,12 +343,11 @@ void load_eventqueue_infos(char *buf)
 void init_interupt(void)
 {
     SPECIAL_done = 1;
-    next_vi = next_interupt = 5000;
-    vi_register.vi_delay = next_vi;
-    vi_field = 0;
+
+    g_vi.delay = g_vi.next_vi = 5000;
 
     clear_queue();
-    add_interupt_event_count(VI_INT, next_vi);
+    add_interupt_event_count(VI_INT, g_vi.next_vi);
     add_interupt_event_count(SPECIAL_INT, 0);
 }
 
@@ -364,12 +355,12 @@ void check_interupt(void)
 {
     struct node* event;
 
-    if (MI_register.mi_intr_reg & MI_register.mi_intr_mask_reg)
-        g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | 0x400) & 0xFFFFFF83;
+    if (g_r4300.mi.regs[MI_INTR_REG] & g_r4300.mi.regs[MI_INTR_MASK_REG])
+        g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | UINT32_C(0x400)) & UINT32_C(0xFFFFFF83);
     else
-        g_cp0_regs[CP0_CAUSE_REG] &= ~0x400;
-    if ((g_cp0_regs[CP0_STATUS_REG] & 7) != 1) return;
-    if (g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & 0xFF00)
+        g_cp0_regs[CP0_CAUSE_REG] &= ~UINT32_C(0x400);
+    if ((g_cp0_regs[CP0_STATUS_REG] & UINT32_C(7)) != 1) return;
+    if (g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & UINT32_C(0xFF00))
     {
         event = alloc_node(&q.pool);
 
@@ -396,11 +387,110 @@ void check_interupt(void)
     }
 }
 
+static void wrapped_exception_general(void)
+{
+#ifdef NEW_DYNAREC
+    if (r4300emu == CORE_DYNAREC) {
+        g_cp0_regs[CP0_EPC_REG] = pcaddr;
+        pcaddr = 0x80000180;
+        g_cp0_regs[CP0_STATUS_REG] |= UINT32_C(2);
+        g_cp0_regs[CP0_CAUSE_REG] &= UINT32_C(0x7FFFFFFF);
+        pending_exception=1;
+    } else {
+        exception_general();
+    }
+#else
+    exception_general();
+#endif
+}
+
+void raise_maskable_interrupt(uint32_t cause)
+{
+    g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | cause) & UINT32_C(0xffffff83);
+
+    if (!(g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & UINT32_C(0xff00)))
+        return;
+
+    if ((g_cp0_regs[CP0_STATUS_REG] & UINT32_C(7)) != UINT32_C(1))
+        return;
+
+    wrapped_exception_general();
+}
+
+static void special_int_handler(void)
+{
+    if (g_cp0_regs[CP0_COUNT_REG] > UINT32_C(0x10000000))
+        return;
+
+
+    SPECIAL_done = 1;
+    remove_interupt_event();
+    add_interupt_event_count(SPECIAL_INT, 0);
+}
+
+static void compare_int_handler(void)
+{
+    remove_interupt_event();
+    g_cp0_regs[CP0_COUNT_REG]+=count_per_op;
+    add_interupt_event_count(COMPARE_INT, g_cp0_regs[CP0_COMPARE_REG]);
+    g_cp0_regs[CP0_COUNT_REG]-=count_per_op;
+
+    raise_maskable_interrupt(UINT32_C(0x8000));
+}
+
+static void hw2_int_handler(void)
+{
+    // Hardware Interrupt 2 -- remove interrupt event from queue
+    remove_interupt_event();
+
+    g_cp0_regs[CP0_STATUS_REG] = (g_cp0_regs[CP0_STATUS_REG] & ~UINT32_C(0x00380000)) | UINT32_C(0x1000);
+    g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | UINT32_C(0x1000)) & UINT32_C(0xffffff83);
+
+    wrapped_exception_general();
+}
+
+static void nmi_int_handler(void)
+{
+    // Non Maskable Interrupt -- remove interrupt event from queue
+    remove_interupt_event();
+    // setup r4300 Status flags: reset TS and SR, set BEV, ERL, and SR
+    g_cp0_regs[CP0_STATUS_REG] = (g_cp0_regs[CP0_STATUS_REG] & ~UINT32_C(0x00380000)) | UINT32_C(0x00500004);
+    g_cp0_regs[CP0_CAUSE_REG]  = 0x00000000;
+    // simulate the soft reset code which would run from the PIF ROM
+    r4300_reset_soft();
+    // clear all interrupts, reset interrupt counters back to 0
+    g_cp0_regs[CP0_COUNT_REG] = 0;
+    g_gs_vi_counter = 0;
+    init_interupt();
+    // clear the audio status register so that subsequent write_ai() calls will work properly
+    g_ai.regs[AI_STATUS_REG] = 0;
+    // set ErrorEPC with the last instruction address
+    g_cp0_regs[CP0_ERROREPC_REG] = PC->addr;
+    // reset the r4300 internal state
+    if (r4300emu != CORE_PURE_INTERPRETER)
+    {
+        // clear all the compiled instruction blocks and re-initialize
+        free_blocks();
+        init_blocks();
+    }
+    // adjust ErrorEPC if we were in a delay slot, and clear the delay_slot and dyna_interp flags
+    if(delay_slot==1 || delay_slot==3)
+    {
+        g_cp0_regs[CP0_ERROREPC_REG]-=4;
+    }
+    delay_slot = 0;
+    dyna_interp = 0;
+    // set next instruction address to reset vector
+    last_addr = UINT32_C(0xa4000040);
+    generic_jump_to(UINT32_C(0xa4000040));
+}
+
+
 void gen_interupt(void)
 {
     if (stop == 1)
     {
-        vi_counter = 0; // debug
+        g_gs_vi_counter = 0; // debug
         dyna_stop();
     }
 
@@ -422,11 +512,11 @@ void gen_interupt(void)
    
     if (skip_jump)
     {
-        unsigned int dest = skip_jump;
+        uint32_t dest = skip_jump;
         skip_jump = 0;
 
         next_interupt = (q.first->data.count > g_cp0_regs[CP0_COUNT_REG]
-                || (g_cp0_regs[CP0_COUNT_REG] - q.first->data.count) < 0x80000000)
+                || (g_cp0_regs[CP0_COUNT_REG] - q.first->data.count) < UINT32_C(0x80000000))
             ? q.first->data.count
             : 0;
 
@@ -438,235 +528,62 @@ void gen_interupt(void)
     switch(q.first->data.type)
     {
         case SPECIAL_INT:
-            if (g_cp0_regs[CP0_COUNT_REG] > 0x10000000) return;
-            remove_interupt_event();
-            add_interupt_event_count(SPECIAL_INT, 0);
-            return;
+            special_int_handler();
             break;
+
         case VI_INT:
-            if(vi_counter < 60)
-            {
-                if (vi_counter == 0)
-                    cheat_apply_cheats(ENTRY_BOOT);
-                vi_counter++;
-            }
-            else
-            {
-                cheat_apply_cheats(ENTRY_VI);
-            }
-            gfx.updateScreen();
-#ifdef WITH_LIRC
-            lircCheckInput();
-#endif
-            SDL_PumpEvents();
-
-            timed_sections_refresh();
-
-            // if paused, poll for input events
-            if(rompause)
-            {
-                osd_render();  // draw Paused message in case gfx.updateScreen didn't do it
-                VidExt_GL_SwapBuffers();
-                while(rompause)
-                {
-                    SDL_Delay(10);
-                    SDL_PumpEvents();
-#ifdef WITH_LIRC
-                    lircCheckInput();
-#endif //WITH_LIRC
-                }
-            }
-
-            new_vi();
-            if (vi_register.vi_v_sync == 0) vi_register.vi_delay = 500000;
-            else vi_register.vi_delay = ((vi_register.vi_v_sync + 1)*1500);
-            next_vi += vi_register.vi_delay;
-            if (vi_register.vi_status&0x40) vi_field=1-vi_field;
-            else vi_field=0;
-
             remove_interupt_event();
-            add_interupt_event_count(VI_INT, next_vi);
-    
-            MI_register.mi_intr_reg |= 0x08;
-            if (MI_register.mi_intr_reg & MI_register.mi_intr_mask_reg)
-                g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | 0x400) & 0xFFFFFF83;
-            else
-                return;
-            if ((g_cp0_regs[CP0_STATUS_REG] & 7) != 1) return;
-            if (!(g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & 0xFF00)) return;
+            vi_vertical_interrupt_event(&g_vi);
             break;
     
         case COMPARE_INT:
-            remove_interupt_event();
-            g_cp0_regs[CP0_COUNT_REG]+=count_per_op;
-            add_interupt_event_count(COMPARE_INT, g_cp0_regs[CP0_COMPARE_REG]);
-            g_cp0_regs[CP0_COUNT_REG]-=count_per_op;
-    
-            g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | 0x8000) & 0xFFFFFF83;
-            if ((g_cp0_regs[CP0_STATUS_REG] & 7) != 1) return;
-            if (!(g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & 0xFF00)) return;
+            compare_int_handler();
             break;
     
         case CHECK_INT:
             remove_interupt_event();
+            wrapped_exception_general();
             break;
     
         case SI_INT:
-#ifdef WITH_LIRC
-            lircCheckInput();
-#endif //WITH_LIRC
-            SDL_PumpEvents();
-            PIF_RAMb[0x3F] = 0x0;
             remove_interupt_event();
-            MI_register.mi_intr_reg |= 0x02;
-            si_register.si_stat |= 0x1000;
-            if (MI_register.mi_intr_reg & MI_register.mi_intr_mask_reg)
-                g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | 0x400) & 0xFFFFFF83;
-            else
-                return;
-            if ((g_cp0_regs[CP0_STATUS_REG] & 7) != 1) return;
-            if (!(g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & 0xFF00)) return;
+            si_end_of_dma_event(&g_si);
             break;
     
         case PI_INT:
             remove_interupt_event();
-            MI_register.mi_intr_reg |= 0x10;
-            pi_register.read_pi_status_reg &= ~3;
-            if (MI_register.mi_intr_reg & MI_register.mi_intr_mask_reg)
-                g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | 0x400) & 0xFFFFFF83;
-            else
-                return;
-            if ((g_cp0_regs[CP0_STATUS_REG] & 7) != 1) return;
-            if (!(g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & 0xFF00)) return;
+            pi_end_of_dma_event(&g_pi);
             break;
     
         case AI_INT:
-            if (ai_register.ai_status & 0x80000000) // full
-            {
-                unsigned int ai_event = get_event(AI_INT);
-                remove_interupt_event();
-                ai_register.ai_status &= ~0x80000000;
-                ai_register.current_delay = ai_register.next_delay;
-                ai_register.current_len = ai_register.next_len;
-                add_interupt_event_count(AI_INT, ai_event+ai_register.next_delay);
-         
-                MI_register.mi_intr_reg |= 0x04;
-                if (MI_register.mi_intr_reg & MI_register.mi_intr_mask_reg)
-                    g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | 0x400) & 0xFFFFFF83;
-                else
-                    return;
-                if ((g_cp0_regs[CP0_STATUS_REG] & 7) != 1) return;
-                if (!(g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & 0xFF00)) return;
-            }
-            else
-            {
-                remove_interupt_event();
-                ai_register.ai_status &= ~0x40000000;
-
-                //-------
-                MI_register.mi_intr_reg |= 0x04;
-                if (MI_register.mi_intr_reg & MI_register.mi_intr_mask_reg)
-                    g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | 0x400) & 0xFFFFFF83;
-                else
-                    return;
-                if ((g_cp0_regs[CP0_STATUS_REG] & 7) != 1) return;
-                if (!(g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & 0xFF00)) return;
-            }
+            remove_interupt_event();
+            ai_end_of_dma_event(&g_ai);
             break;
 
         case SP_INT:
             remove_interupt_event();
-            sp_register.sp_status_reg |= 0x203;
-            // sp_register.sp_status_reg |= 0x303;
-    
-            if (!(sp_register.sp_status_reg & 0x40)) return; // !intr_on_break
-            MI_register.mi_intr_reg |= 0x01;
-            if (MI_register.mi_intr_reg & MI_register.mi_intr_mask_reg)
-                g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | 0x400) & 0xFFFFFF83;
-            else
-                return;
-            if ((g_cp0_regs[CP0_STATUS_REG] & 7) != 1) return;
-            if (!(g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & 0xFF00)) return;
+            rsp_interrupt_event(&g_sp);
             break;
     
         case DP_INT:
             remove_interupt_event();
-            dpc_register.dpc_status &= ~2;
-            dpc_register.dpc_status |= 0x81;
-            MI_register.mi_intr_reg |= 0x20;
-            if (MI_register.mi_intr_reg & MI_register.mi_intr_mask_reg)
-                g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | 0x400) & 0xFFFFFF83;
-            else
-                return;
-            if ((g_cp0_regs[CP0_STATUS_REG] & 7) != 1) return;
-            if (!(g_cp0_regs[CP0_STATUS_REG] & g_cp0_regs[CP0_CAUSE_REG] & 0xFF00)) return;
+            rdp_interrupt_event(&g_dp);
             break;
 
         case HW2_INT:
-            // Hardware Interrupt 2 -- remove interrupt event from queue
-            remove_interupt_event();
-            // setup r4300 Status flags: reset TS, and SR, set IM2
-            g_cp0_regs[CP0_STATUS_REG] = (g_cp0_regs[CP0_STATUS_REG] & ~0x00380000) | 0x1000;
-            g_cp0_regs[CP0_CAUSE_REG] = (g_cp0_regs[CP0_CAUSE_REG] | 0x1000) & 0xFFFFFF83;
-            /* the exception_general() call below will jump to the interrupt vector (0x80000180) and setup the
-             * interpreter or dynarec
-             */
+            hw2_int_handler();
             break;
 
         case NMI_INT:
-            // Non Maskable Interrupt -- remove interrupt event from queue
-            remove_interupt_event();
-            // setup r4300 Status flags: reset TS and SR, set BEV, ERL, and SR
-            g_cp0_regs[CP0_STATUS_REG] = (g_cp0_regs[CP0_STATUS_REG] & ~0x00380000) | 0x00500004;
-            g_cp0_regs[CP0_CAUSE_REG]  = 0x00000000;
-            // simulate the soft reset code which would run from the PIF ROM
-            r4300_reset_soft();
-            // clear all interrupts, reset interrupt counters back to 0
-            g_cp0_regs[CP0_COUNT_REG] = 0;
-            vi_counter = 0;
-            init_interupt();
-            // clear the audio status register so that subsequent write_ai() calls will work properly
-            ai_register.ai_status = 0;
-            // set ErrorEPC with the last instruction address
-            g_cp0_regs[CP0_ERROREPC_REG] = PC->addr;
-            // reset the r4300 internal state
-            if (r4300emu != CORE_PURE_INTERPRETER)
-            {
-                // clear all the compiled instruction blocks and re-initialize
-                free_blocks();
-                init_blocks();
-            }
-            // adjust ErrorEPC if we were in a delay slot, and clear the delay_slot and dyna_interp flags
-            if(delay_slot==1 || delay_slot==3)
-            {
-                g_cp0_regs[CP0_ERROREPC_REG]-=4;
-            }
-            delay_slot = 0;
-            dyna_interp = 0;
-            // set next instruction address to reset vector
-            last_addr = 0xa4000040;
-            generic_jump_to(0xa4000040);
-            return;
+            nmi_int_handler();
+            break;
 
         default:
             DebugMessage(M64MSG_ERROR, "Unknown interrupt queue event type %.8X.", q.first->data.type);
             remove_interupt_event();
+            wrapped_exception_general();
             break;
     }
-
-#ifdef NEW_DYNAREC
-    if (r4300emu == CORE_DYNAREC) {
-        g_cp0_regs[CP0_EPC_REG] = pcaddr;
-        pcaddr = 0x80000180;
-        g_cp0_regs[CP0_STATUS_REG] |= 2;
-        g_cp0_regs[CP0_CAUSE_REG] &= 0x7FFFFFFF;
-        pending_exception=1;
-    } else {
-        exception_general();
-    }
-#else
-    exception_general();
-#endif
 
     if (!interupt_unsafe_state)
     {

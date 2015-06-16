@@ -25,10 +25,23 @@
  */
 
 #import "MupenGameCore.h"
+#import "main.h"
+#import "cheat.h"
 
 void new_vi()
 {
     GET_CURRENT_AND_RETURN();
+    
+    if(g_gs_vi_counter < 60)
+    {
+        if (g_gs_vi_counter == 0)
+            cheat_apply_cheats(ENTRY_BOOT);
+        g_gs_vi_counter++;
+    }
+    else
+    {
+        cheat_apply_cheats(ENTRY_VI);
+    }
 
     [current videoInterrupt];
 }

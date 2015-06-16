@@ -42,7 +42,6 @@ endif
 ifeq ("$(UNAME)","OpenBSD")
   OS = FREEBSD
   CFLAGS += -DIOAPI_NO_64
-  $(warning OS type "$(UNAME)" not officially supported.')
 endif
 ifneq ("$(filter GNU/kFreeBSD kfreebsd,$(UNAME))","")
   OS = LINUX
@@ -95,13 +94,33 @@ ifneq ("$(filter arm%,$(HOST_CPU))","")
     ARCH_DETECTED := 32BITS
     PIC ?= 1
     NEW_DYNAREC := 1
+    CFLAGS += -marm
+    ifneq ("$(filter armv5%,$(HOST_CPU))","")
+    	CFLAGS += -DARMv5_ONLY
+    	$(warning Using ARMv5_ONLY)
+    endif
+    ifneq ("$(filter armv6%,$(HOST_CPU))","")
+    	CFLAGS += -DARMv5_ONLY
+    	$(warning Using ARMv5_ONLY)
+    endif
     ifeq ($(NEON), 1)
-        CFLAGS += -mfpu=neon -mfloat-abi=hard -DNEON
+        CFLAGS += -mfpu=neon -mfloat-abi=hard
     else
+      ifeq ($(VFP_HARD), 1)
+        CFLAGS += -mfpu=vfp -mfloat-abi=hard
+      else
         CFLAGS += -mfpu=vfp -mfloat-abi=softfp
+      endif
     endif
     $(warning Architecture "$(HOST_CPU)" not officially supported.')
   endif
+endif
+ifneq ("$(filter mips,$(HOST_CPU))","")
+  CPU := MIPS
+  ARCH_DETECTED := 32BITS
+  PIC ?= 1
+  NO_ASM := 1
+  $(warning Architecture "$(HOST_CPU)" not officially supported.')
 endif
 ifeq ("$(CPU)","NONE")
   $(error CPU type "$(HOST_CPU)" not supported.  Please file bug report at 'http://code.google.com/p/mupen64plus/issues')
@@ -109,7 +128,7 @@ endif
 
 # base CFLAGS, LDLIBS, and LDFLAGS
 OPTFLAGS ?= -O3 -flto
-WARNFLAGS ?= -Wall
+WARNFLAGS ?= -Wall -Wno-unused-function
 CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -ffast-math -fno-strict-aliasing -fvisibility=hidden -I../../src -DM64P_PARALLEL
 CXXFLAGS += -fvisibility-inlines-hidden
 LDLIBS +=  -lm
@@ -141,6 +160,7 @@ ifeq ($(OS), FREEBSD)
   SONAME = libmupen64plus$(POSTFIX).so.2
   LDFLAGS += -Wl,-Bsymbolic -shared -Wl,-export-dynamic -Wl,-soname,$(SONAME)
   LDLIBS += -L${LOCALBASE}/lib -lc
+  ASFLAGS = -f elf -d ELF_TYPE
 endif
 ifeq ($(OS), LINUX)
   TARGET = libmupen64plus$(POSTFIX).so.2.0.0
@@ -149,6 +169,7 @@ ifeq ($(OS), LINUX)
   LDLIBS += -ldl
   # only export api symbols
   LDFLAGS += -Wl,-version-script,$(SRCDIR)/api/api_export.ver
+  ASFLAGS = -f elf -d ELF_TYPE
 endif
 ifeq ($(OS), OSX)
   #xcode-select has been around since XCode 3.0, i.e. OS X 10.5
@@ -156,8 +177,9 @@ ifeq ($(OS), OSX)
   OSX_SDK_PATH = $(OSX_SDK_ROOT)/$(shell ls $(OSX_SDK_ROOT) | tail -1)
 
   TARGET = libmupen64plus$(POSTFIX).dylib
-  LDFLAGS += -bundle -read_only_relocs suppress
+  LDFLAGS += -framework CoreFoundation -bundle -read_only_relocs suppress
   LDLIBS += -ldl
+  ASFLAGS = -f macho
   ifeq ($(CPU), X86)
     ifeq ($(ARCH_DETECTED), 64BITS)
       CFLAGS += -pipe -arch x86_64 -mmacosx-version-min=10.5 -isysroot $(OSX_SDK_PATH)
@@ -175,6 +197,7 @@ ifeq ($(OS), MINGW)
   # only export api symbols
   LDFLAGS += -Wl,-version-script,$(SRCDIR)/api/api_export.ver
   LDLIBS += -lpthread
+  ASFLAGS = -f win32
 endif
 
 ifeq ($(CPU_ENDIANNESS), BIG)
@@ -186,6 +209,7 @@ ifneq ($(findstring $(MAKEFLAGS),s),s)
 ifndef V
 	Q_CC  = @echo '    CC  '$@;
 	Q_CXX = @echo '    CXX '$@;
+	Q_AS  = @echo '    AS  '$@;
 	Q_LD  = @echo '    LD  '$@;
 endif
 endif
@@ -239,6 +263,20 @@ endif
 CFLAGS += $(SDL_CFLAGS)
 LDLIBS += $(SDL_LDLIBS)
 
+ifeq ($(VC), 1)
+  CFLAGS += -DUSE_GLES -I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/vmcs_host/linux
+  LDLIBS += -L/opt/vc/lib -lGLESv2 -lEGL -lbcm_host -lvcos -lvchiq_arm
+  # OSD uses non-ES code and breaks attribs of video plugins
+  OSD=0
+endif
+
+ifeq ($(USE_GLES), 1)
+  CFLAGS += -DUSE_GLES
+  LDLIBS += -lGLESv2
+  # OSD uses non-ES code and breaks attribs of video plugins
+  OSD=0
+endif
+
 OSD ?= 1
 ifeq ($(OSD), 1)
   CFLAGS += -DM64P_OSD
@@ -287,11 +325,13 @@ endif
 # set base program pointers and flags
 CC        = $(CROSS_COMPILE)gcc
 CXX       = $(CROSS_COMPILE)g++
+AS        = nasm
 RM       ?= rm -f
 INSTALL  ?= install
 MKDIR ?= mkdir -p
 COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
 COMPILE.cc = $(Q_CXX)$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+COMPILE.as = $(Q_AS)$(AS) $(ASFLAGS)
 LINK.o = $(Q_LD)$(CXX) $(CXXFLAGS) $(LDFLAGS) $(TARGET_ARCH)
 
 ifeq ($(OS),OSX)
@@ -371,6 +411,7 @@ OBJDIR = _obj$(POSTFIX)
 
 # list of required source files for compilation
 SOURCE = \
+	$(SRCDIR)/ai/ai_controller.c \
 	$(SRCDIR)/api/callbacks.c \
 	$(SRCDIR)/api/common.c \
 	$(SRCDIR)/api/config.c \
@@ -380,18 +421,26 @@ SOURCE = \
 	$(SRCDIR)/main/main.c \
 	$(SRCDIR)/main/util.c \
 	$(SRCDIR)/main/cheat.c \
+	$(SRCDIR)/main/eep_file.c \
 	$(SRCDIR)/main/eventloop.c \
+	$(SRCDIR)/main/fla_file.c \
 	$(SRCDIR)/main/md5.c \
+	$(SRCDIR)/main/mpk_file.c \
 	$(SRCDIR)/main/profile.c \
 	$(SRCDIR)/main/rom.c \
 	$(SRCDIR)/main/savestates.c \
 	$(SRCDIR)/main/sdl_key_converter.c \
+	$(SRCDIR)/main/sra_file.c \
 	$(SRCDIR)/main/workqueue.c \
-	$(SRCDIR)/memory/dma.c \
-	$(SRCDIR)/memory/flashram.c \
 	$(SRCDIR)/memory/memory.c \
-	$(SRCDIR)/memory/n64_cic_nus_6105.c \
-	$(SRCDIR)/memory/pif.c \
+	$(SRCDIR)/pi/cart_rom.c \
+	$(SRCDIR)/pi/flashram.c \
+	$(SRCDIR)/pi/pi_controller.c \
+	$(SRCDIR)/pi/sram.c \
+	$(SRCDIR)/plugin/emulate_game_controller_via_input_plugin.c \
+	$(SRCDIR)/plugin/emulate_speaker_via_audio_plugin.c \
+	$(SRCDIR)/plugin/get_time_using_C_localtime.c \
+	$(SRCDIR)/plugin/rumble_via_input_plugin.c \
 	$(SRCDIR)/plugin/plugin.c \
 	$(SRCDIR)/plugin/dummy_video.c \
 	$(SRCDIR)/plugin/dummy_audio.c \
@@ -404,10 +453,28 @@ SOURCE = \
 	$(SRCDIR)/r4300/exception.c \
 	$(SRCDIR)/r4300/instr_counters.c \
 	$(SRCDIR)/r4300/interupt.c \
+	$(SRCDIR)/r4300/mi_controller.c \
 	$(SRCDIR)/r4300/pure_interp.c \
+	$(SRCDIR)/r4300/r4300_core.c \
 	$(SRCDIR)/r4300/recomp.c \
 	$(SRCDIR)/r4300/reset.c \
 	$(SRCDIR)/r4300/tlb.c \
+	$(SRCDIR)/rdp/fb.c \
+	$(SRCDIR)/rdp/rdp_core.c \
+	$(SRCDIR)/ri/rdram.c \
+	$(SRCDIR)/ri/rdram_detection_hack.c \
+	$(SRCDIR)/ri/ri_controller.c \
+	$(SRCDIR)/rsp/rsp_core.c \
+	$(SRCDIR)/si/af_rtc.c \
+	$(SRCDIR)/si/cic.c \
+	$(SRCDIR)/si/eeprom.c \
+	$(SRCDIR)/si/game_controller.c \
+	$(SRCDIR)/si/mempak.c \
+	$(SRCDIR)/si/n64_cic_nus_6105.c \
+	$(SRCDIR)/si/pif.c \
+	$(SRCDIR)/si/rumblepak.c \
+	$(SRCDIR)/si/si_controller.c \
+	$(SRCDIR)/vi/vi_controller.c \
 	$(SRCDIR)/osd/screenshot.cpp
 ifeq ("$(OS)","MINGW")
 SOURCE += \
@@ -446,9 +513,14 @@ ifneq ($(DYNAREC), )
   ifeq ($(NEW_DYNAREC), 1)
     ifeq ($(DYNAREC), x86)
       CFLAGS += -DNEW_DYNAREC=1
+      SOURCE += \
+	    $(SRCDIR)/r4300/new_dynarec/x86/linkage_x86.asm
     else
       ifeq ($(DYNAREC), arm)
         CFLAGS += -DNEW_DYNAREC=3
+        SOURCE += \
+         $(SRCDIR)/r4300/new_dynarec/arm/linkage_arm.S \
+         $(SRCDIR)/r4300/new_dynarec/arm/arm_cpu_features.c
       else
         $(error NEW_DYNAREC is only supported on 32 bit x86 and 32 bit armel)
       endif
@@ -456,7 +528,6 @@ ifneq ($(DYNAREC), )
 
     SOURCE += \
       $(SRCDIR)/r4300/empty_dynarec.c \
-      $(SRCDIR)/r4300/new_dynarec/linkage_$(DYNAREC).S \
       $(SRCDIR)/r4300/new_dynarec/new_dynarec.c
   else
     SOURCE += \
@@ -499,7 +570,7 @@ endif
 
 ifeq ($(DEBUGGER), 1)
   SOURCE += \
-	$(SRCDIR)/debugger/debugger.c \
+	$(SRCDIR)/debugger/dbg_debugger.c \
 	$(SRCDIR)/debugger/dbg_decoder.c \
 	$(SRCDIR)/debugger/dbg_memory.c \
 	$(SRCDIR)/debugger/dbg_breakpoints.c
@@ -510,6 +581,7 @@ endif
 OBJECTS := $(patsubst $(SRCDIR)/%.c,   $(OBJDIR)/%.o, $(filter %.c,   $(SOURCE)))
 OBJECTS += $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(filter %.cpp, $(SOURCE)))
 OBJECTS += $(patsubst $(SRCDIR)/%.S, $(OBJDIR)/%.o, $(filter %.S, $(SOURCE)))
+OBJECTS += $(patsubst $(SRCDIR)/%.asm, $(OBJDIR)/%.o, $(filter %.asm, $(SOURCE)))
 OBJDIRS = $(dir $(OBJECTS))
 $(shell $(MKDIR) $(OBJDIRS))
 
@@ -525,7 +597,10 @@ targets:
 	@echo "    BITS=32       == build 32-bit binaries on 64-bit machine"
 	@echo "    LIRC=1        == enable LIRC support"
 	@echo "    NO_ASM=1      == build without assembly (no dynamic recompiler or MMX/SSE code)"
+	@echo "    USE_GLES=1    == build against GLESv2 instead of OpenGL"
+	@echo "    VC=1 	 == build against Broadcom Videocore GLESv2"
 	@echo "    NEON=1        == (ARM only) build for hard floating point environments"
+	@echo "    VFP_HARD=1 	 == (ARM only) full hardware floating point ABI"
 	@echo "    SHAREDIR=path == extra path to search for shared data files"
 	@echo "    OPTFLAGS=flag == compiler optimization (default: -O3 -flto)"
 	@echo "    WARNFLAGS=flag == compiler warning levels (default: -Wall)"
@@ -580,6 +655,9 @@ CFLAGS += -MD -MP
 CXXFLAGS += $(CFLAGS)
 
 # standard build rules
+$(OBJDIR)/%.o: $(SRCDIR)/%.asm
+	$(COMPILE.as) -o $@ $<
+	
 $(OBJDIR)/%.o: $(SRCDIR)/%.S
 	$(COMPILE.c) -o $@ $<
 

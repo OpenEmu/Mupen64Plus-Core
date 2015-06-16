@@ -25,19 +25,22 @@
  *  -String functions
  */
 
+#include <ctype.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <string.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <limits.h>
 
-#include "rom.h"
-#include "util.h"
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 #include "osal/files.h"
 #include "osal/preproc.h"
+#include "rom.h"
+#include "util.h"
 
 /**********************
      File utilities
@@ -87,19 +90,19 @@ void swap_buffer(void *buffer, size_t length, size_t count)
     size_t i;
     if (length == 2)
     {
-        unsigned short *pun = (unsigned short *)buffer;
+        uint16_t *pun = (uint16_t *) buffer;
         for (i = 0; i < count; i++)
             pun[i] = m64p_swap16(pun[i]);
     }
     else if (length == 4)
     {
-        unsigned int *pun = (unsigned int *)buffer;
+        uint32_t *pun = (uint32_t *) buffer;
         for (i = 0; i < count; i++)
             pun[i] = m64p_swap32(pun[i]);
     }
     else if (length == 8)
     {
-        unsigned long long *pun = (unsigned long long *)buffer;
+        uint64_t *pun = (uint64_t *) buffer;
         for (i = 0; i < count; i++)
             pun[i] = m64p_swap64(pun[i]);
     }
@@ -122,7 +125,7 @@ void to_big_endian_buffer(void *buffer, size_t length, size_t count)
 /**********************
      GUI utilities
  **********************/
-void countrycodestring(unsigned short countrycode, char *string)
+void countrycodestring(uint16_t countrycode, char *string)
 {
     switch (countrycode)
     {
@@ -163,16 +166,16 @@ void countrycodestring(unsigned short countrycode, char *string)
         break;
 
     case 0x55: case 0x59:  /* Australia */
-        sprintf(string, "Australia (0x%02X)", countrycode);
+        sprintf(string, "Australia (0x%02" PRIX16 ")", countrycode);
         break;
 
     case 0x50: case 0x58: case 0x20:
     case 0x21: case 0x38: case 0x70:
-        sprintf(string, "Europe (0x%02X)", countrycode);
+        sprintf(string, "Europe (0x%02" PRIX16 ")", countrycode);
         break;
 
     default:
-        sprintf(string, "Unknown (0x%02X)", countrycode);
+        sprintf(string, "Unknown (0x%02" PRIX16 ")", countrycode);
         break;
     }
 }
@@ -236,10 +239,12 @@ static int is_path_separator(char c)
 
 char* combinepath(const char* first, const char *second)
 {
-    size_t len_first = strlen(first), off_second = 0;
+    size_t len_first, off_second = 0;
 
     if (first == NULL || second == NULL)
         return NULL;
+
+    len_first = strlen(first);
 
     while (is_path_separator(first[len_first-1]))
         len_first--;

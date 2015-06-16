@@ -19,8 +19,12 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 #if defined(__GNUC__)
 #include <unistd.h>
@@ -29,17 +33,16 @@
 #endif
 #endif
 
-#include "api/m64p_types.h"
 #include "api/callbacks.h"
-#include "memory/memory.h"
-#include "main/profile.h"
-
+#include "api/m64p_types.h"
 #include "cached_interp.h"
+#include "cp0_private.h"
+#include "main/profile.h"
+#include "memory/memory.h"
+#include "ops.h"
+#include "r4300.h"
 #include "recomp.h"
 #include "recomph.h" //include for function prototypes
-#include "cp0.h"
-#include "r4300.h"
-#include "ops.h"
 #include "tlb.h"
 
 static void *malloc_exec(size_t size);
@@ -51,7 +54,7 @@ int code_length; // current real recompiled code length
 int max_code_length; // current recompiled code's buffer length
 unsigned char **inst_pointer; // output buffer for recompiled code
 precomp_block *dst_block; // the current block that we are recompiling
-int src; // the current recompiled instruction
+uint32_t src; // the current recompiled instruction
 int fast_memory;
 int no_compiled_jump = 0; /* use cached interpreter instead of recompiler for jumps */
 
@@ -62,7 +65,7 @@ static void (*recomp_func)(void); // pointer to the dynarec's generator
 FILE *pfProfile;
 #endif
 
-static int *SRC; // currently recompiled instruction in the input stream
+static const uint32_t *SRC; // currently recompiled instruction in the input stream
 static int check_nop; // next instruction is nop ?
 static int delay_slot_compiled = 0;
 
@@ -90,12 +93,12 @@ static void recompile_standard_i_type(void)
 {
    dst->f.i.rs = reg + ((src >> 21) & 0x1F);
    dst->f.i.rt = reg + ((src >> 16) & 0x1F);
-   dst->f.i.immediate = src & 0xFFFF;
+   dst->f.i.immediate = (int16_t) src;
 }
 
 static void recompile_standard_j_type(void)
 {
-   dst->f.j.inst_index = src & 0x3FFFFFF;
+   dst->f.j.inst_index = src & UINT32_C(0x3FFFFFF);
 }
 
 static void recompile_standard_r_type(void)
@@ -535,7 +538,7 @@ static void (*recomp_special[64])(void) =
 
 static void RBLTZ(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BLTZ;
    recomp_func = genbltz;
    recompile_standard_i_type();
@@ -548,7 +551,7 @@ static void RBLTZ(void)
          recomp_func = genbltz_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BLTZ_OUT;
       recomp_func = genbltz_out;
@@ -557,7 +560,7 @@ static void RBLTZ(void)
 
 static void RBGEZ(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BGEZ;
    recomp_func = genbgez;
    recompile_standard_i_type();
@@ -570,7 +573,7 @@ static void RBGEZ(void)
          recomp_func = genbgez_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BGEZ_OUT;
       recomp_func = genbgez_out;
@@ -579,7 +582,7 @@ static void RBGEZ(void)
 
 static void RBLTZL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BLTZL;
    recomp_func = genbltzl;
    recompile_standard_i_type();
@@ -592,7 +595,7 @@ static void RBLTZL(void)
          recomp_func = genbltzl_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BLTZL_OUT;
       recomp_func = genbltzl_out;
@@ -601,7 +604,7 @@ static void RBLTZL(void)
 
 static void RBGEZL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BGEZL;
    recomp_func = genbgezl;
    recompile_standard_i_type();
@@ -614,7 +617,7 @@ static void RBGEZL(void)
          recomp_func = genbgezl_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BGEZL_OUT;
       recomp_func = genbgezl_out;
@@ -659,7 +662,7 @@ static void RTNEI(void)
 
 static void RBLTZAL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BLTZAL;
    recomp_func = genbltzal;
    recompile_standard_i_type();
@@ -672,7 +675,7 @@ static void RBLTZAL(void)
          recomp_func = genbltzal_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BLTZAL_OUT;
       recomp_func = genbltzal_out;
@@ -681,7 +684,7 @@ static void RBLTZAL(void)
 
 static void RBGEZAL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BGEZAL;
    recomp_func = genbgezal;
    recompile_standard_i_type();
@@ -694,7 +697,7 @@ static void RBGEZAL(void)
          recomp_func = genbgezal_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BGEZAL_OUT;
       recomp_func = genbgezal_out;
@@ -703,7 +706,7 @@ static void RBGEZAL(void)
 
 static void RBLTZALL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BLTZALL;
    recomp_func = genbltzall;
    recompile_standard_i_type();
@@ -716,7 +719,7 @@ static void RBLTZALL(void)
          recomp_func = genbltzall_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BLTZALL_OUT;
       recomp_func = genbltzall_out;
@@ -725,7 +728,7 @@ static void RBLTZALL(void)
 
 static void RBGEZALL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BGEZALL;
    recomp_func = genbgezall;
    recompile_standard_i_type();
@@ -738,7 +741,7 @@ static void RBGEZALL(void)
          recomp_func = genbgezall_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BGEZALL_OUT;
       recomp_func = genbgezall_out;
@@ -808,7 +811,7 @@ static void RMFC0(void)
    dst->ops = current_instruction_table.MFC0;
    recomp_func = genmfc0;
    recompile_standard_r_type();
-   dst->f.r.rd = (long long*)(g_cp0_regs + ((src >> 11) & 0x1F));
+   dst->f.r.rd = (int64_t*) (g_cp0_regs + ((src >> 11) & 0x1F));
    dst->f.r.nrd = (src >> 11) & 0x1F;
    if (dst->f.r.rt == reg) RNOP();
 }
@@ -840,7 +843,7 @@ static void (*recomp_cop0[32])(void) =
 
 static void RBC1F(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BC1F;
    recomp_func = genbc1f;
    recompile_standard_i_type();
@@ -853,7 +856,7 @@ static void RBC1F(void)
          recomp_func = genbc1f_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BC1F_OUT;
       recomp_func = genbc1f_out;
@@ -862,7 +865,7 @@ static void RBC1F(void)
 
 static void RBC1T(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BC1T;
    recomp_func = genbc1t;
    recompile_standard_i_type();
@@ -875,7 +878,7 @@ static void RBC1T(void)
          recomp_func = genbc1t_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BC1T_OUT;
       recomp_func = genbc1t_out;
@@ -884,7 +887,7 @@ static void RBC1T(void)
 
 static void RBC1FL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BC1FL;
    recomp_func = genbc1fl;
    recompile_standard_i_type();
@@ -897,7 +900,7 @@ static void RBC1FL(void)
          recomp_func = genbc1fl_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BC1FL_OUT;
       recomp_func = genbc1fl_out;
@@ -906,7 +909,7 @@ static void RBC1FL(void)
 
 static void RBC1TL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BC1TL;
    recomp_func = genbc1tl;
    recompile_standard_i_type();
@@ -919,7 +922,7 @@ static void RBC1TL(void)
          recomp_func = genbc1tl_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BC1TL_OUT;
       recomp_func = genbc1tl_out;
@@ -1618,11 +1621,11 @@ static void RREGIMM(void)
 
 static void RJ(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.J;
    recomp_func = genj;
    recompile_standard_j_type();
-   target = (dst->f.j.inst_index<<2) | (dst->addr & 0xF0000000);
+   target = (dst->f.j.inst_index<<2) | (dst->addr & UINT32_C(0xF0000000));
    if (target == dst->addr)
    {
       if (check_nop)
@@ -1631,7 +1634,7 @@ static void RJ(void)
          recomp_func = genj_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.J_OUT;
       recomp_func = genj_out;
@@ -1640,11 +1643,11 @@ static void RJ(void)
 
 static void RJAL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.JAL;
    recomp_func = genjal;
    recompile_standard_j_type();
-   target = (dst->f.j.inst_index<<2) | (dst->addr & 0xF0000000);
+   target = (dst->f.j.inst_index<<2) | (dst->addr & UINT32_C(0xF0000000));
    if (target == dst->addr)
    {
       if (check_nop)
@@ -1653,7 +1656,7 @@ static void RJAL(void)
          recomp_func = genjal_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.JAL_OUT;
       recomp_func = genjal_out;
@@ -1662,7 +1665,7 @@ static void RJAL(void)
 
 static void RBEQ(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BEQ;
    recomp_func = genbeq;
    recompile_standard_i_type();
@@ -1675,7 +1678,7 @@ static void RBEQ(void)
          recomp_func = genbeq_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BEQ_OUT;
       recomp_func = genbeq_out;
@@ -1684,7 +1687,7 @@ static void RBEQ(void)
 
 static void RBNE(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BNE;
    recomp_func = genbne;
    recompile_standard_i_type();
@@ -1697,7 +1700,7 @@ static void RBNE(void)
          recomp_func = genbne_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BNE_OUT;
       recomp_func = genbne_out;
@@ -1706,7 +1709,7 @@ static void RBNE(void)
 
 static void RBLEZ(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BLEZ;
    recomp_func = genblez;
    recompile_standard_i_type();
@@ -1719,7 +1722,7 @@ static void RBLEZ(void)
          recomp_func = genblez_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BLEZ_OUT;
       recomp_func = genblez_out;
@@ -1728,7 +1731,7 @@ static void RBLEZ(void)
 
 static void RBGTZ(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BGTZ;
    recomp_func = genbgtz;
    recompile_standard_i_type();
@@ -1741,7 +1744,7 @@ static void RBGTZ(void)
          recomp_func = genbgtz_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BGTZ_OUT;
       recomp_func = genbgtz_out;
@@ -1824,7 +1827,7 @@ static void RCOP1(void)
 
 static void RBEQL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BEQL;
    recomp_func = genbeql;
    recompile_standard_i_type();
@@ -1837,7 +1840,7 @@ static void RBEQL(void)
          recomp_func = genbeql_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BEQL_OUT;
       recomp_func = genbeql_out;
@@ -1846,7 +1849,7 @@ static void RBEQL(void)
 
 static void RBNEL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BNEL;
    recomp_func = genbnel;
    recompile_standard_i_type();
@@ -1859,7 +1862,7 @@ static void RBNEL(void)
          recomp_func = genbnel_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BNEL_OUT;
       recomp_func = genbnel_out;
@@ -1868,7 +1871,7 @@ static void RBNEL(void)
 
 static void RBLEZL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BLEZL;
    recomp_func = genblezl;
    recompile_standard_i_type();
@@ -1881,7 +1884,7 @@ static void RBLEZL(void)
          recomp_func = genblezl_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BLEZL_OUT;
       recomp_func = genblezl_out;
@@ -1890,7 +1893,7 @@ static void RBLEZL(void)
 
 static void RBGTZL(void)
 {
-   unsigned int target;
+   uint32_t target;
    dst->ops = current_instruction_table.BGTZL;
    recomp_func = genbgtzl;
    recompile_standard_i_type();
@@ -1903,7 +1906,7 @@ static void RBGTZL(void)
          recomp_func = genbgtzl_idle;
       }
    }
-   else if (r4300emu != CORE_PURE_INTERPRETER && (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4)))
+   else if (target < dst_block->start || target >= dst_block->end || dst->addr == (dst_block->end-4))
    {
       dst->ops = current_instruction_table.BGTZL_OUT;
       recomp_func = genbgtzl_out;
@@ -2166,7 +2169,7 @@ void init_block(precomp_block *block)
   static int init_length;
   timed_section_start(TIMED_SECTION_COMPILER);
 #ifdef CORE_DBG
-  DebugMessage(M64MSG_INFO, "init block %x - %x", (int) block->start, (int) block->end);
+  DebugMessage(M64MSG_INFO, "init block %" PRIX32 " - %" PRIX32, block->start, block->end);
 #endif
 
   length = get_block_length(block);
@@ -2285,11 +2288,9 @@ void init_block(precomp_block *block)
    * yet as the game should have already set up the code correctly.
    */
   invalid_code[block->start>>12] = 0;
-  if (block->end < 0x80000000 || block->start >= 0xc0000000)
+  if (block->end < UINT32_C(0x80000000) || block->start >= UINT32_C(0xc0000000))
   { 
-    unsigned int paddr;
-    
-    paddr = virtual_to_physical_address(block->start, 2);
+    uint32_t paddr = virtual_to_physical_address(block->start, 2);
     invalid_code[paddr>>12] = 0;
     if (!blocks[paddr>>12])
     {
@@ -2298,8 +2299,8 @@ void init_block(precomp_block *block)
       blocks[paddr>>12]->block = NULL;
       blocks[paddr>>12]->jumps_table = NULL;
       blocks[paddr>>12]->riprel_table = NULL;
-      blocks[paddr>>12]->start = paddr & ~0xFFF;
-      blocks[paddr>>12]->end = (paddr & ~0xFFF) + 0x1000;
+      blocks[paddr>>12]->start = paddr & ~UINT32_C(0xFFF);
+      blocks[paddr>>12]->end = (paddr & ~UINT32_C(0xFFF)) + UINT32_C(0x1000);
     }
     init_block(blocks[paddr>>12]);
     
@@ -2312,40 +2313,28 @@ void init_block(precomp_block *block)
       blocks[paddr>>12]->block = NULL;
       blocks[paddr>>12]->jumps_table = NULL;
       blocks[paddr>>12]->riprel_table = NULL;
-      blocks[paddr>>12]->start = paddr & ~0xFFF;
-      blocks[paddr>>12]->end = (paddr & ~0xFFF) + 0x1000;
+      blocks[paddr>>12]->start = paddr & ~UINT32_C(0xFFF);
+      blocks[paddr>>12]->end = (paddr & ~UINT32_C(0xFFF)) + UINT32_C(0x1000);
     }
     init_block(blocks[paddr>>12]);
   }
   else
   {
-    if (block->start >= 0x80000000 && block->end < 0xa0000000 && invalid_code[(block->start+0x20000000)>>12])
+    uint32_t alt_addr = block->start ^ UINT32_C(0x20000000);
+
+    if (invalid_code[alt_addr>>12])
     {
-      if (!blocks[(block->start+0x20000000)>>12])
+      if (!blocks[alt_addr>>12])
       {
-        blocks[(block->start+0x20000000)>>12] = (precomp_block *) malloc(sizeof(precomp_block));
-        blocks[(block->start+0x20000000)>>12]->code = NULL;
-        blocks[(block->start+0x20000000)>>12]->block = NULL;
-        blocks[(block->start+0x20000000)>>12]->jumps_table = NULL;
-        blocks[(block->start+0x20000000)>>12]->riprel_table = NULL;
-        blocks[(block->start+0x20000000)>>12]->start = (block->start+0x20000000) & ~0xFFF;
-        blocks[(block->start+0x20000000)>>12]->end = ((block->start+0x20000000) & ~0xFFF) + 0x1000;
+        blocks[alt_addr>>12] = (precomp_block *) malloc(sizeof(precomp_block));
+        blocks[alt_addr>>12]->code = NULL;
+        blocks[alt_addr>>12]->block = NULL;
+        blocks[alt_addr>>12]->jumps_table = NULL;
+        blocks[alt_addr>>12]->riprel_table = NULL;
+        blocks[alt_addr>>12]->start = alt_addr & ~UINT32_C(0xFFF);
+        blocks[alt_addr>>12]->end = (alt_addr & ~UINT32_C(0xFFF)) + UINT32_C(0x1000);
       }
-      init_block(blocks[(block->start+0x20000000)>>12]);
-    }
-    if (block->start >= 0xa0000000 && block->end < 0xc0000000 && invalid_code[(block->start-0x20000000)>>12])
-    {
-      if (!blocks[(block->start-0x20000000)>>12])
-      {
-        blocks[(block->start-0x20000000)>>12] = (precomp_block *) malloc(sizeof(precomp_block));
-        blocks[(block->start-0x20000000)>>12]->code = NULL;
-        blocks[(block->start-0x20000000)>>12]->block = NULL;
-        blocks[(block->start-0x20000000)>>12]->jumps_table = NULL;
-        blocks[(block->start-0x20000000)>>12]->riprel_table = NULL;
-        blocks[(block->start-0x20000000)>>12]->start = (block->start-0x20000000) & ~0xFFF;
-        blocks[(block->start-0x20000000)>>12]->end = ((block->start-0x20000000) & ~0xFFF) + 0x1000;
-      }
-      init_block(blocks[(block->start-0x20000000)>>12]);
+      init_block(blocks[alt_addr>>12]);
     }
   }
   timed_section_end(TIMED_SECTION_COMPILER);
@@ -2370,9 +2359,10 @@ void free_block(precomp_block *block)
 /**********************************************************************
  ********************* recompile a block of code **********************
  **********************************************************************/
-void recompile_block(int *source, precomp_block *block, unsigned int func)
+void recompile_block(const uint32_t *source, precomp_block *block, uint32_t func)
 {
-   int i, length, finished=0;
+   uint32_t i;
+   int length, finished=0;
    timed_section_start(TIMED_SECTION_COMPILER);
    length = (block->end-block->start)/4;
    dst_block = block;
@@ -2395,12 +2385,12 @@ void recompile_block(int *source, precomp_block *block, unsigned int func)
 
    for (i = (func & 0xFFF) / 4; finished != 2; i++)
      {
-    if(block->start < 0x80000000 || block->start >= 0xc0000000)
+    if(block->start < UINT32_C(0x80000000) || UINT32_C(block->start >= 0xc0000000))
       {
-          unsigned int address2 =
+          uint32_t address2 =
            virtual_to_physical_address(block->start + i*4, 0);
-         if(blocks[address2>>12]->block[(address2&0xFFF)/4].ops == current_instruction_table.NOTCOMPILED)
-           blocks[address2>>12]->block[(address2&0xFFF)/4].ops = current_instruction_table.NOTCOMPILED2;
+         if(blocks[address2>>12]->block[(address2&UINT32_C(0xFFF))/4].ops == current_instruction_table.NOTCOMPILED)
+           blocks[address2>>12]->block[(address2&UINT32_C(0xFFF))/4].ops = current_instruction_table.NOTCOMPILED2;
       }
     
     SRC = source + i;
@@ -2437,16 +2427,16 @@ void recompile_block(int *source, precomp_block *block, unsigned int func)
       }
     
     if (i >= length-2+(length>>2)) finished = 2;
-    if (i >= (length-1) && (block->start == 0xa4000000 ||
-                block->start >= 0xc0000000 ||
-                block->end   <  0x80000000)) finished = 2;
+    if (i >= (length-1) && (block->start == UINT32_C(0xa4000000) ||
+                block->start >= UINT32_C(0xc0000000) ||
+                block->end   <  UINT32_C(0x80000000))) finished = 2;
     if (dst->ops == current_instruction_table.ERET || finished == 1) finished = 2;
     if (/*i >= length &&*/ 
         (dst->ops == current_instruction_table.J ||
          dst->ops == current_instruction_table.J_OUT ||
          dst->ops == current_instruction_table.JR) &&
-        !(i >= (length-1) && (block->start >= 0xc0000000 ||
-                  block->end   <  0x80000000)))
+        !(i >= (length-1) && (block->start >= UINT32_C(0xc0000000) ||
+                  block->end   <  UINT32_C(0x80000000))))
       finished = 1;
      }
 
@@ -2495,7 +2485,7 @@ void recompile_block(int *source, precomp_block *block, unsigned int func)
     free_assembler(&block->jumps_table, &block->jumps_number, &block->riprel_table, &block->riprel_number);
      }
 #ifdef CORE_DBG
-   DebugMessage(M64MSG_INFO, "block recompiled (%x-%x)", (int)func, (int)(block->start+i*4));
+   DebugMessage(M64MSG_INFO, "block recompiled (%" PRIX32 "-%" PRIX32 ")", func, block->start+i*4);
 #endif
 #if defined(PROFILE_R4300)
    fclose(pfProfile);
@@ -2606,17 +2596,6 @@ void recompile_opcode(void)
      if (r4300emu == CORE_DYNAREC) recomp_func();
    }
    delay_slot_compiled = 2;
-}
-
-/**********************************************************************
- ************** decode one opcode (for the interpreter) ***************
- **********************************************************************/
-void prefetch_opcode(unsigned int op, unsigned int nextop)
-{
-   dst = PC;
-   src = op;
-   check_nop = nextop == 0;
-   recomp_ops[((src >> 26) & 0x3F)]();
 }
 
 /**********************************************************************

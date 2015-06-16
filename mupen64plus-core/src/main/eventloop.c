@@ -20,8 +20,10 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <stdlib.h>
 #include <SDL.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #if ! SDL_VERSION_ATLEAST(1,3,0)
 
 #define SDL_SCANCODE_ESCAPE SDLK_ESCAPE
@@ -55,19 +57,21 @@
 #define SDL_SetEventFilter(func, data) SDL_SetEventFilter(func)
 #define event_sdl_filter(userdata, event) event_sdl_filter(const event)
 
+#else
+	 SDL_JoystickID l_iJoyInstanceID[10];
 #endif
 
 #define M64P_CORE_PROTOTYPES 1
-#include "main.h"
-#include "eventloop.h"
-#include "sdl_key_converter.h"
-#include "util.h"
 #include "api/callbacks.h"
 #include "api/config.h"
 #include "api/m64p_config.h"
+#include "api/m64p_types.h"
+#include "eventloop.h"
+#include "main.h"
 #include "plugin/plugin.h"
-#include "r4300/interupt.h"
 #include "r4300/reset.h"
+#include "sdl_key_converter.h"
+#include "util.h"
 
 /* version number for CoreEvents config section */
 #define CONFIG_PARAM_VERSION 1.00
@@ -159,6 +163,9 @@ static int MatchJoyCommand(const SDL_Event *event, eJoyCommand cmd)
                 return 0;
             if (sscanf(event_str, "J%dA%d%c", &dev_number, &input_number, &axis_direction) != 3)
                 return 0;
+#if SDL_VERSION_ATLEAST(2,0,0)
+			dev_number = l_iJoyInstanceID[dev_number];
+#endif
             if (dev_number != event->jaxis.which || input_number != event->jaxis.axis)
                 return 0;
             if (axis_direction == '+')
@@ -197,6 +204,9 @@ static int MatchJoyCommand(const SDL_Event *event, eJoyCommand cmd)
                 return 0;
             if (sscanf(event_str, "J%dH%dV%d", &dev_number, &input_number, &input_value) != 3)
                 return 0;
+#if SDL_VERSION_ATLEAST(2,0,0)
+			dev_number = l_iJoyInstanceID[dev_number];
+#endif
             if (dev_number != event->jhat.which || input_number != event->jhat.hat)
                 return 0;
             if ((event->jhat.value & input_value) == input_value && JoyCmdActive[cmd] == 0)
@@ -217,6 +227,9 @@ static int MatchJoyCommand(const SDL_Event *event, eJoyCommand cmd)
                 return 0;
             if (sscanf(event_str, "J%dB%d", &dev_number, &input_number) != 2)
                 return 0;
+#if SDL_VERSION_ATLEAST(2,0,0)
+			dev_number = l_iJoyInstanceID[dev_number];
+#endif
             if (dev_number != event->jbutton.which || input_number != event->jbutton.button)
                 return 0;
             if (event->type == SDL_JOYBUTTONDOWN && JoyCmdActive[cmd] == 0)
@@ -366,7 +379,8 @@ void event_initialize(void)
             if (!SDL_WasInit(SDL_INIT_JOYSTICK))
                 SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 #if SDL_VERSION_ATLEAST(2,0,0)
-            SDL_JoystickOpen(device);
+            SDL_Joystick *thisJoy = SDL_JoystickOpen(device);
+			l_iJoyInstanceID[device] = SDL_JoystickInstanceID(thisJoy);
 #else
             if (!SDL_JoystickOpened(device))
                 SDL_JoystickOpen(device);

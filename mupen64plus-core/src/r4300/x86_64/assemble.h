@@ -23,13 +23,16 @@
 #ifndef M64P_R4300_ASSEMBLE_H
 #define M64P_R4300_ASSEMBLE_H
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <sys/types.h>
+
+#include "api/callbacks.h"
+#include "api/m64p_types.h"
 #include "osal/preproc.h"
 #include "r4300/recomph.h"
-#include "api/callbacks.h"
 
-#include <stdlib.h>
-
-extern long long int reg[32];
+extern int64_t reg[32];
 
 #define RAX 0
 #define RCX 1
@@ -68,6 +71,8 @@ extern long long int reg[32];
 #define BH 7
 
 extern int branch_taken;
+
+extern const uint16_t trunc_mode, round_mode, ceil_mode, floor_mode;
 
 void jump_start_rel8(void);
 void jump_end_rel8(void);

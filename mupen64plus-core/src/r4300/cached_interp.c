@@ -19,26 +19,32 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "cached_interp.h"
+#include <stdint.h>
+#include <stdlib.h>
 
-#include "api/m64p_types.h"
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+#include <string.h>
+
 #include "api/callbacks.h"
 #include "api/debugger.h"
-#include "memory/memory.h"
-
-#include "r4300.h"
-#include "cp0.h"
-#include "cp1.h"
-#include "ops.h"
+#include "api/m64p_types.h"
+#include "cached_interp.h"
+#include "cp0_private.h"
+#include "cp1_private.h"
 #include "exception.h"
 #include "interupt.h"
 #include "macros.h"
+#include "main/main.h"
+#include "memory/memory.h"
+#include "ops.h"
+#include "r4300.h"
 #include "recomp.h"
 #include "tlb.h"
 
 #ifdef DBG
+#include "debugger/dbg_debugger.h"
 #include "debugger/dbg_types.h"
-#include "debugger/debugger.h"
 #endif
 
 /* global variables */
@@ -64,13 +70,12 @@ unsigned int jump_to_address;
    static void name(void) \
    { \
       const int take_jump = (condition); \
-      const unsigned int jump_target = (destination); \
-      long long int *link_register = (link); \
+      const uint32_t jump_target = (destination); \
+      int64_t *link_register = (link); \
       if (cop1 && check_cop1_unusable()) return; \
       if (link_register != &reg[0]) \
       { \
-         *link_register=PC->addr + 8; \
-         sign_extended(*link_register); \
+         *link_register = SE32(PC->addr + 8); \
       } \
       if (!likely || take_jump) \
       { \
@@ -96,13 +101,12 @@ unsigned int jump_to_address;
    static void name##_OUT(void) \
    { \
       const int take_jump = (condition); \
-      const unsigned int jump_target = (destination); \
-      long long int *link_register = (link); \
+      const uint32_t jump_target = (destination); \
+      int64_t *link_register = (link); \
       if (cop1 && check_cop1_unusable()) return; \
       if (link_register != &reg[0]) \
       { \
-         *link_register=PC->addr + 8; \
-         sign_extended(*link_register); \
+         *link_register = SE32(PC->addr + 8); \
       } \
       if (!likely || take_jump) \
       { \
@@ -134,7 +138,7 @@ unsigned int jump_to_address;
       { \
          update_count(); \
          skip = next_interupt - g_cp0_regs[CP0_COUNT_REG]; \
-         if (skip > 3) g_cp0_regs[CP0_COUNT_REG] += (skip & 0xFFFFFFFC); \
+         if (skip > 3) g_cp0_regs[CP0_COUNT_REG] += (skip & UINT32_C(0xFFFFFFFC)); \
          else name(); \
       } \
       else name(); \
@@ -197,13 +201,13 @@ Used by dynarec only, check should be unnecessary
 
 static void NOTCOMPILED(void)
 {
-   unsigned int *mem = fast_mem_access(blocks[PC->addr>>12]->start);
+   uint32_t *mem = fast_mem_access(blocks[PC->addr>>12]->start);
 #ifdef CORE_DBG
    DebugMessage(M64MSG_INFO, "NOTCOMPILED: addr = %x ops = %lx", PC->addr, (long) PC->ops);
 #endif
 
    if (mem != NULL)
-      recompile_block((int *)mem, blocks[PC->addr >> 12], PC->addr);
+      recompile_block(mem, blocks[PC->addr >> 12], PC->addr);
    else
       DebugMessage(M64MSG_ERROR, "not compiled exception");
 
@@ -578,6 +582,47 @@ void free_blocks(void)
             free_block(blocks[i]);
             free(blocks[i]);
             blocks[i] = NULL;
+        }
+    }
+}
+
+void invalidate_cached_code_hacktarux(uint32_t address, size_t size)
+{
+    size_t i;
+    uint32_t addr;
+    uint32_t addr_max;
+
+    if (size == 0)
+    {
+        /* invalidate everthing */
+        memset(invalid_code, 1, 0x100000);
+    }
+    else
+    {
+        /* invalidate blocks (if necessary) */
+        addr_max = address+size;
+
+        for(addr = address; addr < addr_max; addr += 4)
+        {
+            i = (addr >> 12);
+
+            if (invalid_code[i] == 0)
+            {
+                if (blocks[i] == NULL
+                || blocks[i]->block[(addr & 0xfff) / 4].ops != current_instruction_table.NOTCOMPILED)
+                {
+                    invalid_code[i] = 1;
+                    /* go directly to next i */
+                    addr &= ~0xfff;
+                    addr |= 0xffc;
+                }
+            }
+            else
+            {
+                /* go directly to next i */
+                addr &= ~0xfff;
+                addr |= 0xffc;
+            }
         }
     }
 }

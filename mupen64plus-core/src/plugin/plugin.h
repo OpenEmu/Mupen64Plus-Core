@@ -25,6 +25,7 @@
 
 #include "api/m64p_common.h"
 #include "api/m64p_plugin.h"
+#include "api/m64p_types.h"
 
 extern m64p_error plugin_connect(m64p_plugin_type, m64p_dynlib_handle plugin_handle);
 extern m64p_error plugin_start(m64p_plugin_type);
@@ -36,7 +37,7 @@ extern CONTROL Controls[4];
 #define RSP_API_VERSION   0x20000
 #define GFX_API_VERSION   0x20200
 #define AUDIO_API_VERSION 0x20000
-#define INPUT_API_VERSION 0x20000
+#define INPUT_API_VERSION 0x20001
 
 /* video plugin function pointers */
 typedef struct _gfx_plugin_functions
@@ -98,6 +99,7 @@ typedef struct _input_plugin_functions
 	ptr_RomOpen             romOpen;
 	ptr_SDL_KeyDown         keyDown;
 	ptr_SDL_KeyUp           keyUp;
+	ptr_RenderCallback      renderCallback;
 } input_plugin_functions;
 
 extern input_plugin_functions input;

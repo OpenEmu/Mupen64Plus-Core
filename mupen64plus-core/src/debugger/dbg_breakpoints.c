@@ -22,17 +22,17 @@
 #include <SDL.h>
 #include <SDL_thread.h>
 
-#include "dbg_types.h"
-#include "debugger.h"
-#include "dbg_breakpoints.h"
-#include "dbg_memory.h"
-
-#include "api/m64p_types.h"
 #include "api/callbacks.h"
+#include "api/m64p_types.h"
+#include "dbg_breakpoints.h"
+#include "dbg_debugger.h"
+#include "dbg_types.h"
+#include "memory/memory.h"
+
+#ifdef DBG
 
 int g_NumBreakpoints=0;
 m64p_breakpoint g_Breakpoints[BREAKPOINTS_MAX_NUMBER];
-
 
 int add_breakpoint( uint32 address )
 {
@@ -184,17 +184,15 @@ int check_breakpoints_on_mem_access( uint32 pc, uint32 address, uint32 size, uin
     //It automatically stops and updates the debugger on hit, so the memory access
     //functions only need to call it and can discard the result.
     int bpt;
-    if(run == 2)
-    {
-        bpt=lookup_breakpoint( address, size, flags );
-        if(bpt != -1)
-        {
+    if (g_dbg_runstate == M64P_DBG_RUNSTATE_RUNNING) {
+        bpt = lookup_breakpoint(address, size, flags);
+        if (bpt != -1) {
             if (BPT_CHECK_FLAG(g_Breakpoints[bpt], M64P_BKP_FLAG_LOG))
                 log_breakpoint(pc, flags, address);
-            
-            run = 0;
+
+            g_dbg_runstate = M64P_DBG_RUNSTATE_PAUSED;
             update_debugger(pc);
-        
+
             return bpt;
         }
     }
@@ -214,3 +212,4 @@ int log_breakpoint(uint32 PC, uint32 Flag, uint32 Access)
     return 0;
 }
 
+#endif

@@ -19,32 +19,41 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "r4300.h"
-#include "cp0.h"
-#include "exception.h"
+#include <stdint.h>
 
+#include "cp0_private.h"
+#include "exception.h"
 #include "new_dynarec/new_dynarec.h"
+#include "r4300.h"
+#include "recomp.h"
 
 #ifdef COMPARE_CORE
 #include "api/debugger.h"
 #endif
 
 #ifdef DBG
+#include "debugger/dbg_debugger.h"
 #include "debugger/dbg_types.h"
-#include "debugger/debugger.h"
 #endif
 
 /* global variable */
 #if NEW_DYNAREC != NEW_DYNAREC_ARM
-unsigned int g_cp0_regs[CP0_REGS_COUNT];
+/* ARM backend requires a different memory layout
+ * and therefore manually allocate that variable */
+uint32_t g_cp0_regs[CP0_REGS_COUNT];
 #endif
 
 /* global functions */
+uint32_t* r4300_cp0_regs(void)
+{
+    return g_cp0_regs;
+}
+
 int check_cop1_unusable(void)
 {
-   if (!(g_cp0_regs[CP0_STATUS_REG] & 0x20000000))
+   if (!(g_cp0_regs[CP0_STATUS_REG] & UINT32_C(0x20000000)))
      {
-    g_cp0_regs[CP0_CAUSE_REG] = (11 << 2) | 0x10000000;
+    g_cp0_regs[CP0_CAUSE_REG] = (UINT32_C(11) << 2) | UINT32_C(0x10000000);
     exception_general();
     return 1;
      }

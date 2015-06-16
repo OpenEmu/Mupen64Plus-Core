@@ -23,17 +23,17 @@
  * functions
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 #include <direct.h>
 #include <shlobj.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
-#include "files.h"
-#include "api/m64p_types.h"
 #include "api/callbacks.h"
+#include "api/m64p_types.h"
+#include "files.h"
 
 /* definitions for system directories to search when looking for shared data files */
 #if defined(SHAREDIR)
@@ -59,7 +59,8 @@ static int search_dir_file(char *destpath, const char *path, const char *filenam
 
     /* build the full filepath */
     strcpy(destpath, path);
-    if (destpath[strlen(destpath)-1] != '\\')
+    /* if the path is empty, don't add \ between it and the file name */
+    if (destpath[0] != '\0' && destpath[strlen(destpath)-1] != '\\')
         strcat(destpath, "\\");
     strcat(destpath, filename);
 

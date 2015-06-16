@@ -23,9 +23,10 @@
 #ifndef __ROM_H__
 #define __ROM_H__
 
+#include <stdint.h>
+
 #include "api/m64p_types.h"
 #include "md5.h"
-#include <stdint.h>
 
 #define BIT(bitnr) (1ULL << (bitnr))
 #ifdef __GNUC__
@@ -40,8 +41,8 @@
 m64p_error open_rom(const unsigned char* romimage, unsigned int size);
 m64p_error close_rom(void);
 
-extern unsigned char* rom;
-extern int rom_size;
+extern unsigned char* g_rom;
+extern int g_rom_size;
 
 extern unsigned char isGoldeneyeRom;
 
