@@ -31,7 +31,6 @@
 #include "hle_external.h"
 #include "hle_internal.h"
 #include "memory.h"
-
 #include "ucodes.h"
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
@@ -171,7 +170,6 @@ static void rsp_break(struct hle_t* hle, unsigned int setbits)
 static void forward_gfx_task(struct hle_t* hle)
 {
     HleProcessDlistList(hle->user_defined);
-    *hle->dpc_status &= ~DP_STATUS_FREEZE;
 }
 
 static bool try_fast_audio_dispatching(struct hle_t* hle)
