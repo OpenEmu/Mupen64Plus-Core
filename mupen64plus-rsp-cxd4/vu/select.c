@@ -1,7 +1,7 @@
 /******************************************************************************\
 * Project:  MSP Simulation Layer for Vector Unit Computational Test Selects    *
 * Authors:  Iconoclast                                                         *
-* Release:  2014.10.15                                                         *
+* Release:  2015.01.30                                                         *
 * License:  CC0 Public Domain Dedication                                       *
 *                                                                              *
 * To the extent possible under law, the author(s) have dedicated all copyright *
@@ -27,15 +27,15 @@
  *     else
  *         dest = element_b;
  */
-INLINE void merge(short* VD, short* cmp, short* pass, short* fail)
+INLINE void merge(pi16 VD, pi16 cmp, pi16 pass, pi16 fail)
 {
     register int i;
-#if (0)
+#if (0 != 0)
 /* Do not use this version yet, as it still does not vectorize to SSE2. */
     for (i = 0; i < N; i++)
         VD[i] = (cmp[i] != 0) ? pass[i] : fail[i];
 #else
-    short diff[N];
+    i16 diff[N];
 
     for (i = 0; i < N; i++)
         diff[i] = pass[i] - fail[i];
@@ -45,131 +45,129 @@ INLINE void merge(short* VD, short* cmp, short* pass, short* fail)
     return;
 }
 
-INLINE static void do_lt(short* VD, short* VS, short* VT)
+INLINE static void do_lt(pi16 VD, pi16 VS, pi16 VT)
 {
-    short cn[N];
-    short eq[N];
+    i16 cn[N];
+    i16 eq[N];
     register int i;
 
     for (i = 0; i < N; i++)
         eq[i] = (VS[i] == VT[i]);
     for (i = 0; i < N; i++)
-        cn[i] = ne[i] & co[i];
+        cn[i] = cf_ne[i] & cf_co[i];
     for (i = 0; i < N; i++)
         eq[i] = eq[i] & cn[i];
     for (i = 0; i < N; i++)
-        clip[i] = 0;
+        cf_comp[i] = (VS[i] < VT[i]); /* less than */
     for (i = 0; i < N; i++)
-        comp[i] = (VS[i] < VT[i]); /* less than */
-    for (i = 0; i < N; i++)
-        comp[i] = comp[i] | eq[i]; /* ... or equal (uncommonly) */
+        cf_comp[i] = cf_comp[i] | eq[i]; /* ... or equal (uncommonly) */
 
-    merge(VACC_L, comp, VS, VT);
+    merge(VACC_L, cf_comp, VS, VT);
     vector_copy(VD, VACC_L);
-    for (i = 0; i < N; i++)
-        ne[i] = 0;
-    for (i = 0; i < N; i++)
-        co[i] = 0;
+
+ /* CTC2    $0, $vco # zeroing RSP flags VCF[0] */
+    vector_wipe(cf_ne);
+    vector_wipe(cf_co);
+
+    vector_wipe(cf_clip);
     return;
 }
 
-INLINE static void do_eq(short* VD, short* VS, short* VT)
+INLINE static void do_eq(pi16 VD, pi16 VS, pi16 VT)
 {
     register int i;
 
     for (i = 0; i < N; i++)
-        clip[i] = 0;
+        cf_comp[i] = (VS[i] == VT[i]);
     for (i = 0; i < N; i++)
-        comp[i] = (VS[i] == VT[i]);
-    for (i = 0; i < N; i++)
-        comp[i] = comp[i] & (ne[i] ^ 1);
+        cf_comp[i] = cf_comp[i] & (cf_ne[i] ^ 1);
 #if (0)
-    merge(VACC_L, comp, VS, VT); /* correct but redundant */
+    merge(VACC_L, cf_comp, VS, VT); /* correct but redundant */
 #else
     vector_copy(VACC_L, VT);
 #endif
     vector_copy(VD, VACC_L);
 
-    for (i = 0; i < N; i++)
-        ne[i] = 0;
-    for (i = 0; i < N; i++)
-        co[i] = 0;
+ /* CTC2    $0, $vco # zeroing RSP flags VCF[0] */
+    vector_wipe(cf_ne);
+    vector_wipe(cf_co);
+
+    vector_wipe(cf_clip);
     return;
 }
 
-INLINE static void do_ne(short* VD, short* VS, short* VT)
+INLINE static void do_ne(pi16 VD, pi16 VS, pi16 VT)
 {
     register int i;
 
     for (i = 0; i < N; i++)
-        clip[i] = 0;
+        cf_comp[i] = (VS[i] != VT[i]);
     for (i = 0; i < N; i++)
-        comp[i] = (VS[i] != VT[i]);
-    for (i = 0; i < N; i++)
-        comp[i] = comp[i] | ne[i];
+        cf_comp[i] = cf_comp[i] | cf_ne[i];
 #if (0)
-    merge(VACC_L, comp, VS, VT); /* correct but redundant */
+    merge(VACC_L, cf_comp, VS, VT); /* correct but redundant */
 #else
     vector_copy(VACC_L, VS);
 #endif
     vector_copy(VD, VACC_L);
 
-    for (i = 0; i < N; i++)
-        ne[i] = 0;
-    for (i = 0; i < N; i++)
-        co[i] = 0;
+ /* CTC2    $0, $vco # zeroing RSP flags VCF[0] */
+    vector_wipe(cf_ne);
+    vector_wipe(cf_co);
+
+    vector_wipe(cf_clip);
     return;
 }
 
-INLINE static void do_ge(short* VD, short* VS, short* VT)
+INLINE static void do_ge(pi16 VD, pi16 VS, pi16 VT)
 {
-    short ce[N];
-    short eq[N];
+    i16 ce[N];
+    i16 eq[N];
     register int i;
 
     for (i = 0; i < N; i++)
         eq[i] = (VS[i] == VT[i]);
     for (i = 0; i < N; i++)
-        ce[i] = (ne[i] & co[i]) ^ 1;
+        ce[i] = (cf_ne[i] & cf_co[i]) ^ 1;
     for (i = 0; i < N; i++)
         eq[i] = eq[i] & ce[i];
     for (i = 0; i < N; i++)
-        clip[i] = 0;
+        cf_comp[i] = (VS[i] > VT[i]); /* greater than */
     for (i = 0; i < N; i++)
-        comp[i] = (VS[i] > VT[i]); /* greater than */
-    for (i = 0; i < N; i++)
-        comp[i] = comp[i] | eq[i]; /* ... or equal (commonly) */
+        cf_comp[i] = cf_comp[i] | eq[i]; /* ... or equal (commonly) */
 
-    merge(VACC_L, comp, VS, VT);
+    merge(VACC_L, cf_comp, VS, VT);
     vector_copy(VD, VACC_L);
-    for (i = 0; i < N; i++)
-        ne[i] = 0;
-    for (i = 0; i < N; i++)
-        co[i] = 0;
+
+ /* CTC2    $0, $vco # zeroing RSP flags VCF[0] */
+    vector_wipe(cf_ne);
+    vector_wipe(cf_co);
+
+    vector_wipe(cf_clip);
     return;
 }
 
-INLINE static void do_cl(short* VD, short* VS, short* VT)
+INLINE static void do_cl(pi16 VD, pi16 VS, pi16 VT)
 {
-    ALIGNED unsigned short VB[N], VC[N];
-    ALIGNED short eq[N], ge[N], le[N];
-    ALIGNED short gen[N], len[N], lz[N], uz[N], sn[N];
-    short diff[N];
-    short cmp[N];
+    ALIGNED u16 VB[N], VC[N];
+    ALIGNED i16 eq[N], ge[N], le[N];
+    ALIGNED i16 gen[N], len[N], lz[N], uz[N], sn[N];
+    i16 diff[N];
+    i16 cmp[N];
     register int i;
 
-    vector_copy((short *)VB, VS);
-    vector_copy((short *)VC, VT);
+    vector_copy((pi16)VB, VS);
+    vector_copy((pi16)VC, VT);
 
 /*
     for (i = 0; i < N; i++)
-        ge[i] = clip[i];
+        ge[i] = cf_clip[i];
     for (i = 0; i < N; i++)
-        le[i] = comp[i];
+        le[i] = cf_comp[i];
 */
     for (i = 0; i < N; i++)
-        eq[i] = ne[i] ^ 1;
-    vector_copy(sn, co);
+        eq[i] = cf_ne[i] ^ 1;
+    vector_copy(sn, cf_co);
 
 /*
  * Now that we have extracted all the flags, we will essentially be masking
@@ -183,7 +181,7 @@ INLINE static void do_cl(short* VD, short* VS, short* VT)
     for (i = 0; i < N; i++)
         diff[i] = VB[i] - VC[i];
     for (i = 0; i < N; i++)
-        uz[i] = (VB[i] + (unsigned short)VT[i] - 65536) >> 31;
+        uz[i] = (VB[i] + (u16)VT[i] - 65536) >> 31;
     for (i = 0; i < N; i++)
         lz[i] = (diff[i] == 0x0000);
     for (i = 0; i < N; i++)
@@ -191,9 +189,9 @@ INLINE static void do_cl(short* VD, short* VS, short* VT)
     for (i = 0; i < N; i++)
         len[i] = lz[i] & uz[i];
     for (i = 0; i < N; i++)
-        gen[i] = gen[i] & vce[i];
+        gen[i] = gen[i] & cf_vce[i];
     for (i = 0; i < N; i++)
-        len[i] = len[i] & (vce[i] ^ 1);
+        len[i] = len[i] & (cf_vce[i] ^ 1);
     for (i = 0; i < N; i++)
         len[i] = len[i] | gen[i];
     for (i = 0; i < N; i++)
@@ -201,37 +199,41 @@ INLINE static void do_cl(short* VD, short* VS, short* VT)
 
     for (i = 0; i < N; i++)
         cmp[i] = eq[i] & sn[i];
-    merge(le, cmp, len, comp);
+    merge(le, cmp, len, cf_comp);
 
     for (i = 0; i < N; i++)
         cmp[i] = eq[i] & (sn[i] ^ 1);
-    merge(ge, cmp, gen, clip);
+    merge(ge, cmp, gen, cf_clip);
 
     merge(cmp, sn, le, ge);
-    merge(VACC_L, cmp, (short *)VC, VS);
+    merge(VACC_L, cmp, (pi16)VC, VS);
     vector_copy(VD, VACC_L);
 
-    vector_copy(clip, ge);
-    vector_copy(comp, le);
-    for (i = 0; i < N; i++)
-        ne[i] = 0;
-    for (i = 0; i < N; i++)
-        co[i] = 0;
-    for (i = 0; i < N; i++)
-        vce[i] = 0;
+ /* CTC2    $0, $vco # zeroing RSP flags VCF[0] */
+    vector_wipe(cf_ne);
+    vector_wipe(cf_co);
+
+    vector_copy(cf_clip, ge);
+    vector_copy(cf_comp, le);
+
+ /* CTC2    $0, $vce # zeroing RSP flags VCF[2] */
+    vector_wipe(cf_vce);
     return;
 }
 
-INLINE static void do_ch(short* VD, short* VS, short* VT)
+INLINE static void do_ch(pi16 VD, pi16 VS, pi16 VT)
 {
-    ALIGNED short VC[N];
-    ALIGNED short eq[N], ge[N], le[N];
-    ALIGNED short sn[N];
+    ALIGNED i16 VC[N];
+    ALIGNED i16 eq[N], ge[N], le[N];
+    ALIGNED i16 sn[N];
 #ifndef _DEBUG
-    short diff[N];
+    i16 diff[N];
 #endif
+    i16 cch[N]; /* corner case hack:  -(-32768) with undefined sign */
     register int i;
 
+    for (i = 0; i < N; i++)
+        cch[i] = (VT[i] == -32768) ? ~0 : 0; /* -(-32768) might not be >= 0. */
     vector_copy(VC, VT);
     for (i = 0; i < N; i++)
         sn[i] = VS[i] ^ VT[i];
@@ -240,15 +242,15 @@ INLINE static void do_ch(short* VD, short* VS, short* VT)
     for (i = 0; i < N; i++)
         VC[i] ^= sn[i]; /* if (sn == ~0) {VT = ~VT;} else {VT =  VT;} */
     for (i = 0; i < N; i++)
-        vce[i]  = (VS[i] == VC[i]); /* 2's complement:  VC = -VT - 1, or ~VT. */
+        cf_vce[i]  = (VS[i] == VC[i]); /* 2's complement:  VC = -VT - 1 = ~VT */
     for (i = 0; i < N; i++)
-        vce[i] &= sn[i];
+        cf_vce[i] &= sn[i];
     for (i = 0; i < N; i++)
-        VC[i] -= sn[i]; /* converts ~(VT) into -(VT) if (sign) */
+        VC[i] -= sn[i] & cch[i]; /* converts ~(VT) into -(VT) if (sign) */
     for (i = 0; i < N; i++)
-        eq[i]  = (VS[i] == VC[i]);
+        eq[i]  = (VS[i] == VC[i]) & ~cch[i]; /* (VS == +32768) is never true. */
     for (i = 0; i < N; i++)
-        eq[i] |= vce[i];
+        eq[i] |= cf_vce[i];
 
 #ifdef _DEBUG
     for (i = 0; i < N; i++)
@@ -267,7 +269,7 @@ INLINE static void do_ch(short* VD, short* VS, short* VT)
         ge[i] = (diff[i] >= VT[i]);
 
     for (i = 0; i < N; i++)
-        sn[i] = (unsigned short)(sn[i]) >> 15; /* ~0 to 1, 0 to 0 */
+        sn[i] = (u16)(sn[i]) >> 15; /* ~0 to 1, 0 to 0 */
 
     for (i = 0; i < N; i++)
         diff[i] = VC[i] - VS[i];
@@ -278,29 +280,31 @@ INLINE static void do_ch(short* VD, short* VS, short* VT)
     merge(le, sn, diff, le);
 #endif
 
-    merge(comp, sn, le, ge);
-    merge(VACC_L, comp, VC, VS);
+    merge(cf_comp, sn, le, ge);
+    merge(VACC_L, cf_comp, VC, VS);
     vector_copy(VD, VACC_L);
 
-    vector_copy(clip, ge);
-    vector_copy(comp, le);
+    vector_copy(cf_clip, ge);
+    vector_copy(cf_comp, le);
     for (i = 0; i < N; i++)
-        ne[i] = eq[i] ^ 1;
-    vector_copy(co, sn);
+        cf_ne[i] = eq[i] ^ 1;
+    vector_copy(cf_co, sn);
     return;
 }
 
-INLINE static void do_cr(short* VD, short* VS, short* VT)
+INLINE static void do_cr(pi16 VD, pi16 VS, pi16 VT)
 {
-    ALIGNED short ge[N], le[N], sn[N];
-    ALIGNED short VC[N];
-    short cmp[N];
+    ALIGNED i16 ge[N], le[N], sn[N];
+    ALIGNED i16 VC[N];
+    i16 cmp[N];
     register int i;
 
     vector_copy(VC, VT);
     for (i = 0; i < N; i++)
-        sn[i] = (signed short)(VS[i] ^ VT[i]) >> 15;
-#if (0)
+        sn[i] = VS[i] ^ VT[i];
+    for (i = 0; i < N; i++)
+        sn[i] = (sn[i] < 0) ? ~0 : 0;
+#ifdef _DEBUG
     for (i = 0; i < N; i++)
         le[i] = sn[i] ? (VT[i] <= ~VS[i]) : (VT[i] <= ~0x0000);
     for (i = 0; i < N; i++)
@@ -317,23 +321,25 @@ INLINE static void do_cr(short* VD, short* VS, short* VT)
 #endif
     for (i = 0; i < N; i++)
         VC[i] ^= sn[i]; /* if (sn == ~0) {VT = ~VT;} else {VT =  VT;} */
-    merge(VACC_L, le, VC, VS);
+    merge(cmp, sn, le, ge);
+    merge(VACC_L, cmp, VC, VS);
     vector_copy(VD, VACC_L);
 
-    vector_copy(clip, ge);
-    vector_copy(comp, le);
-    for (i = 0; i < N; i++)
-        ne[i] = 0;
-    for (i = 0; i < N; i++)
-        co[i] = 0;
-    for (i = 0; i < N; i++)
-        vce[i] = 0;
+ /* CTC2    $0, $vco # zeroing RSP flags VCF[0] */
+    vector_wipe(cf_ne);
+    vector_wipe(cf_co);
+
+    vector_copy(cf_clip, ge);
+    vector_copy(cf_comp, le);
+
+ /* CTC2    $0, $vce # zeroing RSP flags VCF[2] */
+    vector_wipe(cf_vce);
     return;
 }
 
-INLINE static void do_mrg(short* VD, short* VS, short* VT)
+INLINE static void do_mrg(pi16 VD, pi16 VS, pi16 VT)
 {
-    merge(VACC_L, comp, VS, VT);
+    merge(VACC_L, cf_comp, VS, VT);
     vector_copy(VD, VACC_L);
     return;
 }

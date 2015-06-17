@@ -1,7 +1,7 @@
 /******************************************************************************\
 * Project:  MSP Emulation Layer for Vector Unit Computational Operations       *
 * Authors:  Iconoclast                                                         *
-* Release:  2014.12.13                                                         *
+* Release:  2015.01.30                                                         *
 * License:  CC0 Public Domain Dedication                                       *
 *                                                                              *
 * To the extent possible under law, the author(s) have dedicated all copyright *
@@ -25,6 +25,19 @@
 /* N:  number of processor elements in SIMD processor */
 
 /*
+ * Illegal, unaligned LWC2 operations on the RSP may write past the terminal
+ * byte of a vector, while SWC2 operations may have to wrap around stores
+ * from the end to the start of a vector.  Both of these risk out-of-bounds
+ * memory access, but by doubling the number of bytes allocated (shift left)
+ * per each vector register, we could stabilize and probably optimize this.
+ */
+#if 0
+#define VR_STATIC_WRAPAROUND    0
+#else
+#define VR_STATIC_WRAPAROUND    1
+#endif
+
+/*
  * We are going to need this for vector operations doing scalar things.
  * The divides and VSAW need bit-wise information from the instruction word.
  */
@@ -38,7 +51,7 @@ extern u32 inst;
  * For ?WC2 we may need to do byte-precision access just as directly.
  * This is amended by using the `VU_S` and `VU_B` macros defined in `rsp.h`.
  */
-ALIGNED extern i16 VR[32][N];
+ALIGNED extern i16 VR[32][N << VR_STATIC_WRAPAROUND];
 
 /*
  * The RSP accumulator is a vector of 3 48-bit integers.  Nearly all of the
@@ -95,16 +108,16 @@ VECTOR_EXTERN (*COP2_C2[8*7 + 8])(v16, v16);
 #define vector_copy(vd, vs) { \
     *(v16 *)(vd) = *(v16 *)(vs); }
 #define vector_wipe(vd) { \
-    (vd) = _mm_xor_si128(vd, vd); }
+    *(v16 *)&(vd) = _mm_cmpgt_epi16(*(v16 *)&(vd), *(v16 *)&(vd)); }
 #define vector_fill(vd) { \
-    (vd) = _mm_cmpeq_epi16(vd, vd); }
+    *(v16 *)&(vd) = _mm_cmpeq_epi16(*(v16 *)&(vd), *(v16 *)&(vd)); }
 
 #define vector_and(vd, vs) { \
-    (vd) = _mm_and_si128    (vd, vs); }
+    *(v16 *)&(vd) = _mm_and_si128  (*(v16 *)&(vd), *(v16 *)&(vs)); }
 #define vector_or(vd, vs) { \
-    (vd) = _mm_or_si128     (vd, vs); }
+    *(v16 *)&(vd) = _mm_or_si128   (*(v16 *)&(vd), *(v16 *)&(vs)); }
 #define vector_xor(vd, vs) { \
-    (vd) = _mm_xor_si128    (vd, vs); }
+    *(v16 *)&(vd) = _mm_xor_si128  (*(v16 *)&(vd), *(v16 *)&(vs)); }
 
 /*
  * Every competent vector unit should have at least two vector comparison
@@ -113,11 +126,11 @@ VECTOR_EXTERN (*COP2_C2[8*7 + 8])(v16, v16);
  * Default examples when compiling for the x86 SSE2 architecture below.
  */
 #define vector_cmplt(vd, vs) { \
-    (vd) = _mm_cmplt_epi16  (vd, vs); }
+    *(v16 *)&(vd) = _mm_cmplt_epi16(*(v16 *)&(vd), *(v16 *)&(vs)); }
 #define vector_cmpeq(vd, vs) { \
-    (vd) = _mm_cmpeq_epi16  (vd, vs); }
+    *(v16 *)&(vd) = _mm_cmpeq_epi16(*(v16 *)&(vd), *(v16 *)&(vs)); }
 #define vector_cmpgt(vd, vs) { \
-    (vd) = _mm_cmpgt_epi16  (vd, vs); }
+    *(v16 *)&(vd) = _mm_cmpgt_epi16(*(v16 *)&(vd), *(v16 *)&(vs)); }
 
 #else
 
@@ -221,7 +234,7 @@ VECTOR_EXTERN (*COP2_C2[8*7 + 8])(v16, v16);
  * for shuffling said vector into a new vector temporary register,
  * ST = VR[vt], should be pretty convenient.
  */
-INLINE VECTOR_EXTERN SHUFFLE_VECTOR(v16 VD, const int e);
+INLINE VECTOR_EXTERN SHUFFLE_VECTOR(v16 vd, const unsigned int e);
 
 /*
  * Many vector units have pairs of "vector condition flags" registers.
@@ -237,11 +250,11 @@ extern u16 VCO;
 extern u16 VCC;
 extern u8 VCE;
 
-ALIGNED extern i16 ne[8];
-ALIGNED extern i16 co[8];
-ALIGNED extern i16 clip[8];
-ALIGNED extern i16 comp[8];
-ALIGNED extern i16 vce[8];
+ALIGNED extern i16 cf_ne[N];
+ALIGNED extern i16 cf_co[N];
+ALIGNED extern i16 cf_clip[N];
+ALIGNED extern i16 cf_comp[N];
+ALIGNED extern i16 cf_vce[N];
 
 extern u16 get_VCO(void);
 extern u16 get_VCC(void);
@@ -257,5 +270,90 @@ extern void set_VCE(u8 VCE);
  */
 #define B(x)    ((x) & 3)
 #define SHUFFLE(a,b,c,d)    ((B(d)<<6) | (B(c)<<4) | (B(b)<<2) | (B(a)<<0))
+
+/*
+ * RSP vector opcode function names are currently just literally named after
+ * the actual opcode that is being emulated, but names this short could
+ * collide with global symbols exported from somewhere else within the
+ * emulation thread.  (This did happen on Linux Mupen64, with my old function
+ * name "MFC0", which had to be renamed.)  Rather than uglify the function
+ * names, we'll treat them as macros from now on, should the need arise.
+ */
+#define VMULF       mulf_v_msp
+#define VMULU       mulu_v_msp
+#define VMULI       rndp_v_msp
+#define VMULQ       mulq_v_msp
+
+#define VMUDL       mudl_v_msp
+#define VMUDM       mudm_v_msp
+#define VMUDN       mudn_v_msp
+#define VMUDH       mudh_v_msp
+
+#define VMACF       macf_v_msp
+#define VMACU       macu_v_msp
+#define VMACI       rndn_v_msp
+#define VMACQ       macq_v_msp
+
+#define VMADL       madl_v_msp
+#define VMADM       madm_v_msp
+#define VMADN       madn_v_msp
+#define VMADH       madh_v_msp
+
+#define VADD        add_v_msp
+#define VSUB        sub_v_msp
+#define VSUT        sut_v_msp
+#define VABS        abs_v_msp
+
+#define VADDC       addc_v_msp
+#define VSUBC       subc_v_msp
+#define VADDB       addb_v_msp
+#define VSUBB       subb_v_msp
+
+#define VACCB       accb_v_msp
+#define VSUCB       sucb_v_msp
+#define VSAD        sad_v_msp
+#define VSAC        sac_v_msp
+
+#define VSUM        sum_v_msp
+#define VSAW        sar_v_msp
+/* #define VACC */
+/* #define VSUC */
+
+#define VLT         lt_v_msp
+#define VEQ         eq_v_msp
+#define VNE         ne_v_msp
+#define VGE         ge_v_msp
+
+#define VCL         cl_v_msp
+#define VCH         ch_v_msp
+#define VCR         cr_v_msp
+#define VMRG        mrg_v_msp
+
+#define VAND        and_v_msp
+#define VNAND       nand_v_msp
+#define VOR         or_v_msp
+#define VNOR        nor_v_msp
+#define VXOR        xor_v_msp
+#define VNXOR       nxor_v_msp
+
+#define VRCP        rcp_v_msp
+#define VRCPL       rcpl_v_msp
+#define VRCPH       rcph_v_msp
+#define VMOV        mov_v_msp
+
+#define VRSQ        rsq_v_msp
+#define VRSQL       rsql_v_msp
+#define VRSQH       rsqh_v_msp
+#define VNOP        nop_v_msp
+
+#define VEXTT       extt_v_msp
+#define VEXTQ       extq_v_msp
+#define VEXTN       extn_v_msp
+
+
+#define VINST       inst_v_msp
+#define VINSQ       insq_v_msp
+#define VINSN       insn_v_msp
+#define VNULLOP     nop_v_msp
 
 #endif

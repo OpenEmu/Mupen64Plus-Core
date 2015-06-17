@@ -118,10 +118,10 @@ typedef void(*p_func)(void);
  */
 #if defined(M64P_PLUGIN_API)
 #define M64P_PLUGIN_PROTOTYPES 1
-#include "m64p_types.h"
 #include "m64p_common.h"
-#include "m64p_plugin.h"
 #include "m64p_config.h"
+#include "m64p_plugin.h"
+#include "m64p_types.h"
 #include "osal_dynamiclib.h"
 #else
 #if defined(_WIN32)

@@ -1,7 +1,7 @@
 /******************************************************************************\
 * Project:  Module Subsystem Interface to SP Interpreter Core                  *
 * Authors:  Iconoclast                                                         *
-* Release:  2014.12.08                                                         *
+* Release:  2015.01.30                                                         *
 * License:  CC0 Public Domain Dedication                                       *
 *                                                                              *
 * To the extent possible under law, the author(s) have dedicated all copyright *
@@ -56,7 +56,7 @@ NOINLINE void update_conf(const char* source)
 {
     memset(conf, 0, sizeof(conf));
 
-    CFG_HLE_GFX = 1; // OpenEmu
+    CFG_HLE_GFX = ConfigGetParamBool(l_ConfigRsp, "DisplayListToGraphicsPlugin");
     CFG_HLE_AUD = ConfigGetParamBool(l_ConfigRsp, "AudioListToAudioPlugin");
     CFG_WAIT_FOR_CPU_HOST = ConfigGetParamBool(l_ConfigRsp, "WaitForCPUHost");
     CFG_MEND_SEMAPHORE_LOCK = ConfigGetParamBool(l_ConfigRsp, "SupportCPUSemaphoreLock");
@@ -217,8 +217,7 @@ EXPORT int CALL RomOpen(void)
 #else
 
 static const char DLL_about[] =
-    "RSP Interpreter by Iconoclast&&ECHO."\
-    "&&ECHO "\
+    "RSP Interpreter by Iconoclast\n"\
     "Thanks for test RDP:  Jabo, ziggy, angrylion\n"\
     "RSP driver examples:  bpoint, zilmar, Ville Linde";
 
@@ -348,6 +347,8 @@ EXPORT void CALL InitiateRSP(RSP_INFO Rsp_Info, pu32 CycleCount)
     CR[0xD] = &GET_RCP_REG(DPC_BUFBUSY_REG);
     CR[0xE] = &GET_RCP_REG(DPC_PIPEBUSY_REG);
     CR[0xF] = &GET_RCP_REG(DPC_TMEM_REG);
+
+    MF_SP_STATUS_TIMEOUT = 32767;
     return;
 }
 
@@ -396,7 +397,7 @@ NOINLINE void message(const char* body)
     my_free(argv);
 #else
     fputs(body, stdout);
-    putc('\n');
+    putchar('\n');
 #endif
     return;
 }
@@ -645,11 +646,11 @@ NOINLINE FILE* my_fopen(const char * filename, const char* mode)
         (mode[0] == 'r') ? GENERIC_READ : GENERIC_WRITE,
         (mode[0] == 'r') ? FILE_SHARE_READ : FILE_SHARE_WRITE,
         NULL,
-        CREATE_ALWAYS,
+        (mode[0] == 'r') ? OPEN_EXISTING : CREATE_ALWAYS,
 #if 0
         FILE_FLAG_WRITE_THROUGH | FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING,
 #else
-        FILE_FLAG_WRITE_THROUGH,
+        (mode[0] == 'r') ? FILE_ATTRIBUTE_NORMAL : FILE_FLAG_WRITE_THROUGH,
 #endif
         NULL
     );

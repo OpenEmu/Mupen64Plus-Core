@@ -1,7 +1,7 @@
 /******************************************************************************\
 * Project:  MSP Simulation Layer for Vector Unit Computational Adds            *
 * Authors:  Iconoclast                                                         *
-* Release:  2014.10.15                                                         *
+* Release:  2015.01.30                                                         *
 * License:  CC0 Public Domain Dedication                                       *
 *                                                                              *
 * To the extent possible under law, the author(s) have dedicated all copyright *
@@ -14,18 +14,18 @@
 \******************************************************************************/
 
 #include "add.h"
+
 #include "select.h"
 
 #ifdef ARCH_MIN_SSE2
-
-static INLINE void SIGNED_CLAMP_ADD(short* VD, short* VS, short* VT)
+static INLINE void SIGNED_CLAMP_ADD(pi16 VD, pi16 VS, pi16 VT)
 {
     v16 dst, src, vco;
     v16 max, min;
 
     src = _mm_load_si128((v16 *)VS);
     dst = _mm_load_si128((v16 *)VT);
-    vco = _mm_load_si128((v16 *)co);
+    vco = _mm_load_si128((v16 *)cf_co);
 
 /*
  * Due to premature clamping in between adds, sometimes we need to add the
@@ -40,14 +40,14 @@ static INLINE void SIGNED_CLAMP_ADD(short* VD, short* VS, short* VT)
     _mm_store_si128((v16 *)VD, max);
     return;
 }
-static INLINE void SIGNED_CLAMP_SUB(short* VD, short* VS, short* VT)
+static INLINE void SIGNED_CLAMP_SUB(pi16 VD, pi16 VS, pi16 VT)
 {
     v16 dst, src, vco;
     v16 dif, res, xmm;
 
     src = _mm_load_si128((v16 *)VS);
     dst = _mm_load_si128((v16 *)VT);
-    vco = _mm_load_si128((v16 *)co);
+    vco = _mm_load_si128((v16 *)cf_co);
 
     res = _mm_subs_epi16(src, dst);
 
@@ -70,14 +70,14 @@ static INLINE void SIGNED_CLAMP_SUB(short* VD, short* VS, short* VT)
     return;
 }
 #else
-static INLINE void SIGNED_CLAMP_ADD(short* VD, short* VS, short* VT)
+static INLINE void SIGNED_CLAMP_ADD(pi16 VD, pi16 VS, pi16 VT)
 {
     i32 sum[N];
-    short hi[N], lo[N];
+    i16 hi[N], lo[N];
     register int i;
 
     for (i = 0; i < N; i++)
-        sum[i] = VS[i] + VT[i] + co[i];
+        sum[i] = VS[i] + VT[i] + cf_co[i];
     for (i = 0; i < N; i++)
         lo[i] = (sum[i] + 0x8000) >> 31;
     for (i = 0; i < N; i++)
@@ -91,14 +91,14 @@ static INLINE void SIGNED_CLAMP_ADD(short* VD, short* VS, short* VT)
         VD[i] ^= 0x8000 & (hi[i] | lo[i]);
     return;
 }
-static INLINE void SIGNED_CLAMP_SUB(short* VD, short* VS, short* VT)
+static INLINE void SIGNED_CLAMP_SUB(pi16 VD, pi16 VS, pi16 VT)
 {
     i32 dif[N];
-    short hi[N], lo[N];
+    i16 hi[N], lo[N];
     register int i;
 
     for (i = 0; i < N; i++)
-        dif[i] = VS[i] - VT[i] - co[i];
+        dif[i] = VS[i] - VT[i] - cf_co[i];
     for (i = 0; i < N; i++)
         lo[i] = (dif[i] + 0x8000) >> 31;
     for (i = 0; i < N; i++)
@@ -114,31 +114,31 @@ static INLINE void SIGNED_CLAMP_SUB(short* VD, short* VS, short* VT)
 }
 #endif
 
-INLINE static void clr_ci(short* VD, short* VS, short* VT)
+INLINE static void clr_ci(pi16 VD, pi16 VS, pi16 VT)
 { /* clear CARRY and carry in to accumulators */
     register int i;
 
     for (i = 0; i < N; i++)
-        VACC_L[i] = VS[i] + VT[i] + co[i];
+        VACC_L[i] = VS[i] + VT[i] + cf_co[i];
     SIGNED_CLAMP_ADD(VD, VS, VT);
-    for (i = 0; i < N; i++)
-        ne[i] = 0;
-    for (i = 0; i < N; i++)
-        co[i] = 0;
+
+ /* CTC2    $0, $vco # zeroing RSP flags VCF[0] */
+    vector_wipe(cf_ne);
+    vector_wipe(cf_co);
     return;
 }
 
-INLINE static void clr_bi(short* VD, short* VS, short* VT)
+INLINE static void clr_bi(pi16 VD, pi16 VS, pi16 VT)
 { /* clear CARRY and borrow in to accumulators */
     register int i;
 
     for (i = 0; i < N; i++)
-        VACC_L[i] = VS[i] - VT[i] - co[i];
+        VACC_L[i] = VS[i] - VT[i] - cf_co[i];
     SIGNED_CLAMP_SUB(VD, VS, VT);
-    for (i = 0; i < N; i++)
-        ne[i] = 0;
-    for (i = 0; i < N; i++)
-        co[i] = 0;
+
+ /* CTC2    $0, $vco # zeroing RSP flags VCF[0] */
+    vector_wipe(cf_ne);
+    vector_wipe(cf_co);
     return;
 }
 
@@ -148,84 +148,67 @@ INLINE static void clr_bi(short* VD, short* VS, short* VT)
  * +1:  VT *= +1, because VS > 0 // VT ^=  0
  *      VT ^= -1, "negate" -32768 as ~+32767 (corner case hack for N64 SP)
  */
-INLINE static void do_abs(short* VD, short* VS, short* VT)
+INLINE static void do_abs(pi16 VD, pi16 VS, pi16 VT)
 {
-    short neg[N], pos[N];
-    short nez[N], cch[N]; /* corner case hack -- abs(-32768) == +32767 */
-    ALIGNED short res[N];
+    i16 neg[N], pos[N];
+    i16 nez[N], cch[N]; /* corner case hack -- abs(-32768) == +32767 */
+    ALIGNED i16 res[N];
     register int i;
 
     vector_copy(res, VT);
-#ifndef ARCH_MIN_SSE2
-#define MASK_XOR
-#endif
+    for (i = 0; i < N; i++)
+        cch[i]  = (res[i] == -32768);
+
     for (i = 0; i < N; i++)
         neg[i]  = (VS[i] <  0x0000);
     for (i = 0; i < N; i++)
         pos[i]  = (VS[i] >  0x0000);
-    for (i = 0; i < N; i++)
-        nez[i]  = 0;
-#ifdef MASK_XOR
-    for (i = 0; i < N; i++)
-        neg[i]  = -neg[i];
-    for (i = 0; i < N; i++)
-        nez[i] += neg[i];
-#else
+    vector_wipe(nez);
+
     for (i = 0; i < N; i++)
         nez[i] -= neg[i];
-#endif
     for (i = 0; i < N; i++)
         nez[i] += pos[i];
-#ifdef MASK_XOR
-    for (i = 0; i < N; i++)
-        res[i] ^= nez[i];
-    for (i = 0; i < N; i++)
-        cch[i]  = (res[i] != -32768);
-    for (i = 0; i < N; i++)
-        res[i] += cch[i]; /* -(x) === (x ^ -1) + 1 */
-#else
+
     for (i = 0; i < N; i++)
         res[i] *= nez[i];
     for (i = 0; i < N; i++)
-        cch[i]  = (res[i] == -32768);
-    for (i = 0; i < N; i++)
         res[i] -= cch[i];
-#endif
     vector_copy(VACC_L, res);
     vector_copy(VD, VACC_L);
     return;
 }
 
-INLINE static void set_co(short* VD, short* VS, short* VT)
+INLINE static void set_co(pi16 VD, pi16 VS, pi16 VT)
 { /* set CARRY and carry out from sum */
     i32 sum[N];
     register int i;
 
     for (i = 0; i < N; i++)
-        sum[i] = (unsigned short)(VS[i]) + (unsigned short)(VT[i]);
+        sum[i] = (u16)(VS[i]) + (u16)(VT[i]);
     for (i = 0; i < N; i++)
         VACC_L[i] = VS[i] + VT[i];
     vector_copy(VD, VACC_L);
+
+    vector_wipe(cf_ne);
     for (i = 0; i < N; i++)
-        ne[i] = 0;
-    for (i = 0; i < N; i++)
-        co[i] = sum[i] >> 16; /* native:  (sum[i] > +65535) */
+        cf_co[i] = sum[i] >> 16; /* native:  (sum[i] > +65535) */
     return;
 }
 
-INLINE static void set_bo(short* VD, short* VS, short* VT)
+INLINE static void set_bo(pi16 VD, pi16 VS, pi16 VT)
 { /* set CARRY and borrow out from difference */
     i32 dif[N];
     register int i;
 
     for (i = 0; i < N; i++)
-        dif[i] = (unsigned short)(VS[i]) - (unsigned short)(VT[i]);
+        dif[i] = (u16)(VS[i]) - (u16)(VT[i]);
     for (i = 0; i < N; i++)
         VACC_L[i] = VS[i] - VT[i];
     for (i = 0; i < N; i++)
-        ne[i] = (VS[i] != VT[i]);
+        cf_ne[i] = (VS[i] != VT[i]);
     for (i = 0; i < N; i++)
-        co[i] = (dif[i] < 0);
+        cf_co[i] = (dif[i] < 0);
     vector_copy(VD, VACC_L);
     return;
 }

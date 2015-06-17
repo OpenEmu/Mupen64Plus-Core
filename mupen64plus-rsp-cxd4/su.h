@@ -1,7 +1,7 @@
 /******************************************************************************\
 * Project:  Basic MIPS R4000 Instruction Set for Scalar Unit Operations        *
 * Authors:  Iconoclast                                                         *
-* Release:  2014.12.25                                                         *
+* Release:  2015.02.18                                                         *
 * License:  CC0 Public Domain Dedication                                       *
 *                                                                              *
 * To the extent possible under law, the author(s) have dedicated all copyright *
@@ -17,6 +17,7 @@
 #define _SU_H_
 
 #include <stdio.h>
+
 #include "my_types.h"
 #include "rsp.h"
 
@@ -34,6 +35,13 @@
 #define GET_RSP_INFO(member)    (RSP_INFO_NAME.member)
 #define GET_RCP_REG(member)     (*RSP_INFO_NAME.member)
 
+/*
+ * Currently, the plugin system this module is written for doesn't notify us
+ * of how much RDRAM is installed to the system, so we have to presume 8 MiB.
+ */
+#define MAX_DRAM_ADDR           0x007FFFFFul
+#define MAX_DRAM_DMA_ADDR       (MAX_DRAM_ADDR & ~7)
+
 extern int CPU_running;
 
 extern RSP_INFO RSP_INFO_NAME;
@@ -44,16 +52,10 @@ extern pu8 IMEM;
 extern u8 conf[32];
 
 /*
- * RSP virtual registers (of scalar unit)
- * The most important are the 32 general-purpose scalar registers.
- * We have the convenience of using a 32-bit machine (Win32) to emulate
- * another 32-bit machine (MIPS/N64), so the most natural way to accurately
- * emulate the scalar GPRs is to use the standard `int` type.  Situations
- * specifically requiring sign-extension or lack thereof are forcibly
- * applied as defined in the MIPS quick reference card and user manuals.
- * Remember that these are not the same "GPRs" as in the MIPS ISA and totally
- * abandon their designated purposes on the master CPU host (the VR4300),
- * hence most of the MIPS names "k0, k1, t0, t1, v0, v1 ..." no longer apply.
+ * general-purpose scalar registers
+ *
+ * based on the MIPS instruction set architecture but without most of the
+ * original register names (for example, no kernel-reserved registers)
  */
 extern i32 SR[32];
 
@@ -83,9 +85,18 @@ extern short MFC0_count[32];
 /* Keep one C0 MF status read count for each scalar register. */
 #endif
 
+/*
+ * The number of times to tolerate executing `MFC0    $at, $c4`.
+ * Replace $at with any register--the timeout limit is per each.
+ *
+ * Set to a higher value to avoid prematurely quitting the interpreter.
+ * Set to a lower value for speed...you could get away with 10 sometimes.
+ */
+extern int MF_SP_STATUS_TIMEOUT;
+
 #define SLOT_OFF    (BASE_OFF + 0x000)
 #define LINK_OFF    (BASE_OFF + 0x004)
-extern void set_PC(int address);
+extern void set_PC(unsigned int address);
 
 #if (0x7FFFFFFFul >> 037 != 0x7FFFFFFFul >> ~0U)
 #define MASK_SA(sa) (sa & 037)
@@ -97,6 +108,8 @@ extern void set_PC(int address);
 
 #define SR_B(s, i)      (*(pi8)(((pi8)(SR + s)) + BES(i)))
 #define SR_S(s, i)      (*(pi16)(((pi8)(SR + s)) + HES(i)))
+
+                     /* (-(x & (1 << b)) | (x)) */
 #define SE(x, b)        (-(x & (1 << b)) | (x & ~(~0 << b)))
 #define ZE(x, b)        (+(x & (1 << b)) | (x & ~(~0 << b)))
 
@@ -129,21 +142,21 @@ extern void set_PC(int address);
 #define VR_S(vt,element)    (*(pi16)((pi8)(VR[vt]) + element))
 
 /*** Scalar, Coprocessor Operations (system control) ***/
-#define SP_STATUS_HALT          (0x00000001 <<  0)
-#define SP_STATUS_BROKE         (0x00000001 <<  1)
-#define SP_STATUS_DMA_BUSY      (0x00000001 <<  2)
-#define SP_STATUS_DMA_FULL      (0x00000001 <<  3)
-#define SP_STATUS_IO_FULL       (0x00000001 <<  4)
-#define SP_STATUS_SSTEP         (0x00000001 <<  5)
-#define SP_STATUS_INTR_BREAK    (0x00000001 <<  6)
-#define SP_STATUS_SIG0          (0x00000001 <<  7)
-#define SP_STATUS_SIG1          (0x00000001 <<  8)
-#define SP_STATUS_SIG2          (0x00000001 <<  9)
-#define SP_STATUS_SIG3          (0x00000001 << 10)
-#define SP_STATUS_SIG4          (0x00000001 << 11)
-#define SP_STATUS_SIG5          (0x00000001 << 12)
-#define SP_STATUS_SIG6          (0x00000001 << 13)
-#define SP_STATUS_SIG7          (0x00000001 << 14)
+#define SP_STATUS_HALT          (0x00000001ul <<  0)
+#define SP_STATUS_BROKE         (0x00000001ul <<  1)
+#define SP_STATUS_DMA_BUSY      (0x00000001ul <<  2)
+#define SP_STATUS_DMA_FULL      (0x00000001ul <<  3)
+#define SP_STATUS_IO_FULL       (0x00000001ul <<  4)
+#define SP_STATUS_SSTEP         (0x00000001ul <<  5)
+#define SP_STATUS_INTR_BREAK    (0x00000001ul <<  6)
+#define SP_STATUS_SIG0          (0x00000001ul <<  7)
+#define SP_STATUS_SIG1          (0x00000001ul <<  8)
+#define SP_STATUS_SIG2          (0x00000001ul <<  9)
+#define SP_STATUS_SIG3          (0x00000001ul << 10)
+#define SP_STATUS_SIG4          (0x00000001ul << 11)
+#define SP_STATUS_SIG5          (0x00000001ul << 12)
+#define SP_STATUS_SIG6          (0x00000001ul << 13)
+#define SP_STATUS_SIG7          (0x00000001ul << 14)
 
 extern pu32 CR[16];
 
@@ -157,19 +170,19 @@ extern u8 get_VCE(void);
 extern void set_VCO(u16 VCO);
 extern void set_VCC(u16 VCC);
 extern void set_VCE(u8 VCE);
-extern i16 vce[8];
+extern i16 cf_vce[8];
 
 extern u16 rwR_VCE(void);
 extern void rwW_VCE(u16 VCE);
 
-extern void MFC2(int rt, int vs, int e);
-extern void MTC2(int rt, int vd, int e);
-extern void CFC2(int rt, int rd);
-extern void CTC2(int rt, int rd);
+extern void MFC2(unsigned int rt, unsigned int vs, unsigned int e);
+extern void MTC2(unsigned int rt, unsigned int vd, unsigned int e);
+extern void CFC2(unsigned int rt, unsigned int rd);
+extern void CTC2(unsigned int rt, unsigned int rd);
 
 /*** Modern pseudo-operations (not real instructions, but nice shortcuts) ***/
-extern void ULW(int rd, u32 addr);
-extern void USW(int rs, u32 addr);
+extern void ULW(unsigned int rd, u32 addr);
+extern void USW(unsigned int rs, u32 addr);
 
 /*
  * The scalar unit controls the primary R4000 operations implementation,
@@ -185,64 +198,74 @@ extern void USW(int rs, u32 addr);
 
 NOINLINE extern void res_S(void);
 
-extern void SP_CP0_MF(int rt, int rd);
+extern void SP_CP0_MF(unsigned int rt, unsigned int rd);
 
 /*
  * example syntax (basically the same for all LWC2/SWC2 ops):
  * LTWV    $v0[0], -64($at)
  * SBV     $v0[9], 0xFFE($0)
  */
-typedef void(*mwc2_func)(int vt, int element, signed int offset, int base);
+typedef void(*mwc2_func)(
+    unsigned int vt,
+    unsigned int element,
+    signed int offset,
+    unsigned int base
+);
 
 extern mwc2_func LWC2[2 * 8*2];
 extern mwc2_func SWC2[2 * 8*2];
 
-NOINLINE void res_lsw(int vt, int element, signed int offset, int base);
+extern void res_lsw(
+    unsigned int vt,
+    unsigned int element,
+    signed int offset,
+    unsigned int base
+);
 
 /*** Scalar, Coprocessor Operations (vector unit, scalar cache transfers) ***/
-extern void LBV(int vt, int element, signed int offset, int base);
-extern void LSV(int vt, int element, signed int offset, int base);
-extern void LLV(int vt, int element, signed int offset, int base);
-extern void LDV(int vt, int element, signed int offset, int base);
-extern void SBV(int vt, int element, signed int offset, int base);
-extern void SSV(int vt, int element, signed int offset, int base);
-extern void SLV(int vt, int element, signed int offset, int base);
-extern void SDV(int vt, int element, signed int offset, int base);
+extern void LBV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void LSV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void LLV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void LDV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SBV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SSV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SLV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SDV(unsigned vt, unsigned element, signed offset, unsigned base);
 
 /*
  * Group II vector loads and stores:
  * PV and UV (As of RCP implementation, XV and ZV are reserved opcodes.)
  */
-extern void LPV(int vt, int element, signed int offset, int base);
-extern void LUV(int vt, int element, signed int offset, int base);
-extern void SPV(int vt, int element, signed int offset, int base);
-extern void SUV(int vt, int element, signed int offset, int base);
+extern void LPV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void LUV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SPV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SUV(unsigned vt, unsigned element, signed offset, unsigned base);
 
 /*
  * Group III vector loads and stores:
  * HV, FV, and AV (As of RCP implementation, AV opcodes are reserved.)
  */
-extern void LHV(int vt, int element, signed int offset, int base);
-extern void LFV(int vt, int element, signed int offset, int base);
-extern void SHV(int vt, int element, signed int offset, int base);
-extern void SFV(int vt, int element, signed int offset, int base);
+extern void LHV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void LFV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SHV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SFV(unsigned vt, unsigned element, signed offset, unsigned base);
 
 /*
  * Group IV vector loads and stores:
  * QV and RV
  */
-extern void LQV(int vt, int element, signed int offset, int base);
-extern void LRV(int vt, int element, signed int offset, int base);
-extern void SQV(int vt, int element, signed int offset, int base);
-extern void SRV(int vt, int element, signed int offset, int base);
+extern void LQV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void LRV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SQV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SRV(unsigned vt, unsigned element, signed offset, unsigned base);
 
 /*
  * Group V vector loads and stores
  * TV and SWV (As of RCP implementation, LTWV opcode was undesired.)
  */
-extern void LTV(int vt, int element, signed int offset, int base);
-extern void SWV(int vt, int element, signed int offset, int base);
-extern void STV(int vt, int element, signed int offset, int base);
+extern void LTV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void SWV(unsigned vt, unsigned element, signed offset, unsigned base);
+extern void STV(unsigned vt, unsigned element, signed offset, unsigned base);
 
 NOINLINE extern void run_task(void);
 

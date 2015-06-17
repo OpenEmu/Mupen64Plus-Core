@@ -17,6 +17,7 @@
 #define _MODULE_H_
 
 #include <stdio.h>
+
 #include "rsp.h"
 
 #define CFG_FILE    "rsp_conf.bin"
