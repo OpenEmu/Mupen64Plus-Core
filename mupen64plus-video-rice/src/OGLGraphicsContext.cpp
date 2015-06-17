@@ -16,13 +16,18 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <stdio.h>
+#include <string.h>
+
+#include "Texture.h"
+#include "m64p_types.h"
 #include "osal_opengl.h"
 
 #define M64P_PLUGIN_PROTOTYPES 1
-#include "m64p_plugin.h"
 #include "Config.h"
 #include "Debugger.h"
-#if SDL_VIDEO_OPENGL
+#include "m64p_plugin.h"
+#ifndef USE_GLES
 #include "OGLExtensions.h"
 #endif
 #include "OGLDebug.h"
@@ -74,6 +79,7 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
 
     /* hard-coded attribute values */
     const int iDOUBLEBUFFER = 1;
+// OpenEmu
 #if 0
     /* set opengl attributes */
     CoreVideo_GL_SetAttribute(M64P_GL_DOUBLEBUFFER, iDOUBLEBUFFER);
@@ -104,6 +110,7 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
         CoreVideo_Quit();
         return false;
     }
+// OpenEmu
 #if 0
     /* check that our opengl attributes were properly set */
     int iActual;
@@ -120,7 +127,7 @@ bool COGLGraphicsContext::Initialize(uint32 dwWidth, uint32 dwHeight, BOOL bWind
         if (iActual != depthBufferDepth)
             DebugMessage(M64MSG_WARNING, "Failed to set GL_DEPTH_SIZE to %i. (it's %i)", depthBufferDepth, iActual);
 #endif
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     /* Get function pointers to OpenGL extensions (blame Microsoft Windows for this) */
     OGLExtensions_Init();
 #endif
@@ -217,7 +224,7 @@ void COGLGraphicsContext::InitState(void)
     glClearDepth(1.0f);
     OPENGL_CHECK_ERRORS;
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     glShadeModel(GL_SMOOTH);
     OPENGL_CHECK_ERRORS;
 
@@ -238,7 +245,7 @@ void COGLGraphicsContext::InitState(void)
     OPENGL_CHECK_ERRORS;
     glDisable(GL_CULL_FACE);
     OPENGL_CHECK_ERRORS;
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     glDisable(GL_NORMALIZE);
     OPENGL_CHECK_ERRORS;
 #endif
@@ -248,14 +255,14 @@ void COGLGraphicsContext::InitState(void)
     glEnable(GL_DEPTH_TEST);
     OPENGL_CHECK_ERRORS;
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
     OPENGL_CHECK_ERRORS;
 #endif
 
     glEnable(GL_BLEND);
     OPENGL_CHECK_ERRORS;
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     glEnable(GL_ALPHA_TEST);
     OPENGL_CHECK_ERRORS;
 
@@ -266,7 +273,7 @@ void COGLGraphicsContext::InitState(void)
     
     glDepthRange(-1, 1);
 
-#elif SDL_VIDEO_OPENGL_ES2
+#else
     glDepthRangef(0.0f, 1.0f);
 #endif
     OPENGL_CHECK_ERRORS;
@@ -344,7 +351,7 @@ void COGLGraphicsContext::Clear(ClearFlag dwFlags, uint32 color, float depth)
 void COGLGraphicsContext::UpdateFrame(bool swaponly)
 {
     status.gFrameCount++;
-
+    // OpenEmu
     //glFlush();
     //OPENGL_CHECK_ERRORS;
     //glFinish();

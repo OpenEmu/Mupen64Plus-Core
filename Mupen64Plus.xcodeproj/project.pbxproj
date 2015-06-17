@@ -602,6 +602,7 @@
 		87CD091B1B30D9D700021C64 /* Mupen64Plus-v2.0-Design-Proposal-3.mediawiki */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Mupen64Plus-v2.0-Design-Proposal-3.mediawiki"; sourceTree = "<group>"; };
 		87CD091C1B30D9D700021C64 /* Mupen64Plus-v2.0-headers.mediawiki */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Mupen64Plus-v2.0-headers.mediawiki"; sourceTree = "<group>"; };
 		87CD091D1B30D9D700021C64 /* Mupen64Plus-v2.0-Plugin-API.mediawiki */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Mupen64Plus-v2.0-Plugin-API.mediawiki"; sourceTree = "<group>"; };
+		87CD091E1B31016400021C64 /* SDL_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_config.h; sourceTree = "<group>"; };
 		8D5B49B6048680CD000E48DA /* Mupen64Plus.oecoreplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Mupen64Plus.oecoreplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9419A0C11A0891D60065CB61 /* profile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = profile.c; sourceTree = "<group>"; };
@@ -1104,6 +1105,7 @@
 		3D00F07E1183E52F002995A1 /* SDL */ = {
 			isa = PBXGroup;
 			children = (
+				87CD091E1B31016400021C64 /* SDL_config.h */,
 				3DCABDC7166C524C002F2066 /* SDL_opengl.h */,
 				3D00F0AB1183E67F002995A1 /* SDL_thread.h */,
 				3D00F07F1183E52F002995A1 /* SDL.h */,

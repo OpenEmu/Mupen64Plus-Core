@@ -17,23 +17,23 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include <vector>
-#include <fstream>
-
 #include <stdlib.h>
+#include <string.h>
+#include <fstream>
+#include <vector>
 
 #define M64P_PLUGIN_PROTOTYPES 1
-#include "osal_preproc.h"
-#include "m64p_types.h"
-#include "m64p_plugin.h"
-#include "m64p_config.h"
-
 #include "Config.h"
 #include "Debugger.h"
 #include "DeviceBuilder.h"
 #include "RenderBase.h"
+#include "Texture.h"
 #include "TextureManager.h"
 #include "Video.h"
+#include "m64p_config.h"
+#include "m64p_plugin.h"
+#include "m64p_types.h"
+#include "osal_preproc.h"
 
 #define INI_FILE        "RiceVideoLinux.ini"
 
@@ -192,7 +192,7 @@ SettingInfo OnScreenDisplaySettings[] =
 {"Display Frame Per Second With Core Msgs", ONSCREEN_DISPLAY_FRAME_PER_SECOND_WITH_CORE_MSG},
 {"Display Debug Information With Core Msgs", ONSCREEN_DISPLAY_DEBUG_INFORMATION_WITH_CORE_MSG},
 };
-
+// OpenEmu
 extern "C" {
 __attribute__((visibility("default"))) void _OE_ForceUpdateWindowSize(int width, int height)
 {
@@ -349,8 +349,8 @@ BOOL InitConfiguration(void)
     ConfigSetDefaultInt(l_ConfigVideoRice, "Version", CONFIG_PARAM_VERSION, "Mupen64Plus Rice Video Plugin config parameter version number");
     ConfigSetDefaultInt(l_ConfigVideoRice, "FrameBufferSetting", FRM_BUF_NONE, "Frame Buffer Emulation (0=ROM default, 1=disable)");
     ConfigSetDefaultInt(l_ConfigVideoRice, "FrameBufferWriteBackControl", FRM_BUF_WRITEBACK_NORMAL, "Frequency to write back the frame buffer (0=every frame, 1=every other frame, etc)");
-    ConfigSetDefaultInt(l_ConfigVideoRice, "RenderToTexture", TXT_BUF_NORMAL, "Render-to-texture emulation (0=none, 1=ignore, 2=normal, 3=write back, 4=write back and reload)");
-#if defined(WIN32)
+    ConfigSetDefaultInt(l_ConfigVideoRice, "RenderToTexture", TXT_BUF_NONE, "Render-to-texture emulation (0=none, 1=ignore, 2=normal, 3=write back, 4=write back and reload)");
+#if defined(WIN32)// || defined(__APPLE__) // OpenEmu
     ConfigSetDefaultInt(l_ConfigVideoRice, "ScreenUpdateSetting", SCREEN_UPDATE_AT_1ST_CI_CHANGE, "Control when the screen will be updated (0=ROM default, 1=VI origin update, 2=VI origin change, 3=CI change, 4=first CI change, 5=first primitive draw, 6=before screen clear, 7=after screen drawn)");  // SCREEN_UPDATE_AT_VI_UPDATE_AND_DRAWN
 #else
     ConfigSetDefaultInt(l_ConfigVideoRice, "ScreenUpdateSetting", SCREEN_UPDATE_AT_VI_UPDATE, "Control when the screen will be updated (0=ROM default, 1=VI origin update, 2=VI origin change, 3=CI change, 4=first CI change, 5=first primitive draw, 6=before screen clear, 7=after screen drawn)");  // SCREEN_UPDATE_AT_VI_UPDATE_AND_DRAWN
@@ -379,7 +379,7 @@ BOOL InitConfiguration(void)
     ConfigSetDefaultInt(l_ConfigVideoRice, "Mipmapping", 0, "Use Mipmapping? 0=no, 1=nearest, 2=bilinear, 3=trilinear");
     ConfigSetDefaultInt(l_ConfigVideoRice, "FogMethod", 0, "Enable, Disable or Force fog generation (0=Disable, 1=Enable n64 choose, 2=Force Fog)");
     ConfigSetDefaultInt(l_ConfigVideoRice, "ForceTextureFilter", 0, "Force to use texture filtering or not (0=auto: n64 choose, 1=force no filtering, 2=force filtering)");
-    ConfigSetDefaultInt(l_ConfigVideoRice, "TextureEnhancement", 3, "Primary texture enhancement filter (0=None, 1=2X, 2=2XSAI, 3=HQ2X, 4=LQ2X, 5=HQ4X, 6=Sharpen, 7=Sharpen More, 8=External, 9=Mirrored)");
+    ConfigSetDefaultInt(l_ConfigVideoRice, "TextureEnhancement", 0, "Primary texture enhancement filter (0=None, 1=2X, 2=2XSAI, 3=HQ2X, 4=LQ2X, 5=HQ4X, 6=Sharpen, 7=Sharpen More, 8=External, 9=Mirrored)");
     ConfigSetDefaultInt(l_ConfigVideoRice, "TextureEnhancementControl", 0, "Secondary texture enhancement filter (0 = none, 1-4 = filtered)");
     ConfigSetDefaultInt(l_ConfigVideoRice, "TextureQuality", TXT_QUALITY_32BIT, "Color bit depth to use for textures (0=default, 1=32 bits, 2=16 bits)");
     ConfigSetDefaultInt(l_ConfigVideoRice, "OpenGLDepthBufferSetting", 32, "Z-buffer depth (only 16 or 32)");
@@ -387,6 +387,10 @@ BOOL InitConfiguration(void)
     ConfigSetDefaultInt(l_ConfigVideoRice, "ColorQuality", TEXTURE_FMT_A8R8G8B8, "Color bit depth for rendering window (0=32 bits, 1=16 bits)");
     ConfigSetDefaultInt(l_ConfigVideoRice, "OpenGLRenderSetting", OGL_DEVICE, "OpenGL level to support (0=auto, 1=OGL_1.1, 2=OGL_1.4, 3=OGL_FRAGMENT_PROGRAM)");
     ConfigSetDefaultInt(l_ConfigVideoRice, "AnisotropicFiltering", 16, "Enable/Disable Anisotropic Filtering for Mipmapping (0=no filtering, 2-16=quality). This is uneffective if Mipmapping is 0. If the given value is to high to be supported by your graphic card, the value will be the highest value your graphic card can support. Better result with Trilinear filtering");
+
+    ConfigSetDefaultBool(l_ConfigVideoRice, "ForcePolygonOffset", FALSE, "If true, use polygon offset values specified below");
+    ConfigSetDefaultFloat(l_ConfigVideoRice, "PolygonOffsetFactor", 0.0f, "Specifies a scale factor that is used to create a variable depth offset for each polygon");
+    ConfigSetDefaultFloat(l_ConfigVideoRice, "PolygonOffsetUnits", 0.0f, "Is multiplied by an implementation-specific value to create a constant depth offset");
     return TRUE;
 }
 
@@ -500,6 +504,10 @@ static void ReadConfiguration(void)
     options.colorQuality = ConfigGetParamInt(l_ConfigVideoRice, "ColorQuality");
     options.OpenglRenderSetting = ConfigGetParamInt(l_ConfigVideoRice, "OpenGLRenderSetting");
     options.anisotropicFiltering = ConfigGetParamInt(l_ConfigVideoRice, "AnisotropicFiltering");
+
+    options.bForcePolygonOffset = ConfigGetParamBool(l_ConfigVideoRice, "ForcePolygonOffset");
+    options.polygonOffsetFactor = ConfigGetParamFloat(l_ConfigVideoRice, "PolygonOffsetFactor");
+    options.polygonOffsetUnits = ConfigGetParamFloat(l_ConfigVideoRice, "PolygonOffsetUnits");
 
     CDeviceBuilder::SelectDeviceType((SupportedDeviceType)options.OpenglRenderSetting);
 
@@ -969,11 +977,19 @@ BOOL ReadIniFile()
     char readinfo[100];
     const char *ini_filepath = ConfigGetSharedDataFilepath(szIniFileName);
 
-    DebugMessage(M64MSG_VERBOSE, "Reading .ini file: %s", ini_filepath);
+    DebugMessage(M64MSG_VERBOSE, "Reading .ini file: %s", szIniFileName);
+
+    if (ini_filepath == NULL)
+    {
+        DebugMessage(M64MSG_ERROR, "Could not find .ini file: %s", szIniFileName);
+        return FALSE;
+    }
+
     inifile.open(ini_filepath);
 
     if (inifile.fail())
     {
+        DebugMessage(M64MSG_ERROR, "Could not open .ini file: %s", szIniFileName);
         return FALSE;
     }
 

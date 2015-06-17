@@ -20,10 +20,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "Config.h"
 #include "Debugger.h"
+#include "GraphicsContext.h"
 #include "OGLDebug.h"
 #include "OGLGraphicsContext.h"
 #include "OGLTexture.h"
 #include "TextureManager.h"
+#include "osal_opengl.h"
 
 COGLTexture::COGLTexture(uint32 dwWidth, uint32 dwHeight, TextureUsage usage) :
     CTexture(dwWidth,dwHeight,usage),
@@ -119,11 +121,9 @@ void COGLTexture::EndUpdate(DrawInfo *di)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
         OPENGL_CHECK_ERRORS;
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
         // Tell to hardware to generate mipmap (himself) when glTexImage2D is called
         glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-#elif SDL_VIDEO_OPENGL_ES2
-        glGenerateMipmap(GL_TEXTURE_2D);
 #endif
         OPENGL_CHECK_ERRORS;
     }
@@ -134,11 +134,14 @@ void COGLTexture::EndUpdate(DrawInfo *di)
     }
 
     // Copy the image data from main memory to video card texture memory
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     glTexImage2D(GL_TEXTURE_2D, 0, m_glFmt, m_dwCreatedTextureWidth, m_dwCreatedTextureHeight, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, m_pTexture);
-#elif SDL_VIDEO_OPENGL_ES2
+#else
     //GL_BGRA_IMG works on adreno but not inside profiler.
     glTexImage2D(GL_TEXTURE_2D, 0, m_glFmt, m_dwCreatedTextureWidth, m_dwCreatedTextureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pTexture);
+
+    if(options.mipmapping)
+        glGenerateMipmap(GL_TEXTURE_2D);
 #endif
     OPENGL_CHECK_ERRORS;
 }

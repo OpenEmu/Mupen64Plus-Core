@@ -19,14 +19,22 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "osal_opengl.h"
+#include <stddef.h>
 
+#include "CombinerDefs.h"
+#include "DecodedMux.h"
+#include "GraphicsContext.h"
 #include "OGLCombiner.h"
 #include "OGLDebug.h"
-#include "OGLRender.h"
-#include "OGLGraphicsContext.h"
 #include "OGLDecodedMux.h"
+#include "OGLGraphicsContext.h"
+#include "OGLRender.h"
 #include "OGLTexture.h"
+#include "RenderBase.h"
+#include "osal_opengl.h"
+#include "osal_preproc.h"
+
+class CRender;
 
 //========================================================================
 uint32 DirectX_OGL_BlendFuncMaps [] =
@@ -157,7 +165,7 @@ void COGLColorCombiner::InitCombinerCycle12(void)
         return;
     }
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     uint32 mask = 0x1f;
     COGLTexture* pTexture = g_textures[gRSP.curTile].m_pCOGLTexture;
     if( pTexture )

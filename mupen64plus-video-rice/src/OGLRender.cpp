@@ -16,16 +16,28 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <stddef.h>
+
+#include "Combiner.h"
+#include "CombinerDefs.h"
+#include "Config.h"
+#include "Debugger.h"
+#include "DecodedMux.h"
+#include "GraphicsContext.h"
+#include "RSP_Parser.h"
+#include "Texture.h"
+#include "Video.h"
+#include "m64p_plugin.h"
 #include "osal_opengl.h"
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
 #include "OGLExtensions.h"
-#elif SDL_VIDEO_OPENGL_ES2
+#else
 #include "OGLES2FragmentShaders.h"
 #endif
 #include "OGLDebug.h"
-#include "OGLRender.h"
 #include "OGLGraphicsContext.h"
+#include "OGLRender.h"
 #include "OGLTexture.h"
 #include "TextureManager.h"
 
@@ -81,7 +93,7 @@ void OGLRender::Initialize(void)
     OGLXUVFlagMaps[TEXTURE_UV_FLAG_MIRROR].realFlag = GL_MIRRORED_REPEAT;
     OGLXUVFlagMaps[TEXTURE_UV_FLAG_CLAMP].realFlag = GL_CLAMP_TO_EDGE;
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
 
     glVertexPointer( 4, GL_FLOAT, sizeof(float)*5, &(g_vtxProjected5[0][0]) );
     OPENGL_CHECK_ERRORS;
@@ -135,7 +147,7 @@ void OGLRender::Initialize(void)
         OPENGL_CHECK_ERRORS;
     }
 
-#elif SDL_VIDEO_OPENGL_ES2
+#else
 
     glVertexAttribPointer(VS_POSITION,4,GL_FLOAT,GL_FALSE,sizeof(float)*5,&(g_vtxProjected5[0][0]));
     OPENGL_CHECK_ERRORS;
@@ -196,7 +208,7 @@ void OGLRender::ApplyTextureFilter()
 
 void OGLRender::SetShadeMode(RenderShadeMode mode)
 {
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     if( mode == SHADE_SMOOTH )
         glShadeModel(GL_SMOOTH);
     else
@@ -289,15 +301,28 @@ void OGLRender::SetZUpdate(BOOL bZUpdate)
 
 void OGLRender::ApplyZBias(int bias)
 {
-    float f1 = bias > 0 ? -3.0f : 0.0f;  // z offset = -3.0 * max(abs(dz/dx),abs(dz/dy)) per pixel delta z slope
-    float f2 = bias > 0 ? -3.0f : 0.0f;  // z offset += -3.0 * 1 bit
+    float f1; // polygon offset factor
+    float f2; // polygon offset units
+
     if (bias > 0)
     {
+        if (options.bForcePolygonOffset)
+        {
+            f1 = options.polygonOffsetFactor;
+            f2 = options.polygonOffsetUnits;
+        }
+        else
+        {
+            f1 = -3.0f;  // z offset = -3.0 * std::max(abs(dz/dx),abs(dz/dy)) per pixel delta z slope
+            f2 = -3.0f;  // z offset += -3.0 * 1 bit
+        }
         glEnable(GL_POLYGON_OFFSET_FILL);  // enable z offsets
         OPENGL_CHECK_ERRORS;
     }
     else
     {
+        f1 = 0.0f;
+        f2 = 0.0f;
         glDisable(GL_POLYGON_OFFSET_FILL);  // disable z offsets
         OPENGL_CHECK_ERRORS;
     }
@@ -321,7 +346,7 @@ void OGLRender::SetAlphaRef(uint32 dwAlpha)
     if (m_dwAlpha != dwAlpha)
     {
         m_dwAlpha = dwAlpha;
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
         glAlphaFunc(GL_GEQUAL, (float)dwAlpha);
         OPENGL_CHECK_ERRORS;
 #endif
@@ -330,18 +355,18 @@ void OGLRender::SetAlphaRef(uint32 dwAlpha)
 
 void OGLRender::ForceAlphaRef(uint32 dwAlpha)
 {
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     float ref = dwAlpha/255.0f;
     glAlphaFunc(GL_GEQUAL, ref);
     OPENGL_CHECK_ERRORS;
-#elif SDL_VIDEO_OPENGL_ES2
+#else
     m_dwAlpha = dwAlpha;
 #endif
 }
 
 void OGLRender::SetFillMode(FillMode mode)
 {
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     if( mode == RICE_FILLMODE_WINFRAME )
     {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -512,7 +537,7 @@ bool OGLRender::RenderTexRect()
 
     float depth = -(g_texRectTVtx[3].z*2-1);
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
 
     glBegin(GL_TRIANGLE_FAN);
 
@@ -535,7 +560,7 @@ bool OGLRender::RenderTexRect()
     glEnd();
     OPENGL_CHECK_ERRORS;
 
-#elif SDL_VIDEO_OPENGL_ES2
+#else
 
     GLfloat colour[] = {
             g_texRectTVtx[3].r, g_texRectTVtx[3].g, g_texRectTVtx[3].b, g_texRectTVtx[3].a,
@@ -602,7 +627,7 @@ bool OGLRender::RenderFillRect(uint32 dwColor, float depth)
     glDisable(GL_CULL_FACE);
     OPENGL_CHECK_ERRORS;
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
 
     glBegin(GL_TRIANGLE_FAN);
     glColor4f(r,g,b,a);
@@ -613,7 +638,7 @@ bool OGLRender::RenderFillRect(uint32 dwColor, float depth)
     glEnd();
     OPENGL_CHECK_ERRORS;
 
-#elif SDL_VIDEO_OPENGL_ES2
+#else
 
     GLfloat colour[] = {
             r,g,b,a,
@@ -654,7 +679,7 @@ bool OGLRender::RenderFillRect(uint32 dwColor, float depth)
 
 bool OGLRender::RenderLine3D()
 {
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     ApplyZBias(0);  // disable z offsets
 
     glBegin(GL_TRIANGLE_FAN);
@@ -759,7 +784,7 @@ void OGLRender::DrawSimple2DTexture(float x0, float y0, float x1, float y1, floa
     float g = ((g_texRectTVtx[0].dcDiffuse>>8)&0xFF)/255.0f;
     float b = (g_texRectTVtx[0].dcDiffuse&0xFF)/255.0f;
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
 
     glBegin(GL_TRIANGLES);
 
@@ -786,7 +811,7 @@ void OGLRender::DrawSimple2DTexture(float x0, float y0, float x1, float y1, floa
     glEnd();
     OPENGL_CHECK_ERRORS;
 
-#elif SDL_VIDEO_OPENGL_ES2
+#else
 
     GLfloat colour[] = {
             r,g,b,a,
@@ -862,7 +887,7 @@ void OGLRender::DrawSimpleRect(int nX0, int nY0, int nX1, int nY1, uint32 dwColo
     float g = ((dwColor>>8)&0xFF)/255.0f;
     float b = (dwColor&0xFF)/255.0f;
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
 
     glBegin(GL_TRIANGLE_FAN);
 
@@ -875,7 +900,7 @@ void OGLRender::DrawSimpleRect(int nX0, int nY0, int nX1, int nY1, uint32 dwColo
     glEnd();
     OPENGL_CHECK_ERRORS;
 
-#elif SDL_VIDEO_OPENGL_ES2
+#else
 
     GLfloat colour[] = {
             r,g,b,a,
@@ -973,7 +998,7 @@ void OGLRender::RenderReset()
 
 void OGLRender::SetAlphaTestEnable(BOOL bAlphaTestEnable)
 {
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
   #ifdef DEBUGGER
     if( bAlphaTestEnable && debuggerEnableAlphaTest )
   #else
@@ -982,7 +1007,7 @@ void OGLRender::SetAlphaTestEnable(BOOL bAlphaTestEnable)
         glEnable(GL_ALPHA_TEST);
     else
         glDisable(GL_ALPHA_TEST);
-#elif SDL_VIDEO_OPENGL_ES2
+#else
     ((COGL_FragmentProgramCombiner*)m_pColorCombiner)->SetAlphaTestState(bAlphaTestEnable);
 #endif
     OPENGL_CHECK_ERRORS;
@@ -1097,7 +1122,7 @@ void OGLRender::ApplyScissorWithClipRatio(bool force)
 
 void OGLRender::SetFogMinMax(float fMin, float fMax)
 {
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     glFogf(GL_FOG_START, gRSPfFogMin); // Fog Start Depth
     OPENGL_CHECK_ERRORS;
     glFogf(GL_FOG_END, gRSPfFogMax); // Fog End Depth
@@ -1107,13 +1132,13 @@ void OGLRender::SetFogMinMax(float fMin, float fMax)
 
 void OGLRender::TurnFogOnOff(bool flag)
 {
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     if( flag )
         glEnable(GL_FOG);
     else
         glDisable(GL_FOG);
     OPENGL_CHECK_ERRORS;
-#elif SDL_VIDEO_OPENGL_ES2
+#else
     ((COGL_FragmentProgramCombiner*)m_pColorCombiner)->SetFogState(flag);
     OPENGL_CHECK_ERRORS;
 #endif
@@ -1131,7 +1156,7 @@ void OGLRender::SetFogEnable(bool bEnable)
         gRSP.bFogEnabled = true;
     }
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     if( gRSP.bFogEnabled )
     {
         //TRACE2("Enable fog, min=%f, max=%f",gRSPfFogMin,gRSPfFogMax );
@@ -1149,7 +1174,7 @@ void OGLRender::SetFogEnable(bool bEnable)
         glDisable(GL_FOG);
         OPENGL_CHECK_ERRORS;
     }
-#elif SDL_VIDEO_OPENGL_ES2
+#else
     ((COGL_FragmentProgramCombiner*)m_pColorCombiner)->SetFogState(gRSP.bFogEnabled);
     OPENGL_CHECK_ERRORS;
 #endif
@@ -1162,7 +1187,7 @@ void OGLRender::SetFogColor(uint32 r, uint32 g, uint32 b, uint32 a)
     gRDP.fvFogColor[1] = g/255.0f;      //g
     gRDP.fvFogColor[2] = b/255.0f;      //b
     gRDP.fvFogColor[3] = a/255.0f;      //a
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     glFogfv(GL_FOG_COLOR, gRDP.fvFogColor); // Set Fog Color
 #endif
     OPENGL_CHECK_ERRORS;
@@ -1183,7 +1208,8 @@ void OGLRender::DisableMultiTexture()
 
 void OGLRender::EndRendering(void)
 {
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
+    // OpenEmu
     //glFlush();
     //OPENGL_CHECK_ERRORS;
 #endif

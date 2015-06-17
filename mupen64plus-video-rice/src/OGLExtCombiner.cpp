@@ -16,18 +16,31 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
+#include <stddef.h>
 #include <algorithm>
-#include "osal_opengl.h"
 
-#if SDL_VIDEO_OPENGL
+#include "CombinerDefs.h"
+#include "Debugger.h"
+#include "DecodedMux.h"
+#include "GeneralCombiner.h"
+#include "GraphicsContext.h"
+#include "OGLRender.h"
+#include "RSP_Parser.h"
+#include "RenderBase.h"
+#include "osal_opengl.h"
+#include "osal_preproc.h"
+
+#ifndef USE_GLES
 #include "OGLExtensions.h"
 #endif
 #include "OGLDebug.h"
+#include "OGLDecodedMux.h"
 #include "OGLExtCombiner.h"
 #include "OGLExtRender.h"
-#include "OGLDecodedMux.h"
 #include "OGLGraphicsContext.h"
 #include "OGLTexture.h"
+
+class CRender;
 
 #define GL_MODULATE_ADD_ATI        0x8744
 #define GL_MODULATE_SUBTRACT_ATI   0x8746
@@ -50,7 +63,7 @@ bool COGLColorCombiner4::Initialize(void)
     m_bSupportModSub_ATI = false;
     m_maxTexUnits = 1;
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     if( COGLColorCombiner::Initialize() )
     {
         COGLGraphicsContext *pcontext = (COGLGraphicsContext *)(CGraphicsContext::g_pGraphicsContext);
@@ -71,7 +84,7 @@ bool COGLColorCombiner4::Initialize(void)
     }
     return false;
 
-#elif SDL_VIDEO_OPENGL_ES2
+#else
     return true;
 #endif
 }
@@ -154,7 +167,7 @@ void COGLColorCombiner4::InitCombinerCycle12(void)
 int COGLColorCombiner4::ParseDecodedMux()
 {
 #define nextUnit()  {unitNo++;}
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     if( m_maxTexUnits<3) 
         return  ParseDecodedMux2Units();
 
@@ -326,7 +339,7 @@ int COGLColorCombiner4::ParseDecodedMux()
         }
     }
         
-    res.numOfUnits = min(m_maxTexUnits, max(unitNos[0],unitNos[1]));
+    res.numOfUnits = std::min(m_maxTexUnits, std::max(unitNos[0],unitNos[1]));
 
     if( unitNos[0]>m_maxTexUnits || unitNos[1]>m_maxTexUnits ) 
     {
@@ -354,7 +367,7 @@ int COGLColorCombiner4::ParseDecodedMux()
 
     return SaveParsedResult(res);
 
-#elif SDL_VIDEO_OPENGL_ES2
+#else
     return 0;
 #endif
 }
@@ -390,7 +403,7 @@ int COGLColorCombiner4::ParseDecodedMux2Units()
             comb.arg0 = m.d;
             unit.ops[i%2] = GL_REPLACE;
             break;
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
         case CM_FMT_TYPE_A_ADD_D:           // = A+D
             comb.arg0 = m.a;
             comb.arg1 = m.d;
@@ -459,7 +472,7 @@ const char* COGLColorCombiner4::GetOpStr(GLenum op)
     {
     case GL_REPLACE:
         return "REPLACE";
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     case GL_MODULATE:
         return "MOD";
     case GL_ADD:
@@ -569,13 +582,13 @@ int COGLColorCombiner4::FindCompiledMux()
 
 GLint COGLColorCombiner4::RGBArgsMap4[] =
 {
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     GL_PRIMARY_COLOR,               //MUX_0
     GL_PRIMARY_COLOR,               //MUX_1
     GL_PREVIOUS,                    //MUX_COMBINED,
 #endif
     GL_TEXTURE0,                    //MUX_TEXEL0,
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     GL_TEXTURE1,                    //MUX_TEXEL1,
     GL_CONSTANT,                    //MUX_PRIM,
     GL_PRIMARY_COLOR,               //MUX_SHADE,
@@ -583,7 +596,7 @@ GLint COGLColorCombiner4::RGBArgsMap4[] =
     GL_PREVIOUS,                    //MUX_COMBALPHA,
 #endif
     GL_TEXTURE0,                    //MUX_T0_ALPHA,
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     GL_TEXTURE1,                    //MUX_T1_ALPHA,
     GL_CONSTANT,                    //MUX_PRIM_ALPHA,
     GL_PRIMARY_COLOR,               //MUX_SHADE_ALPHA,
@@ -639,7 +652,7 @@ GLint COGLColorCombiner4::MapAlphaArgFlags(uint8 arg)
 
 void ApplyFor1Unit(OGLExtCombinerType &unit)
 {
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, unit.rgbOp);
     OPENGL_CHECK_ERRORS;
 
@@ -785,7 +798,7 @@ void COGLColorCombiner4::GenerateCombinerSettingConstants(int index)
 GLenum GeneralToGLMaps[]=
 {
     GL_REPLACE,             //CM_REPLACE,
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     GL_MODULATE,            //CM_MODULATE,
     GL_ADD,                 //CM_ADD,
     GL_SUBTRACT,            //CM_SUBTRACT,

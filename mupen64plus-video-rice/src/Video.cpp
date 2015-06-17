@@ -18,28 +18,31 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <vector>
 
-#include <stdarg.h>
-
+#include "CritSect.h"
+#include "RenderBase.h"
 #include "osal_opengl.h"
 
 #define M64P_PLUGIN_PROTOTYPES 1
-#include "m64p_types.h"
-#include "m64p_common.h"
-#include "m64p_plugin.h"
-#include "osal_dynamiclib.h"
-
 #include "Config.h"
 #include "Debugger.h"
 #include "DeviceBuilder.h"
 #include "FrameBuffer.h"
 #include "GraphicsContext.h"
-#include "Render.h"
 #include "RSP_Parser.h"
+#include "Render.h"
 #include "TextureFilters.h"
 #include "TextureManager.h"
 #include "Video.h"
+#include "m64p_common.h"
+#include "m64p_plugin.h"
+#include "m64p_types.h"
+#include "osal_dynamiclib.h"
 #include "version.h"
 
 //=======================================================
@@ -983,7 +986,7 @@ EXPORT void CALL ReadScreen2(void *dest, int *width, int *height, int bFront)
     if (dest == NULL)
         return;
 
-#if SDL_VIDEO_OPENGL
+#ifndef USE_GLES
     GLint oldMode;
     glGetIntegerv( GL_READ_BUFFER, &oldMode );
     if (bFront)
@@ -993,6 +996,28 @@ EXPORT void CALL ReadScreen2(void *dest, int *width, int *height, int bFront)
     glReadPixels( 0, 0, windowSetting.uDisplayWidth, windowSetting.uDisplayHeight,
                  GL_RGB, GL_UNSIGNED_BYTE, dest );
     glReadBuffer( oldMode );
+#else
+    unsigned char * line = (unsigned char *)dest;
+
+    unsigned char *frameBuffer = (unsigned char *)malloc((*width)*(*height)*4);
+
+    glReadPixels( 0, 0, windowSetting.uDisplayWidth, windowSetting.uDisplayHeight,
+                 GL_RGBA, GL_UNSIGNED_BYTE, frameBuffer );
+    //Convert RGBA to RGB
+    for (Uint32 y=0; y<windowSetting.uDisplayHeight; y++)
+    {
+        unsigned char *ptr = (unsigned char *) frameBuffer + (windowSetting.uDisplayWidth * 4 * y);
+        for (Uint32 x=0; x<windowSetting.uDisplayWidth; x++)
+        {
+            line[x*3] = ptr[0]; // red
+            line[x*3+1] = ptr[1]; // green
+            line[x*3+2] = ptr[2]; // blue
+            ptr += 4;
+        }
+        line += windowSetting.uDisplayWidth * 3;
+    }
+
+    free(frameBuffer);
 #endif
 }
     
