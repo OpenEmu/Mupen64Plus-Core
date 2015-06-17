@@ -109,7 +109,7 @@ extern "C" {
 #include <stdio.h>
 //#define printf(...)
 #define GL_GLEXT_PROTOTYPES
-//#include <SDL_config.h>
+#include <SDL_config.h>
 #ifdef USE_GLES
 #ifndef SDL_VIDEO_OPENGL_ES2
 #error SDL is not build with OpenGL ES2 support. Try USE_GLES=0
@@ -118,7 +118,7 @@ extern "C" {
 #include "OGLESwrappers.h"
 #else
 #ifndef SDL_VIDEO_OPENGL
-//#error SDL is not build with OpenGL support. Try USE_GLES=1
+#error SDL is not build with OpenGL support. Try USE_GLES=1
 #endif
 #include <SDL_opengl.h>
 #endif
@@ -388,7 +388,7 @@ void LOG(const char *text, ...);
 #else // LOGGING
 #define OPEN_LOG()
 #define CLOSE_LOG()
-#define LOG
+#define LOG(...)
 #endif // LOGGING
 
 #endif

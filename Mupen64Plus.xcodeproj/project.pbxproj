@@ -3143,6 +3143,18 @@
 					"\"$(SRCROOT)/png\"",
 				);
 				MACH_O_TYPE = mh_bundle;
+				OTHER_CFLAGS = (
+					"-ffast-math",
+					"-fno-strict-aliasing",
+					"-fvisibility=hidden",
+					"-DGCC",
+					"-pthread",
+					"-mmmx",
+					"-msse",
+					"-fPIC",
+					"-D__unix__",
+					"-DSDL_VIDEO_OPENGL",
+				);
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
@@ -3172,6 +3184,18 @@
 					"\"$(SRCROOT)/png\"",
 				);
 				MACH_O_TYPE = mh_bundle;
+				OTHER_CFLAGS = (
+					"-ffast-math",
+					"-fno-strict-aliasing",
+					"-fvisibility=hidden",
+					"-DGCC",
+					"-pthread",
+					"-mmmx",
+					"-msse",
+					"-fPIC",
+					"-D__unix__",
+					"-DSDL_VIDEO_OPENGL",
+				);
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";

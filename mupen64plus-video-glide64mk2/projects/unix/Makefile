@@ -55,7 +55,6 @@ ifeq ("$(UNAME)","OpenBSD")
   OS = FREEBSD
   SO_EXTENSION = so
   SHARED = -shared
-  $(warning OS type "$(UNAME)" not officially supported.')
 endif
 ifneq ("$(filter GNU/kFreeBSD kfreebsd,$(UNAME))","")
   OS = LINUX
@@ -122,8 +121,8 @@ ifeq ("$(CPU)","NONE")
 endif
 
 # base CFLAGS, LDLIBS, and LDFLAGS
-OPTFLAGS ?= -O2 -flto
-WARNFLAGS ?= -Wall
+OPTFLAGS ?= -O3 -flto
+WARNFLAGS ?= -Wall -Wno-unused-function
 CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -ffast-math -fno-strict-aliasing -fvisibility=hidden -I../../src -I../../src/Glitch64/inc -DGCC
 CXXFLAGS += -fvisibility-inlines-hidden -std=gnu++0x
 LDFLAGS += $(SHARED)

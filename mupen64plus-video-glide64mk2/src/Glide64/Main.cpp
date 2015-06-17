@@ -69,7 +69,6 @@ int  ghq_dmptex_toggle_key = 0;
 #endif
 
 #define G64_VERSION "G64 Mk2"
-#define RELTIME "Date: " __DATE__// " Time: " __TIME__
 
 #ifdef EXT_LOGGING
 std::ofstream extlog;
@@ -1567,8 +1566,6 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
     CoreVideo_GL_GetProcAddress = (ptr_VidExt_GL_GetProcAddress) osal_dynlib_getproc(CoreLibHandle, "VidExt_GL_GetProcAddress");
     CoreVideo_GL_SetAttribute = (ptr_VidExt_GL_SetAttribute) osal_dynlib_getproc(CoreLibHandle, "VidExt_GL_SetAttribute");
     CoreVideo_GL_SwapBuffers = (ptr_VidExt_GL_SwapBuffers) osal_dynlib_getproc(CoreLibHandle, "VidExt_GL_SwapBuffers");
-    // OpenEmu
-    SetConfigDir(ConfigGetSharedDataFilepath("Glide64mk2.ini"));
 
     if (!CoreVideo_Init || !CoreVideo_Quit || !CoreVideo_ListFullscreenModes || !CoreVideo_SetVideoMode ||
         !CoreVideo_SetCaption || !CoreVideo_ToggleFullScreen || !CoreVideo_ResizeWindow || !CoreVideo_GL_GetProcAddress ||
@@ -1725,7 +1722,7 @@ void CALL GetDllInfo ( PLUGIN_INFO * PluginInfo )
   VLOG ("GetDllInfo ()\n");
   PluginInfo->Version = 0x0103;     // Set to 0x0103
   PluginInfo->Type  = PLUGIN_TYPE_GFX;  // Set to PLUGIN_TYPE_GFX
-  sprintf (PluginInfo->Name, "Glide64mk2 " G64_VERSION RELTIME);  // Name of the DLL
+  sprintf (PluginInfo->Name, "Glide64mk2 " G64_VERSION);  // Name of the DLL
 
   // If DLL supports memory these memory options then set them to TRUE or FALSE
   //  if it does not support it
