@@ -210,7 +210,7 @@ struct texbuf_t {
 static texbuf_t texbufs[NB_TEXBUFS];
 static int texbuf_i;
 
-static SDL_Surface *m_pScreen;
+//static SDL_Surface *m_pScreen;
 
 // unsigned short * frameBuffer = NULL;
 // unsigned short * depthBuffer = NULL;
@@ -420,7 +420,7 @@ grSstWinOpen(
         CoreVideo_GL_SetAttribute(M64P_GL_DEPTH_SIZE, 16)  != M64ERR_SUCCESS)
     {
         WriteLog(M64MSG_ERROR, "Could not set video attributes.");
-        return 0;
+        //return 0;
     }
 
     if (CoreVideo_SetVideoMode(width, height, 0, screen_mode, (m64p_video_flags) 0) != M64ERR_SUCCESS)
@@ -629,7 +629,7 @@ grSstWinClose( GrContext_t context )
 
    //SDL_QuitSubSystem(SDL_INIT_VIDEO);
    //sleep(2);
-   m_pScreen = NULL;
+   //m_pScreen = NULL;
     return FXTRUE;
 }
 

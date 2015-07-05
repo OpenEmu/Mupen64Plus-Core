@@ -149,7 +149,8 @@ extern "C" {
 #include <SDL.h>
 #define LOGKEY KMOD_LCTRL
 inline int GetAsyncKeyState(int key) {
-  return (SDL_GetModState() & key) != 0;
+  //return (SDL_GetModState() & key) != 0;
+    return 0;
 }
 #endif
 
