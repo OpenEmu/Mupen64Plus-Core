@@ -94,12 +94,12 @@
 		3D208F821182B00300BEAA42 /* MupenGameCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D208F811182B00300BEAA42 /* MupenGameCore.m */; };
 		3D8B35D812260F9D00C4C844 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8B35D712260F9D00C4C844 /* main.m */; };
 		3DC21456166C6BA70014251E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E971182550400BEAA42 /* OpenGL.framework */; };
-		3DC21457166C6BB90014251E /* mupen64plus-video-rice.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DCABE0E166C6A20002F2066 /* mupen64plus-video-rice.so */; };
+		3DC21457166C6BB90014251E /* mupen64plus-video-rice.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DCABE0E166C6A20002F2066 /* mupen64plus-video-rice.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		3DC2145A166C6C6E0014251E /* SDLStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D00F0801183E52F002995A1 /* SDLStubs.m */; };
 		3DC2145F166C6D7F0014251E /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC2145C166C6D7F0014251E /* libpng.a */; };
 		3DC21460166C6F170014251E /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E9D1182551500BEAA42 /* libz.dylib */; };
 		3DCABDBB166C4B89002F2066 /* jpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B875166C2A0A00082F27 /* jpeg.c */; };
-		3DCABDC2166C4CB2002F2066 /* mupen64plus-rsp-hle.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DCABDB3166C4ACB002F2066 /* mupen64plus-rsp-hle.so */; };
+		3DCABDC2166C4CB2002F2066 /* mupen64plus-rsp-hle.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DCABDB3166C4ACB002F2066 /* mupen64plus-rsp-hle.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		3DCABDC8166C5BE2002F2066 /* RiceVideoLinux.ini in Resources */ = {isa = PBXBuildFile; fileRef = 94E6B87E166C2A0A00082F27 /* RiceVideoLinux.ini */; };
 		3DCABE12166C6AB6002F2066 /* Blender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B889166C2A0A00082F27 /* Blender.cpp */; };
 		3DCABE17166C6AB6002F2066 /* Combiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B88E166C2A0A00082F27 /* Combiner.cpp */; };
@@ -213,7 +213,7 @@
 		9419A0D31A0892E40065CB61 /* tlb.c in Sources */ = {isa = PBXBuildFile; fileRef = 9419A0D11A0892E40065CB61 /* tlb.c */; };
 		942130D01793DD8F00E57482 /* alist.c in Sources */ = {isa = PBXBuildFile; fileRef = 942130CB1793DD8F00E57482 /* alist.c */; };
 		942130D11793DD8F00E57482 /* cicx105.c in Sources */ = {isa = PBXBuildFile; fileRef = 942130CD1793DD8F00E57482 /* cicx105.c */; };
-		942130D71793E90800E57482 /* mupen64plus-video-glide64mk2.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */; };
+		942130D71793E90800E57482 /* mupen64plus-video-glide64mk2.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		948711A01A6B57FB008CDA87 /* module.c in Sources */ = {isa = PBXBuildFile; fileRef = 9487119D1A6B57FB008CDA87 /* module.c */; };
 		948711A21A6B581E008CDA87 /* su.c in Sources */ = {isa = PBXBuildFile; fileRef = 948711A11A6B581E008CDA87 /* su.c */; };
 		948711B01A6B583F008CDA87 /* add.c in Sources */ = {isa = PBXBuildFile; fileRef = 948711A31A6B583E008CDA87 /* add.c */; };
@@ -257,7 +257,7 @@
 		94D58CAC16BE5DAD0093CD72 /* Glide64mk2.ini in Resources */ = {isa = PBXBuildFile; fileRef = 94D58BE716BE33EC0093CD72 /* Glide64mk2.ini */; };
 		94E1B8F918D0F61F003ACCFF /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
 		94E1B93E18D0F6A9003ACCFF /* osal_dynamiclib_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 94E1B90518D0F6A9003ACCFF /* osal_dynamiclib_unix.c */; };
-		94E1B94418D0F707003ACCFF /* mupen64plus-rsp-cxd4.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94E1B8FD18D0F61F003ACCFF /* mupen64plus-rsp-cxd4.so */; };
+		94E1B94418D0F707003ACCFF /* mupen64plus-rsp-cxd4.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94E1B8FD18D0F61F003ACCFF /* mupen64plus-rsp-cxd4.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		C62301A7171227AE00576081 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
 		C62301A8171227B300576081 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
 		C62301A9171227B900576081 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
@@ -2732,7 +2732,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0700;
 			};
 			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "Mupen64Plus" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -3122,6 +3122,7 @@
 					"-DDYNAREC",
 					"-DM64P_PARALLEL",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "org.openemu.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = Mupen64Plus;
 				SKIP_INSTALL = YES;
 				VALID_ARCHS = x86_64;
@@ -3157,6 +3158,7 @@
 					"-DDYNAREC",
 					"-DM64P_PARALLEL",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "org.openemu.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = Mupen64Plus;
 				SKIP_INSTALL = YES;
 				VALID_ARCHS = x86_64;
@@ -3175,11 +3177,15 @@
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
@@ -3221,11 +3227,14 @@
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
