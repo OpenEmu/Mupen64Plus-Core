@@ -113,8 +113,6 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
 {
     SetStateCallback(NULL, NULL);
     SetDebugCallback(NULL, NULL);
-    dispatch_release(mupenWaitToBeginFrameSemaphore);
-    dispatch_release(coreWaitToEndFrameSemaphore);
 }
 
 // Pass 0 as paramType to receive all state changes.
