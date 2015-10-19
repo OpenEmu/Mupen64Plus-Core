@@ -30,7 +30,7 @@
 
 void new_vi()
 {
-    GET_CURRENT_AND_RETURN();
+    GET_CURRENT_OR_RETURN();
     
     if(g_gs_vi_counter < 60)
     {

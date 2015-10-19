@@ -168,7 +168,7 @@ static void *dlopen_myself()
 
 static void MupenGetKeys(int Control, BUTTONS *Keys)
 {
-    GET_CURRENT_AND_RETURN();
+    GET_CURRENT_OR_RETURN();
 
     Keys->R_DPAD = current->padData[Control][OEN64ButtonDPadRight];
     Keys->L_DPAD = current->padData[Control][OEN64ButtonDPadLeft];
@@ -204,7 +204,7 @@ static AUDIO_INFO AudioInfo;
 
 static void MupenAudioSampleRateChanged(int SystemType)
 {
-    GET_CURRENT_AND_RETURN();
+    GET_CURRENT_OR_RETURN();
 
     float currentRate = current->sampleRate;
     
@@ -225,7 +225,7 @@ static void MupenAudioSampleRateChanged(int SystemType)
 
 static void MupenAudioLenChanged()
 {
-    GET_CURRENT_AND_RETURN();
+    GET_CURRENT_OR_RETURN();
 
     int LenReg = *AudioInfo.AI_LEN_REG;
     uint8_t *ptr = (uint8_t*)(AudioInfo.RDRAM + (*AudioInfo.AI_DRAM_ADDR_REG & 0xFFFFFF));
@@ -235,7 +235,7 @@ static void MupenAudioLenChanged()
 
 static void SetIsNTSC()
 {
-    GET_CURRENT_AND_RETURN();
+    GET_CURRENT_OR_RETURN();
 
     extern m64p_rom_header ROM_HEADER;
     switch (ROM_HEADER.Country_code&0xFF)
@@ -377,7 +377,6 @@ static void MupenSetAudioSpeed(int percent)
 {
     @autoreleasepool
     {
-        [self.renderDelegate startRenderingOnAlternateThread];
         CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
         [super stopEmulation];
     }
