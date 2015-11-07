@@ -229,7 +229,18 @@ static void MupenAudioLenChanged()
 
     int LenReg = *AudioInfo.AI_LEN_REG;
     uint8_t *ptr = (uint8_t*)(AudioInfo.RDRAM + (*AudioInfo.AI_DRAM_ADDR_REG & 0xFFFFFF));
-    
+
+    // Swap channels
+    for (uint32_t i = 0; i < LenReg; i += 4)
+    {
+        ptr[i] ^= ptr[i + 2];
+        ptr[i + 2] ^= ptr[i];
+        ptr[i] ^= ptr[i + 2];
+        ptr[i + 1] ^= ptr[i + 3];
+        ptr[i + 3] ^= ptr[i + 1];
+        ptr[i + 1] ^= ptr[i + 3];
+    }
+
     [[current ringBufferAtIndex:0] write:ptr maxLength:LenReg];
 }
 
