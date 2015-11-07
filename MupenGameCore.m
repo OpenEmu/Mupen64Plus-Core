@@ -377,6 +377,7 @@ static void MupenSetAudioSpeed(int percent)
 {
     @autoreleasepool
     {
+        [self.renderDelegate startRenderingOnAlternateThread];
         CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
         [super stopEmulation];
     }
