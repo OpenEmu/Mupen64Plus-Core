@@ -426,7 +426,7 @@ static void MupenSetAudioSpeed(int percent)
     [self OE_addHandlerForType:M64CORE_STATE_SAVECOMPLETE usingBlock:
      ^ BOOL (m64p_core_param paramType, int newValue)
      {
-         [self setPauseEmulation:YES];
+         [self setRate:0];
          NSAssert(paramType == M64CORE_STATE_SAVECOMPLETE, @"This block should only be called for save completion!");
          dispatch_async(dispatch_get_main_queue(), ^{
              if(newValue == 0)
@@ -449,7 +449,7 @@ static void MupenSetAudioSpeed(int percent)
         if(CoreDoCommand(M64CMD_STATE_SAVE, 1, (void *)[fileName fileSystemRepresentation]) == M64ERR_SUCCESS)
         {
             // Mupen needs to run for a bit for the state saving to take place.
-            [self setPauseEmulation:NO];
+            [self setRate:1.0];
             return YES;
         }
 
