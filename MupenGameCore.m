@@ -376,19 +376,15 @@ static void MupenSetAudioSpeed(int percent)
 
 - (void)startEmulation
 {
-    if(!isRunning)
-    {
-        [super startEmulation];
-        [self.renderDelegate willRenderOnAlternateThread];
-        [NSThread detachNewThreadSelector:@selector(runMupenEmuThread) toTarget:self withObject:nil];
-    }
+    [NSThread detachNewThreadSelector:@selector(runMupenEmuThread) toTarget:self withObject:nil];
+    [super startEmulation];
 }
 
 - (void)runMupenEmuThread
 {
     @autoreleasepool
     {
-        [self.renderDelegate startRenderingOnAlternateThread];
+        [self.renderDelegate willRenderFrameOnAlternateThread];
         CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
         [super stopEmulation];
     }
@@ -407,16 +403,11 @@ static void MupenSetAudioSpeed(int percent)
     [self.renderDelegate didRenderFrameOnAlternateThread];
 }
 
-- (void)executeFrameSkippingFrame:(BOOL)skip
-{
-    dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
-    
-    dispatch_semaphore_wait(coreWaitToEndFrameSemaphore, DISPATCH_TIME_FOREVER);
-}
-
 - (void)executeFrame
 {
-    [self executeFrameSkippingFrame:NO];
+    dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
+
+    dispatch_semaphore_wait(coreWaitToEndFrameSemaphore, DISPATCH_TIME_FOREVER);
 }
 
 - (void)stopEmulation
@@ -428,8 +419,8 @@ static void MupenSetAudioSpeed(int percent)
 - (void)resetEmulation
 {
     // FIXME: do we want/need soft reset? It doesn’t seem to work well with sending M64CMD_RESET alone
-    // FIXME: (astrange) should this method worry about this instance’s dispatch semaphores?
     CoreDoCommand(M64CMD_RESET, 1 /* hard reset */, NULL);
+    dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
 }
 
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
@@ -502,13 +493,24 @@ static void MupenSetAudioSpeed(int percent)
     return OEIntSizeMake(videoWidth, videoHeight);
 }
 
-- (void) tryToResizeVideoTo:(OEIntSize)size
+- (BOOL)tryToResizeVideoTo:(OEIntSize)size
 {
     VidExt_SetVideoMode(size.width, size.height, 32, M64VIDEO_WINDOWED, 0);
     if (ptr_OE_ForceUpdateWindowSize) ptr_OE_ForceUpdateWindowSize(size.width, size.height);
+    return YES;
 }
 
-- (BOOL)rendersToOpenGL
+- (OEGameCoreRendering)gameCoreRendering
+{
+    return OEGameCoreRenderingOpenGL2Video;
+}
+
+- (BOOL)hasAlternateRenderingThread
+{
+    return YES;
+}
+
+- (BOOL)needsDoubleBufferedFBO
 {
     return YES;
 }

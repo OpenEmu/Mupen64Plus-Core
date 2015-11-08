@@ -3199,14 +3199,9 @@
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				OTHER_CFLAGS = (
-					"-ffast-math",
 					"-fno-strict-aliasing",
 					"-fvisibility=hidden",
 					"-DGCC",
-					"-pthread",
-					"-mmmx",
-					"-msse",
-					"-fPIC",
 					"-D__unix__",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
@@ -3249,14 +3244,9 @@
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				OTHER_CFLAGS = (
-					"-ffast-math",
 					"-fno-strict-aliasing",
 					"-fvisibility=hidden",
 					"-DGCC",
-					"-pthread",
-					"-mmmx",
-					"-msse",
-					"-fPIC",
 					"-D__unix__",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
