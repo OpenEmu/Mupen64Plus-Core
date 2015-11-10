@@ -42,6 +42,7 @@
 #import "main.h"
 
 #import <OpenEmuBase/OERingBuffer.h>
+#import <OpenEmuBase/OETimingUtils.h>
 #import <OpenGL/gl.h>
 
 #import "plugin.h"
@@ -77,9 +78,6 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
 @implementation MupenGameCore
 {
     NSData *romData;
-    
-    dispatch_semaphore_t mupenWaitToBeginFrameSemaphore;
-    dispatch_semaphore_t coreWaitToEndFrameSemaphore;
 
     m64p_emu_state _emulatorState;
 
@@ -90,9 +88,6 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
 - (instancetype)init
 {
     if (self = [super init]) {
-        mupenWaitToBeginFrameSemaphore = dispatch_semaphore_create(0);
-        coreWaitToEndFrameSemaphore    = dispatch_semaphore_create(0);
-        
         videoWidth  = 640;
         videoHeight = 480;
         videoBitDepth = 32; // ignored
@@ -287,7 +282,10 @@ static void MupenSetAudioSpeed(int percent)
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
     // Load ROM
-    romData = [NSData dataWithContentsOfMappedFile:path];
+    romData = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:error];
+
+    if (romData == nil) return NO;
+
     NSBundle *coreBundle = [NSBundle bundleForClass:[self class]];
     const char *dataPath;
 
@@ -384,6 +382,7 @@ static void MupenSetAudioSpeed(int percent)
 {
     @autoreleasepool
     {
+        OESetThreadRealtime(1. / 50, .007, .03); // guessed from bsnes
         [self.renderDelegate willRenderFrameOnAlternateThread];
         CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
         [super stopEmulation];
@@ -392,10 +391,7 @@ static void MupenSetAudioSpeed(int percent)
 
 - (void)videoInterrupt
 {
-    dispatch_semaphore_signal(coreWaitToEndFrameSemaphore);
-    
     [self.renderDelegate willRenderFrameOnAlternateThread];
-    dispatch_semaphore_wait(mupenWaitToBeginFrameSemaphore, DISPATCH_TIME_FOREVER);
 }
 
 - (void)swapBuffers
@@ -405,22 +401,19 @@ static void MupenSetAudioSpeed(int percent)
 
 - (void)executeFrame
 {
-    dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
-
-    dispatch_semaphore_wait(coreWaitToEndFrameSemaphore, DISPATCH_TIME_FOREVER);
+    // Do nothing
 }
 
 - (void)stopEmulation
 {
     CoreDoCommand(M64CMD_STOP, 0, NULL);
-    dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
 }
 
 - (void)resetEmulation
 {
     // FIXME: do we want/need soft reset? It doesn’t seem to work well with sending M64CMD_RESET alone
+    // FIXME: might need to explicitly kick other thread
     CoreDoCommand(M64CMD_RESET, 1 /* hard reset */, NULL);
-    dispatch_semaphore_signal(mupenWaitToBeginFrameSemaphore);
 }
 
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
