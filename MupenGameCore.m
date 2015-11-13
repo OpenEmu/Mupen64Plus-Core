@@ -407,6 +407,7 @@ static void MupenSetAudioSpeed(int percent)
 - (void)stopEmulation
 {
     CoreDoCommand(M64CMD_STOP, 0, NULL);
+    [super stopEmulation];
 }
 
 - (void)resetEmulation
