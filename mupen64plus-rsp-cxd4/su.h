@@ -17,7 +17,6 @@
 #define _SU_H_
 
 #include <stdio.h>
-
 #include "my_types.h"
 #include "rsp.h"
 
@@ -30,10 +29,6 @@
 #define SP_EXECUTE_LOG
 #define VU_EMULATE_SCALAR_ACCUMULATOR_READ
 #endif
-
-#define RSP_INFO_NAME           RSP_info
-#define GET_RSP_INFO(member)    (RSP_INFO_NAME.member)
-#define GET_RCP_REG(member)     (*RSP_INFO_NAME.member)
 
 /*
  * Currently, the plugin system this module is written for doesn't notify us
@@ -104,6 +99,13 @@ extern void set_PC(unsigned int address);
 #else
 #define MASK_SA(sa) (sa)
 /* Let hardware architecture do the mask for us. */
+#endif
+
+/* If primary op-code is SPECIAL (000000), we could skip ANDing the rs shift. */
+#if (~0U >> 1 == ~0U) || defined(_DEBUG)
+#define SPECIAL_DECODE_RS(inst)     (((inst) & 0x03E00000UL) >> 21)
+#else
+#define SPECIAL_DECODE_RS(inst)     ((inst) >> 21)
 #endif
 
 #define SR_B(s, i)      (*(pi8)(((pi8)(SR + s)) + BES(i)))
@@ -268,120 +270,5 @@ extern void SWV(unsigned vt, unsigned element, signed offset, unsigned base);
 extern void STV(unsigned vt, unsigned element, signed offset, unsigned base);
 
 NOINLINE extern void run_task(void);
-
-/*
- * Unfortunately, SSE machine code takes up so much space in the instruction
- * cache when populated enough in something like an interpreter switch
- * statement, that the compiler starts looking for ways to create branches
- * and jumps where the C code specifies none.  This complex set of macros
- * is intended to minimize the compiler's obligation to choose doing this
- * since SSE2 has no static shuffle operation with a variable mask operand.
- */
-#ifdef ARCH_MIN_SSE2
-#define EXECUTE_VU() { target = *(v16 *)VR[vt]; \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_0Q() { \
-    target = _mm_shufflehi_epi16(_mm_shufflelo_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(00, 00, 02, 02)), SHUFFLE(04, 04, 06, 06)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_1Q() { \
-    target = _mm_shufflehi_epi16(_mm_shufflelo_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(01, 01, 03, 03)), SHUFFLE(05, 05, 07, 07)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_0H() { \
-    target = _mm_shufflehi_epi16(_mm_shufflelo_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(00, 00, 00, 00)), SHUFFLE(04, 04, 04, 04)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_1H() { \
-    target = _mm_shufflehi_epi16(_mm_shufflelo_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(01, 01, 01, 01)), SHUFFLE(05, 05, 05, 05)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_2H() { \
-    target = _mm_shufflehi_epi16(_mm_shufflelo_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(02, 02, 02, 02)), SHUFFLE(06, 06, 06, 06)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_3H() { \
-    target = _mm_shufflehi_epi16(_mm_shufflelo_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(03, 03, 03, 03)), SHUFFLE(07, 07, 07, 07)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_0W() { \
-    target = _mm_shuffle_epi32(_mm_shufflelo_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(00, 00, 00, 00)), SHUFFLE(0/2, 0/2, 0/2, 0/2)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_1W() { \
-    target = _mm_shuffle_epi32(_mm_shufflelo_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(01, 01, 01, 01)), SHUFFLE(1/2, 1/2, 1/2, 1/2)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_2W() { \
-    target = _mm_shuffle_epi32(_mm_shufflelo_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(02, 02, 02, 02)), SHUFFLE(2/2, 2/2, 2/2, 2/2)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_3W() { \
-    target = _mm_shuffle_epi32(_mm_shufflelo_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(03, 03, 03, 03)), SHUFFLE(3/2, 3/2, 3/2, 3/2)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_4W() { \
-    target = _mm_shuffle_epi32(_mm_shufflehi_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(04, 04, 04, 04)), SHUFFLE(4/2, 4/2, 4/2, 4/2)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_5W() { \
-    target = _mm_shuffle_epi32(_mm_shufflehi_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(05, 05, 05, 05)), SHUFFLE(5/2, 5/2, 5/2, 5/2)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_6W() { \
-    target = _mm_shuffle_epi32(_mm_shufflehi_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(06, 06, 06, 06)), SHUFFLE(6/2, 6/2, 6/2, 6/2)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#define EXECUTE_VU_7W() { \
-    target = _mm_shuffle_epi32(_mm_shufflehi_epi16(*(v16 *)VR[vt], \
-        SHUFFLE(07, 07, 07, 07)), SHUFFLE(7/2, 7/2, 7/2, 7/2)); \
-    *(v16 *)(VR[vd]) = vector_op(source, target); }
-#else
-#define EXECUTE_VU() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0x0); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_0Q() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0x2); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_1Q() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0x3); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_0H() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0x4); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_1H() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0x5); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_2H() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0x6); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_3H() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0x7); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_0W() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0x8); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_1W() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0x9); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_2W() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0xA); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_3W() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0xB); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_4W() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0xC); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_5W() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0xD); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_6W() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0xE); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#define EXECUTE_VU_7W() { \
-    vector_copy(target, VR[vt]); SHUFFLE_VECTOR(target, 0xF); \
-    vector_op(source, target); vector_copy(VR[vd], V_result); }
-#endif
 
 #endif

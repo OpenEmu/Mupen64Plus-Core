@@ -15,8 +15,6 @@
 
 #include "multiply.h"
 
-#include "select.h"
-
 #ifdef ARCH_MIN_SSE2
 #define _mm_cmple_epu16(dst, src) \
     _mm_cmpeq_epi16(_mm_subs_epu16(dst, src), _mm_setzero_si128())
@@ -93,8 +91,9 @@ static INLINE void SIGNED_CLAMP_AL(pi16 VD)
     for (i = 0; i < N; i++)
         cond[i] = (temp[i] != VACC_M[i]); /* result_clamped != result_raw ? */
     for (i = 0; i < N; i++)
-        temp[i] ^= 0x8000; /* half-assed unsigned saturation mix in the clamp */
-    merge(VD, cond, temp, VACC_L);
+        temp[i] ^= 0x8000; /* clamps 0x0000:0xFFFF instead of -0x8000:+0x7FFF */
+    for (i = 0; i < N; i++)
+        VD[i] = (cond[i] ? temp[i] : VACC_L[i]);
     return;
 }
 

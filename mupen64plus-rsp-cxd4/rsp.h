@@ -18,7 +18,7 @@ extern "C" {
 #define PLUGIN_TYPE_RSP             1
 #define PLUGIN_TYPE_GFX             2
 #define PLUGIN_TYPE_AUDIO           3
-#define PLUGIN_TYPE_CONTROLLER      4z
+#define PLUGIN_TYPE_CONTROLLER      4
 
 #ifndef PLUGIN_API_VERSION
 #define PLUGIN_API_VERSION      0x0102
@@ -38,8 +38,12 @@ extern "C" {
  * versus
  * `GET_RCP_REG(MI_INTR_REG) |= MI_INTR_MASK_SP;'.
  */
-#if !defined(RSP_INFO_NAME) &&	 !defined(M64P_PLUGIN_API)
+#ifndef RSP_INFO_NAME
+#ifdef M64P_PLUGIN_API
+#define RSP_INFO_NAME           RSP_info
+#else
 #define RSP_INFO_NAME           RCP_info_SP
+#endif
 #define GET_RSP_INFO(member)    ((RSP_INFO_NAME).member)
 #define GET_RCP_REG(member)     (*(RSP_INFO_NAME).member)
 #endif
