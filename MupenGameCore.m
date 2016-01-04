@@ -309,11 +309,11 @@ static void MupenSetAudioSpeed(int percent)
 
     // Disable dynarec (for debugging)
     m64p_handle section;
-#ifdef DEBUG
-    int ival = 0;
-#else
+//#ifdef DEBUG
+//    int ival = 0;
+//#else
     int ival = 2;
-#endif
+//#endif
 
     ConfigOpenSection("Core", &section);
     ConfigSetParameter(section, "R4300Emulator", M64TYPE_INT, &ival);
@@ -392,11 +392,12 @@ static void MupenSetAudioSpeed(int percent)
 - (void)videoInterrupt
 {
     [self.renderDelegate willRenderFrameOnAlternateThread];
+    [self.renderDelegate didRenderFrameOnAlternateThread];
+    // FIXME: The wait for next frame should be here, but the framebuffer copy should be in swapBuffers
 }
 
 - (void)swapBuffers
 {
-    [self.renderDelegate didRenderFrameOnAlternateThread];
 }
 
 - (void)executeFrame
