@@ -393,11 +393,11 @@ static void MupenSetAudioSpeed(int percent)
 {
     [self.renderDelegate willRenderFrameOnAlternateThread];
     [self.renderDelegate didRenderFrameOnAlternateThread];
-    // FIXME: The wait for next frame should be here, but the framebuffer copy should be in swapBuffers
 }
 
 - (void)swapBuffers
 {
+    [self.renderDelegate presentDoubleBufferedFBO];
 }
 
 - (void)executeFrame
