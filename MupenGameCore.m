@@ -391,7 +391,6 @@ static void MupenSetAudioSpeed(int percent)
 
 - (void)videoInterrupt
 {
-    [self.renderDelegate willRenderFrameOnAlternateThread];
     [self.renderDelegate didRenderFrameOnAlternateThread];
 }
 
@@ -420,10 +419,16 @@ static void MupenSetAudioSpeed(int percent)
 
 - (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
+    /*
+     Blocks run in this order:
+     scheduleSaveState -> M64CORE_STATE_SAVECOMPLETE
+     */
+
     [self OE_addHandlerForType:M64CORE_STATE_SAVECOMPLETE usingBlock:
      ^ BOOL (m64p_core_param paramType, int newValue)
      {
-         [self setRate:0];
+         // Reset the paused state back to where it was.
+         [self endPausedExecution];
          NSAssert(paramType == M64CORE_STATE_SAVECOMPLETE, @"This block should only be called for save completion!");
          dispatch_async(dispatch_get_main_queue(), ^{
              if(newValue == 0)
@@ -445,8 +450,8 @@ static void MupenSetAudioSpeed(int percent)
     ^ BOOL {
         if(CoreDoCommand(M64CMD_STATE_SAVE, 1, (void *)[fileName fileSystemRepresentation]) == M64ERR_SUCCESS)
         {
-            // Mupen needs to run for a bit for the state saving to take place.
-            [self setRate:1.0];
+            // Mupen needs to be running to process the save.
+            [self beginPausedExecution];
             return YES;
         }
 
