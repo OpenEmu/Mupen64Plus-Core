@@ -385,7 +385,6 @@ static void MupenSetAudioSpeed(int percent)
         OESetThreadRealtime(1. / 50, .007, .03); // guessed from bsnes
         [self.renderDelegate willRenderFrameOnAlternateThread];
         CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
-        [super stopEmulation];
     }
 }
 
