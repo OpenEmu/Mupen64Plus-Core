@@ -83,11 +83,17 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
 
     dispatch_queue_t _callbackQueue;
     NSMutableDictionary *_callbackHandlers;
+
+    BOOL _initializing;
+    NSUInteger _frameCounter;
 }
 
 - (instancetype)init
 {
     if (self = [super init]) {
+        _initializing = YES;
+        _frameCounter = 0;
+
         videoWidth  = 640;
         videoHeight = 480;
         videoBitDepth = 32; // ignored
@@ -401,6 +407,10 @@ static void MupenSetAudioSpeed(int percent)
 - (void)executeFrame
 {
     // Do nothing
+    if(_frameCounter >= 10)
+        _initializing = NO;
+
+    _frameCounter ++;
 }
 
 - (void)stopEmulation
@@ -472,18 +482,61 @@ static void MupenSetAudioSpeed(int percent)
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-    // FIXME: investigate why old method stopped working for some games (Mario 64), since this is ugly
-    if(!g_EmulatorRunning)
+    if(_initializing)
     {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1000 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
             int success = CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName fileSystemRepresentation]);
             if(block) block(success==M64ERR_SUCCESS, nil);
-        });
+       });
     }
     else
     {
-        int success = CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName fileSystemRepresentation]);
-        if(block) block(success==M64ERR_SUCCESS, nil);
+        [self OE_addHandlerForType:M64CORE_STATE_LOADCOMPLETE usingBlock:
+         ^ BOOL (m64p_core_param paramType, int newValue)
+         {
+             NSAssert(paramType == M64CORE_STATE_LOADCOMPLETE, @"This block should only be called for load completion!");
+
+             [self endPausedExecution];
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 if(newValue == 0)
+                 {
+                     NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:@{
+                         NSLocalizedDescriptionKey : @"Mupen Could not load the save state",
+                         NSLocalizedRecoverySuggestionErrorKey : @"The loaded file is probably corrupted.",
+                         NSFilePathErrorKey : fileName
+                     }];
+                     block(NO, error);
+                     return;
+                 }
+
+                 block(YES, nil);
+             });
+             return NO;
+         }];
+
+        BOOL (^scheduleLoadState)(void) =
+        ^ BOOL {
+            if(CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName fileSystemRepresentation]) == M64ERR_SUCCESS)
+            {
+                // Mupen needs to be running to process the save.
+                [self beginPausedExecution];
+                return YES;
+            }
+
+            return NO;
+        };
+
+        if(scheduleLoadState()) return;
+
+        [self OE_addHandlerForType:M64CORE_EMU_STATE usingBlock:
+         ^ BOOL (m64p_core_param paramType, int newValue)
+         {
+             NSAssert(paramType == M64CORE_EMU_STATE, @"This block should only be called for load completion!");
+             if(newValue != M64EMU_RUNNING && newValue != M64EMU_PAUSED)
+                 return YES;
+
+             return !scheduleLoadState();
+         }];
     }
 }
 
