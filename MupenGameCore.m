@@ -607,20 +607,31 @@ static void MupenSetAudioSpeed(int percent)
 
 - (oneway void)didMoveN64JoystickDirection:(OEN64Button)button withValue:(CGFloat)value forPlayer:(NSUInteger)player
 {
+    // N64 Programming Manual: The 3D Control Stick data is of type signed char and in the range between 80 and -80
+    // TODO: handle analog gamepad deadzone and peak through API, e.g.
+    /*
+    int deadzone = 4096;
+    int peak = 32767;
+    int range = peak - deadzone;
+
+    int joyVal = value * 32767;
+    int axisVal = ((abs(joyVal) - deadzone) * 80 / range);
+     */
+
     player -= 1;
     switch (button)
     {
         case OEN64AnalogUp:
-            yAxis[player] = value * INT8_MAX;
+            yAxis[player] = value * 80;
             break;
         case OEN64AnalogDown:
-            yAxis[player] = value * INT8_MIN;
+            yAxis[player] = value * -80;
             break;
         case OEN64AnalogLeft:
-            xAxis[player] = value * INT8_MIN;
+            xAxis[player] = value * -80;
             break;
         case OEN64AnalogRight:
-            xAxis[player] = value * INT8_MAX;
+            xAxis[player] = value * 80;
             break;
         default:
             break;
