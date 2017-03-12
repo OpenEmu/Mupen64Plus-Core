@@ -237,7 +237,6 @@
 		875505961E74E966002222F3 /* mupen64plus-video-GLideN64.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 875503951E74C51D002222F3 /* mupen64plus-video-GLideN64.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		875505971E74EB2D002222F3 /* GLideN64.custom.ini in Resources */ = {isa = PBXBuildFile; fileRef = 875503991E74C7BE002222F3 /* GLideN64.custom.ini */; };
 		875505981E74EB2D002222F3 /* GLideN64.ini in Resources */ = {isa = PBXBuildFile; fileRef = 8755039A1E74C7BE002222F3 /* GLideN64.ini */; };
-		875505991E74ECC2002222F3 /* TextDrawer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875504E61E74C7BF002222F3 /* TextDrawer.cpp */; };
 		87887AEE1B49B217006ED96C /* SDLStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D00F0801183E52F002995A1 /* SDLStubs.m */; };
 		87887AF01B49B217006ED96C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E9D1182551500BEAA42 /* libz.dylib */; };
 		87887AF11B49B217006ED96C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E971182550400BEAA42 /* OpenGL.framework */; };
@@ -3978,7 +3977,6 @@
 				8755057D1E74C7BF002222F3 /* S2DEX.cpp in Sources */,
 				8755057F1E74C7BF002222F3 /* SoftwareRender.cpp in Sources */,
 				875505801E74C7BF002222F3 /* TexrectDrawer.cpp in Sources */,
-				875505991E74ECC2002222F3 /* TextDrawer.cpp in Sources */,
 				875505821E74C7BF002222F3 /* TextureFilterHandler.cpp in Sources */,
 				875505831E74C7BF002222F3 /* Textures.cpp in Sources */,
 				875505841E74C7BF002222F3 /* Turbo3D.cpp in Sources */,
