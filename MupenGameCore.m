@@ -351,6 +351,7 @@ static void MupenSetAudioSpeed(int percent)
     LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-rice.so");
     //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-glide64.so");
     //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-glide64mk2.so");
+    //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-GLideN64.so");
 
     ptr_OE_ForceUpdateWindowSize = dlsym(RTLD_DEFAULT, "_OE_ForceUpdateWindowSize");
 
@@ -555,6 +556,7 @@ static void MupenSetAudioSpeed(int percent)
 - (OEGameCoreRendering)gameCoreRendering
 {
     return OEGameCoreRenderingOpenGL2Video;
+    //return OEGameCoreRenderingOpenGL3Video; // Set for GLideN64
 }
 
 - (BOOL)hasAlternateRenderingThread
