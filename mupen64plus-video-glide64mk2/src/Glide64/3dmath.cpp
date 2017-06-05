@@ -271,7 +271,7 @@ void MulMatricesSSE(float m1[4][4],float m2[4][4],float r[4][4])
     tmp = _mm_shuffle_ps (tmp, tmp, 3 + (3 << 2) + (3 << 4) + (3 << 6));
     destrow += tmp * row3;
 
-    __builtin_ia32_storeups(r[i], destrow);
+    _mm_storeu_ps(r[i], destrow);
   }
  #elif !defined(NO_ASM) && !defined(NOSSE)
   __asm
