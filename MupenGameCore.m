@@ -86,6 +86,10 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
 
     BOOL _initializing;
     NSUInteger _frameCounter;
+
+    //FBO obkects for OpenEmu and GlideN64 respectively
+    GLint FBO, curFBO;
+
 }
 
 - (instancetype)init
@@ -348,10 +352,10 @@ static void MupenSetAudioSpeed(int percent)
     };
 
     // Load Video
-    LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-rice.so");
+    //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-rice.so");
     //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-glide64.so");
     //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-glide64mk2.so");
-    //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-GLideN64.so");
+    LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-GLideN64.so");
 
     ptr_OE_ForceUpdateWindowSize = dlsym(RTLD_DEFAULT, "_OE_ForceUpdateWindowSize");
 
@@ -391,6 +395,10 @@ static void MupenSetAudioSpeed(int percent)
     {
         OESetThreadRealtime(1. / 50, .007, .03); // guessed from bsnes
         [self.renderDelegate willRenderFrameOnAlternateThread];
+
+        // Link the OpenEmu presentation buffer to the local FBO
+        FBO = (GLint)[[self.renderDelegate presentationFramebuffer] integerValue];
+
         CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
     }
 }
@@ -402,6 +410,17 @@ static void MupenSetAudioSpeed(int percent)
 
 - (void)swapBuffers
 {
+    //Get the FBO attached to the Frmaebuffer
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &curFBO);
+
+    //Bind GlideN64 FBO to read read and OpenEmu alternate FBO to draw buffer
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, curFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
+
+    //Blit copy the GlideN64 FBO to the OpenEmu FBO
+    glBlitFramebuffer(0, 0, videoWidth, videoHeight, 0, 0, videoWidth, videoHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    //Tell OpenEmu to Render the buffer
     [self.renderDelegate presentDoubleBufferedFBO];
 }
 
@@ -555,8 +574,8 @@ static void MupenSetAudioSpeed(int percent)
 
 - (OEGameCoreRendering)gameCoreRendering
 {
-    return OEGameCoreRenderingOpenGL2Video;
-    //return OEGameCoreRenderingOpenGL3Video; // Set for GLideN64
+    //return OEGameCoreRenderingOpenGL2Video;
+    return OEGameCoreRenderingOpenGL3Video; // Set for GLideN64
 }
 
 - (BOOL)hasAlternateRenderingThread
