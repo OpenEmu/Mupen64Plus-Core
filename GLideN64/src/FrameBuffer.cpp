@@ -26,6 +26,8 @@
 #include <Graphics/Parameters.h>
 #include "DisplayWindow.h"
 
+#import <OpenGL/gl.h>
+
 using namespace std;
 using namespace graphics;
 
@@ -649,7 +651,7 @@ void FrameBufferList::saveBuffer(u32 _address, u16 _format, u16 _size, u16 _widt
 		} else {
 			m_pCurrent->m_resolved = false;
 			gfxContext.bindFramebuffer(bufferTarget::FRAMEBUFFER, m_pCurrent->m_FBO);
-			if (m_pCurrent->m_size != _size) {
+            if (m_pCurrent->m_size != _size) {
 				f32 fillColor[4];
 				gDPGetFillColor(fillColor);
 				wnd.getDrawer().clearColorBuffer(fillColor);
@@ -883,6 +885,9 @@ void FrameBufferList::_renderScreenSizeBuffer()
 
 	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
+     //Attach the m_FBO to the FrameBuffer for Mupen Core to Render
+    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(m_pCurrent->m_FBO));
+
 	wnd.swapBuffers();
 	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, pBuffer->m_FBO);
 	gDP.changed |= CHANGED_SCISSOR;
@@ -1086,6 +1091,9 @@ void FrameBufferList::renderBuffer(u32 _address)
 	}
 
 	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
+
+    //Attach the m_FBO to the FrameBuffer for Mupen Core to Render
+    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(m_pCurrent->m_FBO));
 
 	wnd.swapBuffers();
 	if (m_pCurrent != nullptr) {
