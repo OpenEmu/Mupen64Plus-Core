@@ -27,6 +27,8 @@
 #include <Graphics/Parameters.h>
 #include "DisplayWindow.h"
 
+#import <OpenGL/gl.h>
+
 using namespace std;
 using namespace graphics;
 
@@ -838,6 +840,8 @@ void FrameBufferList::_renderScreenSizeBuffer()
 
 	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(m_pCurrent->m_FBO));
+
 	wnd.swapBuffers();
 	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, pBuffer->m_FBO);
 	gDP.changed |= CHANGED_SCISSOR;
@@ -1167,6 +1171,8 @@ void FrameBufferList::renderBuffer()
 
 	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(m_pCurrent->m_FBO));
+    
 	wnd.swapBuffers();
 	if (m_pCurrent != nullptr) {
 		gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, m_pCurrent->m_FBO);
