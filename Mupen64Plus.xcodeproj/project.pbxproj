@@ -4688,6 +4688,7 @@
 					"\"$(SRCROOT)/GLideN64/src\"",
 					"\"$(SRCROOT)/GLideN64/src/inc\"",
 					"\"$(SRCROOT)/GLideN64/src/osal\"",
+					"\"$(SRCROOT)/Compatibility\"",
 				);
 				INSTALL_PATH = "";
 				LD_DYLIB_INSTALL_NAME = "";
@@ -4734,6 +4735,7 @@
 					"\"$(SRCROOT)/GLideN64/src\"",
 					"\"$(SRCROOT)/GLideN64/src/inc\"",
 					"\"$(SRCROOT)/GLideN64/src/osal\"",
+					"\"$(SRCROOT)/Compatibility\"",
 				);
 				INSTALL_PATH = "";
 				LD_DYLIB_INSTALL_NAME = "";
