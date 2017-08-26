@@ -143,6 +143,17 @@
 		3DCABE76166C6AB6002F2066 /* TextureManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B8F0166C2A0A00082F27 /* TextureManager.cpp */; };
 		3DCABE7C166C6AB6002F2066 /* VectorMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B8F6166C2A0A00082F27 /* VectorMath.cpp */; };
 		3DCABE80166C6AB6002F2066 /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94E6B8FA166C2A0A00082F27 /* Video.cpp */; };
+		3E82BC481F507B940081AF7B /* DebugDump.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC3E1F507B930081AF7B /* DebugDump.cpp */; };
+		3E82BC491F507B940081AF7B /* Debugger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC3F1F507B930081AF7B /* Debugger.cpp */; };
+		3E82BC4A1F507B940081AF7B /* F3DAM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC401F507B930081AF7B /* F3DAM.cpp */; };
+		3E82BC4B1F507B940081AF7B /* F3DEX2ACCLAIM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC411F507B930081AF7B /* F3DEX2ACCLAIM.cpp */; };
+		3E82BC4C1F507B940081AF7B /* F3DSWRS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC421F507B940081AF7B /* F3DSWRS.cpp */; };
+		3E82BC4D1F507B940081AF7B /* RSP_LoadMatrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */; };
+		3E82BC4F1F507B940081AF7B /* T3DUX.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC451F507B940081AF7B /* T3DUX.cpp */; };
+		3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC551F507C380081AF7B /* ColorBufferReader.cpp */; };
+		3E82BC5F1F507C8F0081AF7B /* GraphicBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC5E1F507C8F0081AF7B /* GraphicBuffer.cpp */; };
+		3E82BC6E1F507D6D0081AF7B /* FrameBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */; };
+		3E82BC6F1F507D6D0081AF7B /* TextDrawerStubs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC6D1F507D6D0081AF7B /* TextDrawerStubs.cpp */; };
 		8755038C1E74C51D002222F3 /* SDLStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D00F0801183E52F002995A1 /* SDLStubs.m */; };
 		8755038E1E74C51D002222F3 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E9D1182551500BEAA42 /* libz.dylib */; };
 		8755038F1E74C51D002222F3 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E971182550400BEAA42 /* OpenGL.framework */; };
@@ -174,7 +185,6 @@
 		875505221E74C7BF002222F3 /* F3DPD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503E51E74C7BE002222F3 /* F3DPD.cpp */; };
 		875505231E74C7BF002222F3 /* F3DSETA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503E71E74C7BE002222F3 /* F3DSETA.cpp */; };
 		875505241E74C7BF002222F3 /* F3DTEXA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503E91E74C7BE002222F3 /* F3DTEXA.cpp */; };
-		875505251E74C7BF002222F3 /* FrameBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503EB1E74C7BE002222F3 /* FrameBuffer.cpp */; };
 		875505261E74C7BF002222F3 /* FrameBufferInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503EE1E74C7BE002222F3 /* FrameBufferInfo.cpp */; };
 		875505271E74C7BF002222F3 /* GBI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503F11E74C7BE002222F3 /* GBI.cpp */; };
 		875505281E74C7BF002222F3 /* gDP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503F31E74C7BE002222F3 /* gDP.cpp */; };
@@ -652,6 +662,52 @@
 		3DCABDB3166C4ACB002F2066 /* mupen64plus-rsp-hle.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-rsp-hle.so"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DCABDC7166C524C002F2066 /* SDL_opengl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_opengl.h; sourceTree = "<group>"; };
 		3DCABE0E166C6A20002F2066 /* mupen64plus-video-rice.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-video-rice.so"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3E82BC331F507B930081AF7B /* DebugDump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DebugDump.h; sourceTree = "<group>"; };
+		3E82BC341F507B930081AF7B /* Debugger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Debugger.h; sourceTree = "<group>"; };
+		3E82BC351F507B930081AF7B /* F3DAM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = F3DAM.h; sourceTree = "<group>"; };
+		3E82BC361F507B930081AF7B /* F3DEX2ACCLAIM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = F3DEX2ACCLAIM.h; sourceTree = "<group>"; };
+		3E82BC371F507B930081AF7B /* F3DSWRS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = F3DSWRS.h; sourceTree = "<group>"; };
+		3E82BC381F507B930081AF7B /* Revision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Revision.h; sourceTree = "<group>"; };
+		3E82BC391F507B930081AF7B /* T3DUX.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = T3DUX.h; sourceTree = "<group>"; };
+		3E82BC3A1F507B930081AF7B /* ZilmarGFX_1_3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZilmarGFX_1_3.h; sourceTree = "<group>"; };
+		3E82BC3B1F507B930081AF7B /* ZlutTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZlutTexture.h; sourceTree = "<group>"; };
+		3E82BC3C1F507B930081AF7B /* ZSort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZSort.h; sourceTree = "<group>"; };
+		3E82BC3D1F507B930081AF7B /* CRC_OPT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CRC_OPT.cpp; sourceTree = "<group>"; };
+		3E82BC3E1F507B930081AF7B /* DebugDump.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DebugDump.cpp; sourceTree = "<group>"; };
+		3E82BC3F1F507B930081AF7B /* Debugger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Debugger.cpp; sourceTree = "<group>"; };
+		3E82BC401F507B930081AF7B /* F3DAM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = F3DAM.cpp; sourceTree = "<group>"; };
+		3E82BC411F507B930081AF7B /* F3DEX2ACCLAIM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = F3DEX2ACCLAIM.cpp; sourceTree = "<group>"; };
+		3E82BC421F507B940081AF7B /* F3DSWRS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = F3DSWRS.cpp; sourceTree = "<group>"; };
+		3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RSP_LoadMatrix.cpp; sourceTree = "<group>"; };
+		3E82BC441F507B940081AF7B /* RSP_LoadMatrixX86.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RSP_LoadMatrixX86.cpp; sourceTree = "<group>"; };
+		3E82BC451F507B940081AF7B /* T3DUX.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = T3DUX.cpp; sourceTree = "<group>"; };
+		3E82BC461F507B940081AF7B /* ZilmarPluginAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZilmarPluginAPI.cpp; sourceTree = "<group>"; };
+		3E82BC511F507C190081AF7B /* ColorBufferToRDRAMStub.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorBufferToRDRAMStub.h; sourceTree = "<group>"; };
+		3E82BC521F507C190081AF7B /* RDRAMtoColorBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RDRAMtoColorBuffer.h; sourceTree = "<group>"; };
+		3E82BC531F507C2A0081AF7B /* ClipPolygon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ClipPolygon.h; sourceTree = "<group>"; };
+		3E82BC541F507C2A0081AF7B /* DepthBufferRender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DepthBufferRender.h; sourceTree = "<group>"; };
+		3E82BC551F507C380081AF7B /* ColorBufferReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ColorBufferReader.cpp; sourceTree = "<group>"; };
+		3E82BC571F507C560081AF7B /* CombinerProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombinerProgram.h; sourceTree = "<group>"; };
+		3E82BC581F507C560081AF7B /* FramebufferTextureFormats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FramebufferTextureFormats.h; sourceTree = "<group>"; };
+		3E82BC591F507C560081AF7B /* ObjectHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjectHandle.h; sourceTree = "<group>"; };
+		3E82BC5A1F507C560081AF7B /* Parameter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parameter.h; sourceTree = "<group>"; };
+		3E82BC5B1F507C560081AF7B /* Parameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parameters.h; sourceTree = "<group>"; };
+		3E82BC5C1F507C560081AF7B /* PixelBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelBuffer.h; sourceTree = "<group>"; };
+		3E82BC5D1F507C6D0081AF7B /* opengl_Attributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opengl_Attributes.h; sourceTree = "<group>"; };
+		3E82BC5E1F507C8F0081AF7B /* GraphicBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicBuffer.cpp; sourceTree = "<group>"; };
+		3E82BC601F507CBA0081AF7B /* callbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = callbacks.h; sourceTree = "<group>"; };
+		3E82BC611F507CBA0081AF7B /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		3E82BC621F507CBA0081AF7B /* debugger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debugger.h; sourceTree = "<group>"; };
+		3E82BC631F507CBA0081AF7B /* m64p_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = m64p_common.h; sourceTree = "<group>"; };
+		3E82BC641F507CBA0081AF7B /* m64p_debugger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = m64p_debugger.h; sourceTree = "<group>"; };
+		3E82BC651F507CBA0081AF7B /* m64p_frontend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = m64p_frontend.h; sourceTree = "<group>"; };
+		3E82BC661F507CBA0081AF7B /* m64p_plugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = m64p_plugin.h; sourceTree = "<group>"; };
+		3E82BC671F507CBA0081AF7B /* m64p_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = m64p_types.h; sourceTree = "<group>"; };
+		3E82BC681F507CBA0081AF7B /* vidext_sdl2_compat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vidext_sdl2_compat.h; sourceTree = "<group>"; };
+		3E82BC691F507CBA0081AF7B /* vidext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vidext.h; sourceTree = "<group>"; };
+		3E82BC6A1F507CD60081AF7B /* osal_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_files.h; sourceTree = "<group>"; };
+		3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FrameBuffer.cpp; path = OpenGL/FrameBuffer.cpp; sourceTree = "<group>"; };
+		3E82BC6D1F507D6D0081AF7B /* TextDrawerStubs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TextDrawerStubs.cpp; path = OpenGL/TextDrawerStubs.cpp; sourceTree = "<group>"; };
 		875503951E74C51D002222F3 /* mupen64plus-video-GLideN64.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-video-GLideN64.so"; sourceTree = BUILT_PRODUCTS_DIR; };
 		875503991E74C7BE002222F3 /* GLideN64.custom.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = GLideN64.custom.ini; sourceTree = "<group>"; };
 		8755039A1E74C7BE002222F3 /* GLideN64.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = GLideN64.ini; sourceTree = "<group>"; };
@@ -828,13 +884,10 @@
 		875504551E74C7BE002222F3 /* Warning.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = Warning.ico; sourceTree = "<group>"; };
 		875504571E74C7BE002222F3 /* ColorBufferReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorBufferReader.h; sourceTree = "<group>"; };
 		875504581E74C7BE002222F3 /* CombinerProgram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CombinerProgram.cpp; sourceTree = "<group>"; };
-		875504591E74C7BE002222F3 /* CombinerProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombinerProgram.h; sourceTree = "<group>"; };
 		8755045A1E74C7BF002222F3 /* Context.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Context.cpp; sourceTree = "<group>"; };
 		8755045B1E74C7BF002222F3 /* Context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Context.h; sourceTree = "<group>"; };
 		8755045C1E74C7BF002222F3 /* ContextImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContextImpl.h; sourceTree = "<group>"; };
-		8755045D1E74C7BF002222F3 /* FramebufferTextureFormats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FramebufferTextureFormats.h; sourceTree = "<group>"; };
 		8755045E1E74C7BF002222F3 /* ObjectHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObjectHandle.cpp; sourceTree = "<group>"; };
-		8755045F1E74C7BF002222F3 /* ObjectHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjectHandle.h; sourceTree = "<group>"; };
 		875504611E74C7BF002222F3 /* GLFunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLFunctions.cpp; sourceTree = "<group>"; };
 		875504621E74C7BF002222F3 /* GLFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLFunctions.h; sourceTree = "<group>"; };
 		875504641E74C7BF002222F3 /* glsl_CombinerInputs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerInputs.cpp; sourceTree = "<group>"; };
@@ -859,7 +912,6 @@
 		875504781E74C7BF002222F3 /* libhardware.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libhardware.h; sourceTree = "<group>"; };
 		8755047A1E74C7BF002222F3 /* mupen64plus_DisplayWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mupen64plus_DisplayWindow.cpp; sourceTree = "<group>"; };
 		8755047B1E74C7BF002222F3 /* opengl_Attributes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_Attributes.cpp; sourceTree = "<group>"; };
-		8755047C1E74C7BF002222F3 /* opengl_Attributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opengl_Attributes.h; sourceTree = "<group>"; };
 		8755047D1E74C7BF002222F3 /* opengl_BufferedDrawer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_BufferedDrawer.cpp; sourceTree = "<group>"; };
 		8755047E1E74C7BF002222F3 /* opengl_BufferedDrawer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opengl_BufferedDrawer.h; sourceTree = "<group>"; };
 		8755047F1E74C7BF002222F3 /* opengl_BufferManipulationObjectFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_BufferManipulationObjectFactory.cpp; sourceTree = "<group>"; };
@@ -886,10 +938,6 @@
 		875504941E74C7BF002222F3 /* opengl_UnbufferedDrawer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opengl_UnbufferedDrawer.h; sourceTree = "<group>"; };
 		875504951E74C7BF002222F3 /* opengl_Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_Utils.cpp; sourceTree = "<group>"; };
 		875504961E74C7BF002222F3 /* opengl_Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opengl_Utils.h; sourceTree = "<group>"; };
-		875504981E74C7BF002222F3 /* windows_DisplayWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = windows_DisplayWindow.cpp; sourceTree = "<group>"; };
-		875504991E74C7BF002222F3 /* Parameter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parameter.h; sourceTree = "<group>"; };
-		8755049A1E74C7BF002222F3 /* Parameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parameters.h; sourceTree = "<group>"; };
-		8755049B1E74C7BF002222F3 /* PixelBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelBuffer.h; sourceTree = "<group>"; };
 		8755049C1E74C7BF002222F3 /* ShaderProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShaderProgram.h; sourceTree = "<group>"; };
 		8755049D1E74C7BF002222F3 /* GraphicsDrawer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicsDrawer.cpp; sourceTree = "<group>"; };
 		8755049E1E74C7BF002222F3 /* GraphicsDrawer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphicsDrawer.h; sourceTree = "<group>"; };
@@ -2155,6 +2203,7 @@
 		3D2090581182D92800BEAA42 /* Compatibility */ = {
 			isa = PBXGroup;
 			children = (
+				3E82BC6B1F507D290081AF7B /* OpenGL */,
 				3D00F07E1183E52F002995A1 /* SDL */,
 				3D00F06A1183E4AA002995A1 /* eventloop.m */,
 				3D00F06B1183E4AA002995A1 /* osd.m */,
@@ -2173,6 +2222,15 @@
 				3DC2145E166C6D7F0014251E /* pngconf.h */,
 			);
 			path = png;
+			sourceTree = "<group>";
+		};
+		3E82BC6B1F507D290081AF7B /* OpenGL */ = {
+			isa = PBXGroup;
+			children = (
+				3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */,
+				3E82BC6D1F507D6D0081AF7B /* TextDrawerStubs.cpp */,
+			);
+			name = OpenGL;
 			sourceTree = "<group>";
 		};
 		875503971E74C7BE002222F3 /* GLideN64 */ = {
@@ -2266,6 +2324,26 @@
 		875503AF1E74C7BE002222F3 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				3E82BC331F507B930081AF7B /* DebugDump.h */,
+				3E82BC341F507B930081AF7B /* Debugger.h */,
+				3E82BC351F507B930081AF7B /* F3DAM.h */,
+				3E82BC361F507B930081AF7B /* F3DEX2ACCLAIM.h */,
+				3E82BC371F507B930081AF7B /* F3DSWRS.h */,
+				3E82BC381F507B930081AF7B /* Revision.h */,
+				3E82BC391F507B930081AF7B /* T3DUX.h */,
+				3E82BC3A1F507B930081AF7B /* ZilmarGFX_1_3.h */,
+				3E82BC3B1F507B930081AF7B /* ZlutTexture.h */,
+				3E82BC3C1F507B930081AF7B /* ZSort.h */,
+				3E82BC3D1F507B930081AF7B /* CRC_OPT.cpp */,
+				3E82BC3E1F507B930081AF7B /* DebugDump.cpp */,
+				3E82BC3F1F507B930081AF7B /* Debugger.cpp */,
+				3E82BC401F507B930081AF7B /* F3DAM.cpp */,
+				3E82BC411F507B930081AF7B /* F3DEX2ACCLAIM.cpp */,
+				3E82BC421F507B940081AF7B /* F3DSWRS.cpp */,
+				3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */,
+				3E82BC441F507B940081AF7B /* RSP_LoadMatrixX86.cpp */,
+				3E82BC451F507B940081AF7B /* T3DUX.cpp */,
+				3E82BC461F507B940081AF7B /* ZilmarPluginAPI.cpp */,
 				875503B01E74C7BE002222F3 /* 3DMath.cpp */,
 				875503B11E74C7BE002222F3 /* 3DMath.h */,
 				875503B21E74C7BE002222F3 /* 3DMathNeon.cpp */,
@@ -2402,6 +2480,8 @@
 		875503B31E74C7BE002222F3 /* BufferCopy */ = {
 			isa = PBXGroup;
 			children = (
+				3E82BC511F507C190081AF7B /* ColorBufferToRDRAMStub.h */,
+				3E82BC521F507C190081AF7B /* RDRAMtoColorBuffer.h */,
 				875503B41E74C7BE002222F3 /* ColorBufferToRDRAM.cpp */,
 				875503B51E74C7BE002222F3 /* ColorBufferToRDRAM.h */,
 				875503B61E74C7BE002222F3 /* ColorBufferToRDRAMStub.h */,
@@ -2425,6 +2505,8 @@
 		875503CE1E74C7BE002222F3 /* DepthBufferRender */ = {
 			isa = PBXGroup;
 			children = (
+				3E82BC531F507C2A0081AF7B /* ClipPolygon.h */,
+				3E82BC541F507C2A0081AF7B /* DepthBufferRender.h */,
 				875503CF1E74C7BE002222F3 /* ClipPolygon.cpp */,
 				875503D01E74C7BE002222F3 /* ClipPolygon.h */,
 				875503D11E74C7BE002222F3 /* DepthBufferRender.cpp */,
@@ -2563,19 +2645,20 @@
 		875504561E74C7BE002222F3 /* Graphics */ = {
 			isa = PBXGroup;
 			children = (
+				3E82BC571F507C560081AF7B /* CombinerProgram.h */,
+				3E82BC581F507C560081AF7B /* FramebufferTextureFormats.h */,
+				3E82BC591F507C560081AF7B /* ObjectHandle.h */,
+				3E82BC5A1F507C560081AF7B /* Parameter.h */,
+				3E82BC5B1F507C560081AF7B /* Parameters.h */,
+				3E82BC5C1F507C560081AF7B /* PixelBuffer.h */,
+				3E82BC551F507C380081AF7B /* ColorBufferReader.cpp */,
 				875504571E74C7BE002222F3 /* ColorBufferReader.h */,
 				875504581E74C7BE002222F3 /* CombinerProgram.cpp */,
-				875504591E74C7BE002222F3 /* CombinerProgram.h */,
 				8755045A1E74C7BF002222F3 /* Context.cpp */,
 				8755045B1E74C7BF002222F3 /* Context.h */,
 				8755045C1E74C7BF002222F3 /* ContextImpl.h */,
-				8755045D1E74C7BF002222F3 /* FramebufferTextureFormats.h */,
 				8755045E1E74C7BF002222F3 /* ObjectHandle.cpp */,
-				8755045F1E74C7BF002222F3 /* ObjectHandle.h */,
 				875504601E74C7BF002222F3 /* OpenGLContext */,
-				875504991E74C7BF002222F3 /* Parameter.h */,
-				8755049A1E74C7BF002222F3 /* Parameters.h */,
-				8755049B1E74C7BF002222F3 /* PixelBuffer.h */,
 				8755049C1E74C7BF002222F3 /* ShaderProgram.h */,
 			);
 			path = Graphics;
@@ -2584,13 +2667,13 @@
 		875504601E74C7BF002222F3 /* OpenGLContext */ = {
 			isa = PBXGroup;
 			children = (
+				3E82BC5D1F507C6D0081AF7B /* opengl_Attributes.h */,
 				875504611E74C7BF002222F3 /* GLFunctions.cpp */,
 				875504621E74C7BF002222F3 /* GLFunctions.h */,
 				875504631E74C7BF002222F3 /* GLSL */,
 				875504731E74C7BF002222F3 /* GraphicBufferPrivateApi */,
 				875504791E74C7BF002222F3 /* mupen64plus */,
 				8755047B1E74C7BF002222F3 /* opengl_Attributes.cpp */,
-				8755047C1E74C7BF002222F3 /* opengl_Attributes.h */,
 				8755047D1E74C7BF002222F3 /* opengl_BufferedDrawer.cpp */,
 				8755047E1E74C7BF002222F3 /* opengl_BufferedDrawer.h */,
 				8755047F1E74C7BF002222F3 /* opengl_BufferManipulationObjectFactory.cpp */,
@@ -2617,7 +2700,6 @@
 				875504941E74C7BF002222F3 /* opengl_UnbufferedDrawer.h */,
 				875504951E74C7BF002222F3 /* opengl_Utils.cpp */,
 				875504961E74C7BF002222F3 /* opengl_Utils.h */,
-				875504971E74C7BF002222F3 /* windows */,
 			);
 			path = OpenGLContext;
 			sourceTree = "<group>";
@@ -2647,6 +2729,7 @@
 		875504731E74C7BF002222F3 /* GraphicBufferPrivateApi */ = {
 			isa = PBXGroup;
 			children = (
+				3E82BC5E1F507C8F0081AF7B /* GraphicBuffer.cpp */,
 				875504741E74C7BF002222F3 /* gralloc.h */,
 				875504751E74C7BF002222F3 /* GraphicBuffer.cpp */,
 				875504761E74C7BF002222F3 /* GraphicBuffer.h */,
@@ -2664,17 +2747,19 @@
 			path = mupen64plus;
 			sourceTree = "<group>";
 		};
-		875504971E74C7BF002222F3 /* windows */ = {
-			isa = PBXGroup;
-			children = (
-				875504981E74C7BF002222F3 /* windows_DisplayWindow.cpp */,
-			);
-			path = windows;
-			sourceTree = "<group>";
-		};
 		875504A21E74C7BF002222F3 /* inc */ = {
 			isa = PBXGroup;
 			children = (
+				3E82BC601F507CBA0081AF7B /* callbacks.h */,
+				3E82BC611F507CBA0081AF7B /* config.h */,
+				3E82BC621F507CBA0081AF7B /* debugger.h */,
+				3E82BC631F507CBA0081AF7B /* m64p_common.h */,
+				3E82BC641F507CBA0081AF7B /* m64p_debugger.h */,
+				3E82BC651F507CBA0081AF7B /* m64p_frontend.h */,
+				3E82BC661F507CBA0081AF7B /* m64p_plugin.h */,
+				3E82BC671F507CBA0081AF7B /* m64p_types.h */,
+				3E82BC681F507CBA0081AF7B /* vidext_sdl2_compat.h */,
+				3E82BC691F507CBA0081AF7B /* vidext.h */,
 				875504A31E74C7BF002222F3 /* callbacks.h */,
 				875504A41E74C7BF002222F3 /* config.h */,
 				875504A51E74C7BF002222F3 /* debugger.h */,
@@ -2718,6 +2803,7 @@
 		875504CB1E74C7BF002222F3 /* osal */ = {
 			isa = PBXGroup;
 			children = (
+				3E82BC6A1F507CD60081AF7B /* osal_files.h */,
 				875504CC1E74C7BF002222F3 /* CMakeLists.txt */,
 				875504CD1E74C7BF002222F3 /* mupen64plus-video-osal.mk */,
 				875504CE1E74C7BF002222F3 /* osal_files.h */,
@@ -3940,6 +4026,7 @@
 				875505111E74C7BF002222F3 /* CommonPluginAPI.cpp in Sources */,
 				875505121E74C7BF002222F3 /* Config.cpp in Sources */,
 				875505131E74C7BF002222F3 /* convert.cpp in Sources */,
+				3E82BC4C1F507B940081AF7B /* F3DSWRS.cpp in Sources */,
 				875505141E74C7BF002222F3 /* CRC32.cpp in Sources */,
 				875505161E74C7BF002222F3 /* DepthBuffer.cpp in Sources */,
 				875505191E74C7BF002222F3 /* DisplayWindow.cpp in Sources */,
@@ -3951,12 +4038,14 @@
 				8755051F1E74C7BF002222F3 /* F3DEX2CBFD.cpp in Sources */,
 				875505201E74C7BF002222F3 /* F3DEX2MM.cpp in Sources */,
 				875505211E74C7BF002222F3 /* F3DGOLDEN.cpp in Sources */,
+				3E82BC4A1F507B940081AF7B /* F3DAM.cpp in Sources */,
 				875505241E74C7BF002222F3 /* F3DTEXA.cpp in Sources */,
 				875505221E74C7BF002222F3 /* F3DPD.cpp in Sources */,
 				875505231E74C7BF002222F3 /* F3DSETA.cpp in Sources */,
-				875505251E74C7BF002222F3 /* FrameBuffer.cpp in Sources */,
 				875505261E74C7BF002222F3 /* FrameBufferInfo.cpp in Sources */,
 				875505271E74C7BF002222F3 /* GBI.cpp in Sources */,
+				3E82BC5F1F507C8F0081AF7B /* GraphicBuffer.cpp in Sources */,
+				3E82BC6E1F507D6D0081AF7B /* FrameBuffer.cpp in Sources */,
 				875505281E74C7BF002222F3 /* gDP.cpp in Sources */,
 				875505291E74C7BF002222F3 /* GLideN64.cpp in Sources */,
 				875505671E74C7BF002222F3 /* GraphicsDrawer.cpp in Sources */,
@@ -3979,21 +4068,26 @@
 				875505801E74C7BF002222F3 /* TexrectDrawer.cpp in Sources */,
 				875505821E74C7BF002222F3 /* TextureFilterHandler.cpp in Sources */,
 				875505831E74C7BF002222F3 /* Textures.cpp in Sources */,
+				3E82BC4F1F507B940081AF7B /* T3DUX.cpp in Sources */,
 				875505841E74C7BF002222F3 /* Turbo3D.cpp in Sources */,
 				875505861E74C7BF002222F3 /* VI.cpp in Sources */,
 				8755058C1E74C7BF002222F3 /* ZlutTexture.cpp in Sources */,
 				8755058D1E74C7BF002222F3 /* ZSort.cpp in Sources */,
+				3E82BC4B1F507B940081AF7B /* F3DEX2ACCLAIM.cpp in Sources */,
 				8755050B1E74C7BF002222F3 /* ColorBufferToRDRAM.cpp in Sources */,
 				8755050C1E74C7BF002222F3 /* DepthBufferToRDRAM.cpp in Sources */,
 				8755050D1E74C7BF002222F3 /* RDRAMtoColorBuffer.cpp in Sources */,
 				875505171E74C7BF002222F3 /* ClipPolygon.cpp in Sources */,
+				3E82BC4D1F507B940081AF7B /* RSP_LoadMatrix.cpp in Sources */,
 				875505181E74C7BF002222F3 /* DepthBufferRender.cpp in Sources */,
 				875505101E74C7BF002222F3 /* CommonAPIImpl_common.cpp in Sources */,
 				8755054B1E74C7BF002222F3 /* Context.cpp in Sources */,
 				8755054A1E74C7BF002222F3 /* CombinerProgram.cpp in Sources */,
 				8755054C1E74C7BF002222F3 /* ObjectHandle.cpp in Sources */,
 				8755054D1E74C7BF002222F3 /* GLFunctions.cpp in Sources */,
+				3E82BC481F507B940081AF7B /* DebugDump.cpp in Sources */,
 				875505581E74C7BF002222F3 /* opengl_Attributes.cpp in Sources */,
+				3E82BC6F1F507D6D0081AF7B /* TextDrawerStubs.cpp in Sources */,
 				875505591E74C7BF002222F3 /* opengl_BufferedDrawer.cpp in Sources */,
 				8755055A1E74C7BF002222F3 /* opengl_BufferManipulationObjectFactory.cpp in Sources */,
 				8755055B1E74C7BF002222F3 /* opengl_CachedFunctions.cpp in Sources */,
@@ -4015,9 +4109,11 @@
 				875505541E74C7BF002222F3 /* glsl_Utils.cpp in Sources */,
 				875505851E74C7BF002222F3 /* TxFilterStub.cpp in Sources */,
 				875505731E74C7BF002222F3 /* MupenPlusPluginAPI.cpp in Sources */,
+				3E82BC491F507B940081AF7B /* Debugger.cpp in Sources */,
 				875505711E74C7BF002222F3 /* Config_mupenplus.cpp in Sources */,
 				875505701E74C7BF002222F3 /* CommonAPIImpl_mupenplus.cpp in Sources */,
 				875505721E74C7BF002222F3 /* MupenPlusAPIImpl.cpp in Sources */,
+				3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */,
 				875505571E74C7BF002222F3 /* mupen64plus_DisplayWindow.cpp in Sources */,
 				8755038C1E74C51D002222F3 /* SDLStubs.m in Sources */,
 			);
