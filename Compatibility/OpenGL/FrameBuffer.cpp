@@ -840,9 +840,9 @@ void FrameBufferList::_renderScreenSizeBuffer()
 
 	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(m_pCurrent->m_FBO));
+    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(pFilteredBuffer->m_FBO));
 
-	wnd.swapBuffers();
+    wnd.swapBuffers();
 	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, pBuffer->m_FBO);
 	gDP.changed |= CHANGED_SCISSOR;
 }
@@ -1171,7 +1171,7 @@ void FrameBufferList::renderBuffer()
 
 	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(m_pCurrent->m_FBO));
+    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(pFilteredBuffer->m_FBO));
     
 	wnd.swapBuffers();
 	if (m_pCurrent != nullptr) {
