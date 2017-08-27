@@ -662,6 +662,7 @@
 		3DCABDB3166C4ACB002F2066 /* mupen64plus-rsp-hle.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-rsp-hle.so"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DCABDC7166C524C002F2066 /* SDL_opengl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_opengl.h; sourceTree = "<group>"; };
 		3DCABE0E166C6A20002F2066 /* mupen64plus-video-rice.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-video-rice.so"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3E5C54391F52698500323A31 /* Revision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Revision.h; sourceTree = "<group>"; };
 		3E82BC331F507B930081AF7B /* DebugDump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DebugDump.h; sourceTree = "<group>"; };
 		3E82BC341F507B930081AF7B /* Debugger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Debugger.h; sourceTree = "<group>"; };
 		3E82BC351F507B930081AF7B /* F3DAM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = F3DAM.h; sourceTree = "<group>"; };
@@ -2227,6 +2228,7 @@
 		3E82BC6B1F507D290081AF7B /* OpenGL */ = {
 			isa = PBXGroup;
 			children = (
+				3E5C54391F52698500323A31 /* Revision.h */,
 				3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */,
 				3E82BC6D1F507D6D0081AF7B /* TextDrawerStubs.cpp */,
 			);
