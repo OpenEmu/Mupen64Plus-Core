@@ -1137,41 +1137,41 @@ void FrameBufferList::renderBuffer()
 	drawer.copyTexturedRect(blitParams);
 
 //    This causes graphics flashing in OE  for right now, lets
-//       comment it out and hope future fixes in the upstream
+//       change the FBO holder name and manually apply it to the pFilteredBuffer
 //       give us some hope to rendering it correctly.
+	if (pNextBuffer != nullptr) {
+		pNextBuffer->m_isMainBuffer = true;
+		FrameBuffer * pNextFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
+			postProcessor.doOrientationCorrection(pNextBuffer)));
+		srcY1 = srcPartHeight;
+		dstY0 = dstY1;
+		dstY1 = dstY0 + dstPartHeight;
+		if (pNextFilteredBuffer->m_pTexture->frameBufferTexture == CachedTexture::fbMultiSample) {
+			pNextFilteredBuffer->resolveMultisampledTexture();
+			readBuffer = pNextFilteredBuffer->m_resolveFBO;
+			pBufferTexture = pNextFilteredBuffer->m_pResolveTexture;
+		}
+		else {
+			readBuffer = pNextFilteredBuffer->m_FBO;
+			pBufferTexture = pNextFilteredBuffer->m_pTexture;
+		}
 
-//	if (pNextBuffer != nullptr) {
-//		pNextBuffer->m_isMainBuffer = true;
-//		pFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
-//			postProcessor.doOrientationCorrection(pNextBuffer)));
-//		srcY1 = srcPartHeight;
-//		dstY0 = dstY1;
-//		dstY1 = dstY0 + dstPartHeight;
-//		if (pFilteredBuffer->m_pTexture->frameBufferTexture == CachedTexture::fbMultiSample) {
-//			pFilteredBuffer->resolveMultisampledTexture();
-//			readBuffer = pFilteredBuffer->m_resolveFBO;
-//			pBufferTexture = pFilteredBuffer->m_pResolveTexture;
-//		}
-//		else {
-//			readBuffer = pFilteredBuffer->m_FBO;
-//			pBufferTexture = pFilteredBuffer->m_pTexture;
-//		}
-//
-//		blitParams.srcY0 = 0;
-//		blitParams.srcY1 = min((s32)(srcY1*srcScaleY), (s32)pFilteredBuffer->m_pTexture->realHeight);
-//		blitParams.srcWidth = pBufferTexture->realWidth;
-//		blitParams.srcHeight = pBufferTexture->realHeight;
-//		blitParams.dstX0 = hOffset;
-//		blitParams.dstY0 = vOffset + (s32)(dstY0*dstScaleY);
-//		blitParams.dstX1 = hOffset + dstX1;
-//		blitParams.dstY1 = vOffset + (s32)(dstY1*dstScaleY);
-//		blitParams.dstWidth = wnd.getScreenWidth();
-//		blitParams.dstHeight = wnd.getScreenHeight() + wnd.getHeightOffset();
-//		blitParams.tex[0] = pBufferTexture;
-//		blitParams.readBuffer = readBuffer;
-//
-//		drawer.copyTexturedRect(blitParams);
-//	}
+		blitParams.srcY0 = 0;
+		blitParams.srcY1 = min((s32)(srcY1*srcScaleY), (s32)pFilteredBuffer->m_pTexture->realHeight);
+		blitParams.srcWidth = pBufferTexture->realWidth;
+		blitParams.srcHeight = pBufferTexture->realHeight;
+		blitParams.dstX0 = hOffset;
+		blitParams.dstY0 = vOffset + (s32)(dstY0*dstScaleY);
+		blitParams.dstX1 = hOffset + dstX1;
+		blitParams.dstY1 = vOffset + (s32)(dstY1*dstScaleY);
+		blitParams.dstWidth = wnd.getScreenWidth();
+		blitParams.dstHeight = wnd.getScreenHeight() + wnd.getHeightOffset();
+		blitParams.tex[0] = pBufferTexture;
+		blitParams.readBuffer = readBuffer;
+        blitParams.drawBuffer = pFilteredBuffer->m_FBO;
+
+		drawer.copyTexturedRect(blitParams);
+	}
 
 	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
