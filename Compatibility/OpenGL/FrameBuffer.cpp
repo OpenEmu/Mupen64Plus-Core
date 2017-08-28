@@ -799,11 +799,11 @@ void FrameBufferList::_renderScreenSizeBuffer()
 	DisplayWindow & wnd = dwnd();
 	GraphicsDrawer & drawer = wnd.getDrawer();
 	FrameBuffer *pBuffer = &m_list.back();
+    FrameBuffer *OERenderBuffer = &m_list.back();
 	PostProcessor & postProcessor = PostProcessor::get();
 	FrameBuffer * pFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
 		postProcessor.doOrientationCorrection(pBuffer)));
 	CachedTexture * pBufferTexture = pFilteredBuffer->m_pTexture;
-
 
 	s32 srcCoord[4] = { 0, 0, pBufferTexture->realWidth, pBufferTexture->realHeight };
 	const s32 hOffset = (wnd.getScreenWidth() - wnd.getWidth()) / 2;
@@ -835,12 +835,13 @@ void FrameBufferList::_renderScreenSizeBuffer()
 	blitParams.tex[0] = pBufferTexture;
 	blitParams.combiner = CombinerInfo::get().getTexrectCopyProgram();
 	blitParams.readBuffer = pFilteredBuffer->m_FBO;
+    blitParams.drawBuffer = OERenderBuffer->m_FBO;
 
 	drawer.blitOrCopyTexturedRect(blitParams);
 
 	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(pFilteredBuffer->m_FBO));
+    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(OERenderBuffer->m_FBO));
 
     wnd.swapBuffers();
 	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, pBuffer->m_FBO);
@@ -1006,6 +1007,8 @@ void FrameBufferList::renderBuffer()
 		return;
 
 	FrameBuffer *pBuffer = findBuffer(rdpRes.vi_origin);
+    FrameBuffer *OERenderBuffer = findBuffer(rdpRes.vi_origin);
+    
 	if (pBuffer == nullptr)
 		return;
 	pBuffer->m_isMainBuffer = true;
@@ -1044,7 +1047,6 @@ void FrameBufferList::renderBuffer()
 
 	srcWidth = min(rdpRes.vi_width, (rdpRes.vi_hres * rdpRes.vi_x_add) >> 10);
 	srcHeight = rdpRes.vi_width * ((rdpRes.vi_vres*rdpRes.vi_y_add + rdpRes.vi_y_start) >> 10) / pBuffer->m_width;
-
 
 	const u32 stride = pBuffer->m_width << pBuffer->m_size >> 1;
 	FrameBuffer *pNextBuffer = findBuffer(rdpRes.vi_origin + stride * srcHeight);
@@ -1132,28 +1134,26 @@ void FrameBufferList::renderBuffer()
 	blitParams.tex[0] = pBufferTexture;
 	blitParams.combiner = CombinerInfo::get().getTexrectCopyProgram();
 	blitParams.readBuffer = readBuffer;
+    blitParams.drawBuffer = OERenderBuffer->m_FBO;
 	blitParams.invertY = true;
 
 	drawer.copyTexturedRect(blitParams);
 
-//    This causes graphics flashing in OE  for right now, lets
-//       change the FBO holder name and manually apply it to the pFilteredBuffer
-//       give us some hope to rendering it correctly.
 	if (pNextBuffer != nullptr) {
 		pNextBuffer->m_isMainBuffer = true;
-		FrameBuffer * pNextFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
+		FrameBuffer * pFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
 			postProcessor.doOrientationCorrection(pNextBuffer)));
 		srcY1 = srcPartHeight;
 		dstY0 = dstY1;
 		dstY1 = dstY0 + dstPartHeight;
-		if (pNextFilteredBuffer->m_pTexture->frameBufferTexture == CachedTexture::fbMultiSample) {
-			pNextFilteredBuffer->resolveMultisampledTexture();
-			readBuffer = pNextFilteredBuffer->m_resolveFBO;
-			pBufferTexture = pNextFilteredBuffer->m_pResolveTexture;
+		if (pFilteredBuffer->m_pTexture->frameBufferTexture == CachedTexture::fbMultiSample) {
+			pFilteredBuffer->resolveMultisampledTexture();
+			readBuffer = pFilteredBuffer->m_resolveFBO;
+			pBufferTexture = pFilteredBuffer->m_pResolveTexture;
 		}
 		else {
-			readBuffer = pNextFilteredBuffer->m_FBO;
-			pBufferTexture = pNextFilteredBuffer->m_pTexture;
+			readBuffer = pFilteredBuffer->m_FBO;
+			pBufferTexture = pFilteredBuffer->m_pTexture;
 		}
 
 		blitParams.srcY0 = 0;
@@ -1168,15 +1168,15 @@ void FrameBufferList::renderBuffer()
 		blitParams.dstHeight = wnd.getScreenHeight() + wnd.getHeightOffset();
 		blitParams.tex[0] = pBufferTexture;
 		blitParams.readBuffer = readBuffer;
-        blitParams.drawBuffer = pFilteredBuffer->m_FBO;
+        blitParams.drawBuffer = OERenderBuffer->m_FBO;
 
 		drawer.copyTexturedRect(blitParams);
 	}
 
 	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(pFilteredBuffer->m_FBO));
-    
+    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(OERenderBuffer->m_FBO));
+
 	wnd.swapBuffers();
 	if (m_pCurrent != nullptr) {
 		gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, m_pCurrent->m_FBO);
