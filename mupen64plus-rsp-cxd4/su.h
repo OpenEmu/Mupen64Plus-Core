@@ -182,7 +182,7 @@ extern void set_PC(unsigned int address);
  *
  * Some of these also will only work assuming 2's complement (e.g., Intel).
  */
-#if defined(ARCH_MIN_SSE2)
+#if defined(ARCH_MIN_SSE2) && !defined(SSE2NEON)
 #define MASK_SA(sa)             (sa)
 #define IW_RD(inst)             ((u16)(inst) >> 11)
 #define SIGNED_IMM16(imm)       (s16)(imm)

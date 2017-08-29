@@ -4603,6 +4603,7 @@
 					"-D__unix__",
 					"-DM64P_PLUGIN_API",
 					"-DARCH_MIN_SSE2",
+					"-DHLEVIDEO",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -4642,6 +4643,7 @@
 					"-D__unix__",
 					"-DM64P_PLUGIN_API",
 					"-DARCH_MIN_SSE2",
+					"-DHLEVIDEO",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
