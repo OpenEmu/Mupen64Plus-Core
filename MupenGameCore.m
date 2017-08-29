@@ -422,7 +422,7 @@ static void MupenSetAudioSpeed(int percent)
     glBlitFramebuffer(0,  videoHeight, videoWidth - 1 , 0, 0, 0, videoWidth, videoHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
     //Tell OpenEmu to Render the buffer
-    [self.renderDelegate presentDoubleBufferedFBO];
+    //[self.renderDelegate presentDoubleBufferedFBO];
 }
 
 - (void)executeFrame
@@ -584,10 +584,10 @@ static void MupenSetAudioSpeed(int percent)
     return YES;
 }
 
-- (BOOL)needsDoubleBufferedFBO
-{
-    return YES;
-}
+//- (BOOL)needsDoubleBufferedFBO
+//{
+//    return YES;
+//}
 
 - (const void *)videoBuffer
 {
