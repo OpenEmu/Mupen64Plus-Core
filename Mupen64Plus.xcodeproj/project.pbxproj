@@ -247,35 +247,6 @@
 		875505961E74E966002222F3 /* mupen64plus-video-GLideN64.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 875503951E74C51D002222F3 /* mupen64plus-video-GLideN64.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		875505971E74EB2D002222F3 /* GLideN64.custom.ini in Resources */ = {isa = PBXBuildFile; fileRef = 875503991E74C7BE002222F3 /* GLideN64.custom.ini */; };
 		875505981E74EB2D002222F3 /* GLideN64.ini in Resources */ = {isa = PBXBuildFile; fileRef = 8755039A1E74C7BE002222F3 /* GLideN64.ini */; };
-		87887AEE1B49B217006ED96C /* SDLStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D00F0801183E52F002995A1 /* SDLStubs.m */; };
-		87887AF01B49B217006ED96C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E9D1182551500BEAA42 /* libz.dylib */; };
-		87887AF11B49B217006ED96C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E971182550400BEAA42 /* OpenGL.framework */; };
-		87887AF21B49B217006ED96C /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC2145C166C6D7F0014251E /* libpng.a */; };
-		87887AF31B49B217006ED96C /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
-		87887B071B49B527006ED96C /* mupen64plus-video-glide64.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 87887AF71B49B217006ED96C /* mupen64plus-video-glide64.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		87887B4E1B49B6AD006ED96C /* 3dmath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B101B49B6AD006ED96C /* 3dmath.cpp */; };
-		87887B4F1B49B6AD006ED96C /* Combine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B141B49B6AD006ED96C /* Combine.cpp */; };
-		87887B511B49B6AD006ED96C /* Config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B171B49B6AD006ED96C /* Config.cpp */; };
-		87887B521B49B6AD006ED96C /* CRC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B191B49B6AD006ED96C /* CRC.cpp */; };
-		87887B531B49B6AD006ED96C /* Debugger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B1D1B49B6AD006ED96C /* Debugger.cpp */; };
-		87887B541B49B6AD006ED96C /* DepthBufferRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B1F1B49B6AD006ED96C /* DepthBufferRender.cpp */; };
-		87887B551B49B6AD006ED96C /* Ini.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B251B49B6AD006ED96C /* Ini.cpp */; };
-		87887B561B49B6AD006ED96C /* Main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B2A1B49B6AD006ED96C /* Main.cpp */; };
-		87887B571B49B6AD006ED96C /* osal_dynamiclib_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 87887B2D1B49B6AD006ED96C /* osal_dynamiclib_unix.c */; };
-		87887B591B49B6AD006ED96C /* rdp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B301B49B6AD006ED96C /* rdp.cpp */; };
-		87887B5A1B49B6AD006ED96C /* TexBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B321B49B6AD006ED96C /* TexBuffer.cpp */; };
-		87887B5B1B49B6AD006ED96C /* TexCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B341B49B6AD006ED96C /* TexCache.cpp */; };
-		87887B5C1B49B6AD006ED96C /* Util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B4A1B49B6AD006ED96C /* Util.cpp */; };
-		87887B701B49B6F9006ED96C /* 2xsai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B5E1B49B6F9006ED96C /* 2xsai.cpp */; };
-		87887B711B49B6F9006ED96C /* combiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B611B49B6F9006ED96C /* combiner.cpp */; };
-		87887B721B49B6F9006ED96C /* config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B621B49B6F9006ED96C /* config.cpp */; };
-		87887B731B49B6F9006ED96C /* filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B641B49B6F9006ED96C /* filter.cpp */; };
-		87887B741B49B6F9006ED96C /* geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B661B49B6F9006ED96C /* geometry.cpp */; };
-		87887B751B49B6F9006ED96C /* hq2x.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B6A1B49B6F9006ED96C /* hq2x.cpp */; };
-		87887B761B49B6F9006ED96C /* hq4x.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B6B1B49B6F9006ED96C /* hq4x.cpp */; };
-		87887B771B49B6F9006ED96C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B6C1B49B6F9006ED96C /* main.cpp */; };
-		87887B781B49B6F9006ED96C /* textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87887B6F1B49B6F9006ED96C /* textures.cpp */; };
-		87887B7A1B49B72F006ED96C /* Glide64.ini in Resources */ = {isa = PBXBuildFile; fileRef = 87887B791B49B72F006ED96C /* Glide64.ini */; };
 		87CD08831B30B99100021C64 /* ai_controller.c in Sources */ = {isa = PBXBuildFile; fileRef = 87CD08811B30B99100021C64 /* ai_controller.c */; };
 		87CD088E1B30BB7700021C64 /* eep_file.c in Sources */ = {isa = PBXBuildFile; fileRef = 87CD08861B30BB7700021C64 /* eep_file.c */; };
 		87CD088F1B30BB7700021C64 /* fla_file.c in Sources */ = {isa = PBXBuildFile; fileRef = 87CD08881B30BB7700021C64 /* fla_file.c */; };
@@ -397,13 +368,6 @@
 			remoteGlobalIDString = 875503771E74C51D002222F3;
 			remoteInfo = "mupen64plus-video-GLideN64";
 		};
-		87887B051B49B4F6006ED96C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 87887AD91B49B217006ED96C;
-			remoteInfo = "mupen64plus-video-glide64";
-		};
 		942130D51793E8FC00E57482 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
@@ -435,7 +399,6 @@
 			dstSubfolderSpec = 13;
 			files = (
 				875505961E74E966002222F3 /* mupen64plus-video-GLideN64.so in CopyFiles */,
-				87887B071B49B527006ED96C /* mupen64plus-video-glide64.so in CopyFiles */,
 				94E1B94418D0F707003ACCFF /* mupen64plus-rsp-cxd4.so in CopyFiles */,
 				942130D71793E90800E57482 /* mupen64plus-video-glide64mk2.so in CopyFiles */,
 				3DC21457166C6BB90014251E /* mupen64plus-video-rice.so in CopyFiles */,
@@ -1041,89 +1004,6 @@
 		875505051E74C7BF002222F3 /* gliden64_ja.ts */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = gliden64_ja.ts; sourceTree = "<group>"; };
 		875505061E74C7BF002222F3 /* gliden64_pl.ts */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = gliden64_pl.ts; sourceTree = "<group>"; };
 		875505071E74C7BF002222F3 /* gliden64_pt_BR.ts */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = gliden64_pt_BR.ts; sourceTree = "<group>"; };
-		87887AF71B49B217006ED96C /* mupen64plus-video-glide64.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = "mupen64plus-video-glide64.so"; sourceTree = BUILT_PRODUCTS_DIR; };
-		87887B101B49B6AD006ED96C /* 3dmath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = 3dmath.cpp; path = "mupen64plus-video-glide64/src/3dmath.cpp"; sourceTree = "<group>"; };
-		87887B111B49B6AD006ED96C /* 3dmath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 3dmath.h; path = "mupen64plus-video-glide64/src/3dmath.h"; sourceTree = "<group>"; };
-		87887B121B49B6AD006ED96C /* AUTHORS */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = AUTHORS; path = "mupen64plus-video-glide64/src/AUTHORS"; sourceTree = "<group>"; };
-		87887B131B49B6AD006ED96C /* Changes.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Changes.txt; path = "mupen64plus-video-glide64/src/Changes.txt"; sourceTree = "<group>"; };
-		87887B141B49B6AD006ED96C /* Combine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Combine.cpp; path = "mupen64plus-video-glide64/src/Combine.cpp"; sourceTree = "<group>"; };
-		87887B151B49B6AD006ED96C /* Combine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Combine.h; path = "mupen64plus-video-glide64/src/Combine.h"; sourceTree = "<group>"; };
-		87887B161B49B6AD006ED96C /* compiletex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = compiletex.c; path = "mupen64plus-video-glide64/src/compiletex.c"; sourceTree = "<group>"; };
-		87887B171B49B6AD006ED96C /* Config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Config.cpp; path = "mupen64plus-video-glide64/src/Config.cpp"; sourceTree = "<group>"; };
-		87887B181B49B6AD006ED96C /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Config.h; path = "mupen64plus-video-glide64/src/Config.h"; sourceTree = "<group>"; };
-		87887B191B49B6AD006ED96C /* CRC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CRC.cpp; path = "mupen64plus-video-glide64/src/CRC.cpp"; sourceTree = "<group>"; };
-		87887B1A1B49B6AD006ED96C /* CRC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CRC.h; path = "mupen64plus-video-glide64/src/CRC.h"; sourceTree = "<group>"; };
-		87887B1B1B49B6AD006ED96C /* cursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cursor.h; path = "mupen64plus-video-glide64/src/cursor.h"; sourceTree = "<group>"; };
-		87887B1C1B49B6AD006ED96C /* cursor.tex */ = {isa = PBXFileReference; lastKnownFileType = file; name = cursor.tex; path = "mupen64plus-video-glide64/src/cursor.tex"; sourceTree = "<group>"; };
-		87887B1D1B49B6AD006ED96C /* Debugger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Debugger.cpp; path = "mupen64plus-video-glide64/src/Debugger.cpp"; sourceTree = "<group>"; };
-		87887B1E1B49B6AD006ED96C /* Debugger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Debugger.h; path = "mupen64plus-video-glide64/src/Debugger.h"; sourceTree = "<group>"; };
-		87887B1F1B49B6AD006ED96C /* DepthBufferRender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DepthBufferRender.cpp; path = "mupen64plus-video-glide64/src/DepthBufferRender.cpp"; sourceTree = "<group>"; };
-		87887B201B49B6AD006ED96C /* DepthBufferRender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DepthBufferRender.h; path = "mupen64plus-video-glide64/src/DepthBufferRender.h"; sourceTree = "<group>"; };
-		87887B211B49B6AD006ED96C /* font.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = font.h; path = "mupen64plus-video-glide64/src/font.h"; sourceTree = "<group>"; };
-		87887B221B49B6AD006ED96C /* font.tex */ = {isa = PBXFileReference; lastKnownFileType = file; name = font.tex; path = "mupen64plus-video-glide64/src/font.tex"; sourceTree = "<group>"; };
-		87887B231B49B6AD006ED96C /* Gfx1.3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Gfx1.3.h; path = "mupen64plus-video-glide64/src/Gfx1.3.h"; sourceTree = "<group>"; };
-		87887B241B49B6AD006ED96C /* gpl.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = gpl.txt; path = "mupen64plus-video-glide64/src/gpl.txt"; sourceTree = "<group>"; };
-		87887B251B49B6AD006ED96C /* Ini.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Ini.cpp; path = "mupen64plus-video-glide64/src/Ini.cpp"; sourceTree = "<group>"; };
-		87887B261B49B6AD006ED96C /* Ini.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Ini.h; path = "mupen64plus-video-glide64/src/Ini.h"; sourceTree = "<group>"; };
-		87887B271B49B6AD006ED96C /* INSTALL */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = INSTALL; path = "mupen64plus-video-glide64/src/INSTALL"; sourceTree = "<group>"; };
-		87887B281B49B6AD006ED96C /* LICENSES */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = LICENSES; path = "mupen64plus-video-glide64/src/LICENSES"; sourceTree = "<group>"; };
-		87887B291B49B6AD006ED96C /* m64p.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = m64p.h; path = "mupen64plus-video-glide64/src/m64p.h"; sourceTree = "<group>"; };
-		87887B2A1B49B6AD006ED96C /* Main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Main.cpp; path = "mupen64plus-video-glide64/src/Main.cpp"; sourceTree = "<group>"; };
-		87887B2B1B49B6AD006ED96C /* MiClWr8b.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MiClWr8b.h; path = "mupen64plus-video-glide64/src/MiClWr8b.h"; sourceTree = "<group>"; };
-		87887B2C1B49B6AD006ED96C /* MiClWr16b.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MiClWr16b.h; path = "mupen64plus-video-glide64/src/MiClWr16b.h"; sourceTree = "<group>"; };
-		87887B2D1B49B6AD006ED96C /* osal_dynamiclib_unix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = osal_dynamiclib_unix.c; path = "mupen64plus-video-glide64/src/osal_dynamiclib_unix.c"; sourceTree = "<group>"; };
-		87887B2E1B49B6AD006ED96C /* osal_dynamiclib_win32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = osal_dynamiclib_win32.c; path = "mupen64plus-video-glide64/src/osal_dynamiclib_win32.c"; sourceTree = "<group>"; };
-		87887B2F1B49B6AD006ED96C /* osal_dynamiclib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = osal_dynamiclib.h; path = "mupen64plus-video-glide64/src/osal_dynamiclib.h"; sourceTree = "<group>"; };
-		87887B301B49B6AD006ED96C /* rdp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rdp.cpp; path = "mupen64plus-video-glide64/src/rdp.cpp"; sourceTree = "<group>"; };
-		87887B311B49B6AD006ED96C /* rdp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rdp.h; path = "mupen64plus-video-glide64/src/rdp.h"; sourceTree = "<group>"; };
-		87887B321B49B6AD006ED96C /* TexBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TexBuffer.cpp; path = "mupen64plus-video-glide64/src/TexBuffer.cpp"; sourceTree = "<group>"; };
-		87887B331B49B6AD006ED96C /* TexBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexBuffer.h; path = "mupen64plus-video-glide64/src/TexBuffer.h"; sourceTree = "<group>"; };
-		87887B341B49B6AD006ED96C /* TexCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TexCache.cpp; path = "mupen64plus-video-glide64/src/TexCache.cpp"; sourceTree = "<group>"; };
-		87887B351B49B6AD006ED96C /* TexCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexCache.h; path = "mupen64plus-video-glide64/src/TexCache.h"; sourceTree = "<group>"; };
-		87887B361B49B6AD006ED96C /* TexConv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexConv.h; path = "mupen64plus-video-glide64/src/TexConv.h"; sourceTree = "<group>"; };
-		87887B371B49B6AD006ED96C /* TexLoad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexLoad.h; path = "mupen64plus-video-glide64/src/TexLoad.h"; sourceTree = "<group>"; };
-		87887B381B49B6AD006ED96C /* TexLoad4b.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexLoad4b.h; path = "mupen64plus-video-glide64/src/TexLoad4b.h"; sourceTree = "<group>"; };
-		87887B391B49B6AD006ED96C /* TexLoad8b.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexLoad8b.h; path = "mupen64plus-video-glide64/src/TexLoad8b.h"; sourceTree = "<group>"; };
-		87887B3A1B49B6AD006ED96C /* TexLoad16b.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexLoad16b.h; path = "mupen64plus-video-glide64/src/TexLoad16b.h"; sourceTree = "<group>"; };
-		87887B3B1B49B6AD006ED96C /* TexLoad32b.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexLoad32b.h; path = "mupen64plus-video-glide64/src/TexLoad32b.h"; sourceTree = "<group>"; };
-		87887B3C1B49B6AD006ED96C /* TexMod.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexMod.h; path = "mupen64plus-video-glide64/src/TexMod.h"; sourceTree = "<group>"; };
-		87887B3D1B49B6AD006ED96C /* TexModCI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexModCI.h; path = "mupen64plus-video-glide64/src/TexModCI.h"; sourceTree = "<group>"; };
-		87887B3E1B49B6AD006ED96C /* Tmem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Tmem.h; path = "mupen64plus-video-glide64/src/Tmem.h"; sourceTree = "<group>"; };
-		87887B3F1B49B6AD006ED96C /* ucode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ucode.h; path = "mupen64plus-video-glide64/src/ucode.h"; sourceTree = "<group>"; };
-		87887B401B49B6AD006ED96C /* Ucode00.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Ucode00.h; path = "mupen64plus-video-glide64/src/Ucode00.h"; sourceTree = "<group>"; };
-		87887B411B49B6AD006ED96C /* ucode01.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ucode01.h; path = "mupen64plus-video-glide64/src/ucode01.h"; sourceTree = "<group>"; };
-		87887B421B49B6AD006ED96C /* ucode02.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ucode02.h; path = "mupen64plus-video-glide64/src/ucode02.h"; sourceTree = "<group>"; };
-		87887B431B49B6AD006ED96C /* ucode03.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ucode03.h; path = "mupen64plus-video-glide64/src/ucode03.h"; sourceTree = "<group>"; };
-		87887B441B49B6AD006ED96C /* ucode04.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ucode04.h; path = "mupen64plus-video-glide64/src/ucode04.h"; sourceTree = "<group>"; };
-		87887B451B49B6AD006ED96C /* ucode05.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ucode05.h; path = "mupen64plus-video-glide64/src/ucode05.h"; sourceTree = "<group>"; };
-		87887B461B49B6AD006ED96C /* ucode06.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ucode06.h; path = "mupen64plus-video-glide64/src/ucode06.h"; sourceTree = "<group>"; };
-		87887B471B49B6AD006ED96C /* ucode07.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ucode07.h; path = "mupen64plus-video-glide64/src/ucode07.h"; sourceTree = "<group>"; };
-		87887B481B49B6AD006ED96C /* ucode08.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ucode08.h; path = "mupen64plus-video-glide64/src/ucode08.h"; sourceTree = "<group>"; };
-		87887B491B49B6AD006ED96C /* UcodeFB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UcodeFB.h; path = "mupen64plus-video-glide64/src/UcodeFB.h"; sourceTree = "<group>"; };
-		87887B4A1B49B6AD006ED96C /* Util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Util.cpp; path = "mupen64plus-video-glide64/src/Util.cpp"; sourceTree = "<group>"; };
-		87887B4B1B49B6AD006ED96C /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Util.h; path = "mupen64plus-video-glide64/src/Util.h"; sourceTree = "<group>"; };
-		87887B4C1B49B6AD006ED96C /* video_api_export.ver */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = video_api_export.ver; path = "mupen64plus-video-glide64/src/video_api_export.ver"; sourceTree = "<group>"; };
-		87887B4D1B49B6AD006ED96C /* winlnxdefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = winlnxdefs.h; path = "mupen64plus-video-glide64/src/winlnxdefs.h"; sourceTree = "<group>"; };
-		87887B5E1B49B6F9006ED96C /* 2xsai.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = 2xsai.cpp; path = "mupen64plus-video-glide64/src/wrapper/2xsai.cpp"; sourceTree = "<group>"; };
-		87887B5F1B49B6F9006ED96C /* 2xsai.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 2xsai.h; path = "mupen64plus-video-glide64/src/wrapper/2xsai.h"; sourceTree = "<group>"; };
-		87887B601B49B6F9006ED96C /* 3dfx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = 3dfx.h; path = "mupen64plus-video-glide64/src/wrapper/3dfx.h"; sourceTree = "<group>"; };
-		87887B611B49B6F9006ED96C /* combiner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = combiner.cpp; path = "mupen64plus-video-glide64/src/wrapper/combiner.cpp"; sourceTree = "<group>"; };
-		87887B621B49B6F9006ED96C /* config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = config.cpp; path = "mupen64plus-video-glide64/src/wrapper/config.cpp"; sourceTree = "<group>"; };
-		87887B631B49B6F9006ED96C /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = COPYING; path = "mupen64plus-video-glide64/src/wrapper/COPYING"; sourceTree = "<group>"; };
-		87887B641B49B6F9006ED96C /* filter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = filter.cpp; path = "mupen64plus-video-glide64/src/wrapper/filter.cpp"; sourceTree = "<group>"; };
-		87887B651B49B6F9006ED96C /* g3ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = g3ext.h; path = "mupen64plus-video-glide64/src/wrapper/g3ext.h"; sourceTree = "<group>"; };
-		87887B661B49B6F9006ED96C /* geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = geometry.cpp; path = "mupen64plus-video-glide64/src/wrapper/geometry.cpp"; sourceTree = "<group>"; };
-		87887B671B49B6F9006ED96C /* glide.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = glide.h; path = "mupen64plus-video-glide64/src/wrapper/glide.h"; sourceTree = "<group>"; };
-		87887B681B49B6F9006ED96C /* glidesys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = glidesys.h; path = "mupen64plus-video-glide64/src/wrapper/glidesys.h"; sourceTree = "<group>"; };
-		87887B691B49B6F9006ED96C /* glideutl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = glideutl.h; path = "mupen64plus-video-glide64/src/wrapper/glideutl.h"; sourceTree = "<group>"; };
-		87887B6A1B49B6F9006ED96C /* hq2x.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hq2x.cpp; path = "mupen64plus-video-glide64/src/wrapper/hq2x.cpp"; sourceTree = "<group>"; };
-		87887B6B1B49B6F9006ED96C /* hq4x.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hq4x.cpp; path = "mupen64plus-video-glide64/src/wrapper/hq4x.cpp"; sourceTree = "<group>"; };
-		87887B6C1B49B6F9006ED96C /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = "mupen64plus-video-glide64/src/wrapper/main.cpp"; sourceTree = "<group>"; };
-		87887B6D1B49B6F9006ED96C /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = main.h; path = "mupen64plus-video-glide64/src/wrapper/main.h"; sourceTree = "<group>"; };
-		87887B6E1B49B6F9006ED96C /* sst1vid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sst1vid.h; path = "mupen64plus-video-glide64/src/wrapper/sst1vid.h"; sourceTree = "<group>"; };
-		87887B6F1B49B6F9006ED96C /* textures.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = textures.cpp; path = "mupen64plus-video-glide64/src/wrapper/textures.cpp"; sourceTree = "<group>"; };
-		87887B791B49B72F006ED96C /* Glide64.ini */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Glide64.ini; path = "mupen64plus-video-glide64/data/Glide64.ini"; sourceTree = "<group>"; };
-		87887B7C1B49B79D006ED96C /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; name = Makefile; path = "mupen64plus-video-glide64/projects/unix/Makefile"; sourceTree = "<group>"; };
 		87CD08811B30B99100021C64 /* ai_controller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ai_controller.c; path = ai/ai_controller.c; sourceTree = "<group>"; };
 		87CD08821B30B99100021C64 /* ai_controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ai_controller.h; path = ai/ai_controller.h; sourceTree = "<group>"; };
 		87CD08841B30BA8C00021C64 /* dbg_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dbg_debugger.c; sourceTree = "<group>"; };
@@ -1600,17 +1480,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		87887AEF1B49B217006ED96C /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				87887AF01B49B217006ED96C /* libz.dylib in Frameworks */,
-				87887AF11B49B217006ED96C /* OpenGL.framework in Frameworks */,
-				87887AF21B49B217006ED96C /* libpng.a in Frameworks */,
-				87887AF31B49B217006ED96C /* OpenEmuBase.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		8D5B49B3048680CD000E48DA /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1715,7 +1584,6 @@
 				3DCABE0E166C6A20002F2066 /* mupen64plus-video-rice.so */,
 				94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */,
 				94E1B8FD18D0F61F003ACCFF /* mupen64plus-rsp-cxd4.so */,
-				87887AF71B49B217006ED96C /* mupen64plus-video-glide64.so */,
 				875503951E74C51D002222F3 /* mupen64plus-video-GLideN64.so */,
 			);
 			name = Products;
@@ -1730,7 +1598,6 @@
 				94E6B84F166C2A0A00082F27 /* mupen64plus-input-sdl */,
 				94E1B8FE18D0F6A9003ACCFF /* mupen64plus-rsp-cxd4 */,
 				94E6B869166C2A0A00082F27 /* mupen64plus-rsp-hle */,
-				87887AF81B49B426006ED96C /* mupen64plus-video-glide64 */,
 				94D58BE516BE33EC0093CD72 /* mupen64plus-video-glide64mk2 */,
 				94E6B87C166C2A0A00082F27 /* mupen64plus-video-rice */,
 				3D208CC611824C2200BEAA42 /* mupen64plus-core */,
@@ -2841,135 +2708,6 @@
 			path = translations;
 			sourceTree = "<group>";
 		};
-		87887AF81B49B426006ED96C /* mupen64plus-video-glide64 */ = {
-			isa = PBXGroup;
-			children = (
-				87887B0E1B49B643006ED96C /* data */,
-				87887B0D1B49B635006ED96C /* projects */,
-				87887B0C1B49B62B006ED96C /* src */,
-			);
-			name = "mupen64plus-video-glide64";
-			sourceTree = "<group>";
-		};
-		87887B0C1B49B62B006ED96C /* src */ = {
-			isa = PBXGroup;
-			children = (
-				87887B101B49B6AD006ED96C /* 3dmath.cpp */,
-				87887B111B49B6AD006ED96C /* 3dmath.h */,
-				87887B121B49B6AD006ED96C /* AUTHORS */,
-				87887B131B49B6AD006ED96C /* Changes.txt */,
-				87887B141B49B6AD006ED96C /* Combine.cpp */,
-				87887B151B49B6AD006ED96C /* Combine.h */,
-				87887B161B49B6AD006ED96C /* compiletex.c */,
-				87887B171B49B6AD006ED96C /* Config.cpp */,
-				87887B181B49B6AD006ED96C /* Config.h */,
-				87887B191B49B6AD006ED96C /* CRC.cpp */,
-				87887B1A1B49B6AD006ED96C /* CRC.h */,
-				87887B1B1B49B6AD006ED96C /* cursor.h */,
-				87887B1C1B49B6AD006ED96C /* cursor.tex */,
-				87887B1D1B49B6AD006ED96C /* Debugger.cpp */,
-				87887B1E1B49B6AD006ED96C /* Debugger.h */,
-				87887B1F1B49B6AD006ED96C /* DepthBufferRender.cpp */,
-				87887B201B49B6AD006ED96C /* DepthBufferRender.h */,
-				87887B211B49B6AD006ED96C /* font.h */,
-				87887B221B49B6AD006ED96C /* font.tex */,
-				87887B231B49B6AD006ED96C /* Gfx1.3.h */,
-				87887B241B49B6AD006ED96C /* gpl.txt */,
-				87887B251B49B6AD006ED96C /* Ini.cpp */,
-				87887B261B49B6AD006ED96C /* Ini.h */,
-				87887B271B49B6AD006ED96C /* INSTALL */,
-				87887B281B49B6AD006ED96C /* LICENSES */,
-				87887B291B49B6AD006ED96C /* m64p.h */,
-				87887B2A1B49B6AD006ED96C /* Main.cpp */,
-				87887B2B1B49B6AD006ED96C /* MiClWr8b.h */,
-				87887B2C1B49B6AD006ED96C /* MiClWr16b.h */,
-				87887B2D1B49B6AD006ED96C /* osal_dynamiclib_unix.c */,
-				87887B2E1B49B6AD006ED96C /* osal_dynamiclib_win32.c */,
-				87887B2F1B49B6AD006ED96C /* osal_dynamiclib.h */,
-				87887B301B49B6AD006ED96C /* rdp.cpp */,
-				87887B311B49B6AD006ED96C /* rdp.h */,
-				87887B321B49B6AD006ED96C /* TexBuffer.cpp */,
-				87887B331B49B6AD006ED96C /* TexBuffer.h */,
-				87887B341B49B6AD006ED96C /* TexCache.cpp */,
-				87887B351B49B6AD006ED96C /* TexCache.h */,
-				87887B361B49B6AD006ED96C /* TexConv.h */,
-				87887B371B49B6AD006ED96C /* TexLoad.h */,
-				87887B381B49B6AD006ED96C /* TexLoad4b.h */,
-				87887B391B49B6AD006ED96C /* TexLoad8b.h */,
-				87887B3A1B49B6AD006ED96C /* TexLoad16b.h */,
-				87887B3B1B49B6AD006ED96C /* TexLoad32b.h */,
-				87887B3C1B49B6AD006ED96C /* TexMod.h */,
-				87887B3D1B49B6AD006ED96C /* TexModCI.h */,
-				87887B3E1B49B6AD006ED96C /* Tmem.h */,
-				87887B3F1B49B6AD006ED96C /* ucode.h */,
-				87887B401B49B6AD006ED96C /* Ucode00.h */,
-				87887B411B49B6AD006ED96C /* ucode01.h */,
-				87887B421B49B6AD006ED96C /* ucode02.h */,
-				87887B431B49B6AD006ED96C /* ucode03.h */,
-				87887B441B49B6AD006ED96C /* ucode04.h */,
-				87887B451B49B6AD006ED96C /* ucode05.h */,
-				87887B461B49B6AD006ED96C /* ucode06.h */,
-				87887B471B49B6AD006ED96C /* ucode07.h */,
-				87887B481B49B6AD006ED96C /* ucode08.h */,
-				87887B491B49B6AD006ED96C /* UcodeFB.h */,
-				87887B4A1B49B6AD006ED96C /* Util.cpp */,
-				87887B4B1B49B6AD006ED96C /* Util.h */,
-				87887B4C1B49B6AD006ED96C /* video_api_export.ver */,
-				87887B4D1B49B6AD006ED96C /* winlnxdefs.h */,
-				87887B5D1B49B6DD006ED96C /* wrapper */,
-			);
-			name = src;
-			sourceTree = "<group>";
-		};
-		87887B0D1B49B635006ED96C /* projects */ = {
-			isa = PBXGroup;
-			children = (
-				87887B7B1B49B78F006ED96C /* unix */,
-			);
-			name = projects;
-			sourceTree = "<group>";
-		};
-		87887B0E1B49B643006ED96C /* data */ = {
-			isa = PBXGroup;
-			children = (
-				87887B791B49B72F006ED96C /* Glide64.ini */,
-			);
-			name = data;
-			sourceTree = "<group>";
-		};
-		87887B5D1B49B6DD006ED96C /* wrapper */ = {
-			isa = PBXGroup;
-			children = (
-				87887B5E1B49B6F9006ED96C /* 2xsai.cpp */,
-				87887B5F1B49B6F9006ED96C /* 2xsai.h */,
-				87887B601B49B6F9006ED96C /* 3dfx.h */,
-				87887B611B49B6F9006ED96C /* combiner.cpp */,
-				87887B621B49B6F9006ED96C /* config.cpp */,
-				87887B631B49B6F9006ED96C /* COPYING */,
-				87887B641B49B6F9006ED96C /* filter.cpp */,
-				87887B651B49B6F9006ED96C /* g3ext.h */,
-				87887B661B49B6F9006ED96C /* geometry.cpp */,
-				87887B671B49B6F9006ED96C /* glide.h */,
-				87887B681B49B6F9006ED96C /* glidesys.h */,
-				87887B691B49B6F9006ED96C /* glideutl.h */,
-				87887B6A1B49B6F9006ED96C /* hq2x.cpp */,
-				87887B6B1B49B6F9006ED96C /* hq4x.cpp */,
-				87887B6C1B49B6F9006ED96C /* main.cpp */,
-				87887B6D1B49B6F9006ED96C /* main.h */,
-				87887B6E1B49B6F9006ED96C /* sst1vid.h */,
-				87887B6F1B49B6F9006ED96C /* textures.cpp */,
-			);
-			name = wrapper;
-			sourceTree = "<group>";
-		};
-		87887B7B1B49B78F006ED96C /* unix */ = {
-			isa = PBXGroup;
-			children = (
-				87887B7C1B49B79D006ED96C /* Makefile */,
-			);
-			name = unix;
-			sourceTree = "<group>";
-		};
 		87CD08801B30B97D00021C64 /* ai */ = {
 			isa = PBXGroup;
 			children = (
@@ -3790,22 +3528,6 @@
 			productReference = 875503951E74C51D002222F3 /* mupen64plus-video-GLideN64.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		87887AD91B49B217006ED96C /* mupen64plus-video-glide64 */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 87887AF41B49B217006ED96C /* Build configuration list for PBXNativeTarget "mupen64plus-video-glide64" */;
-			buildPhases = (
-				87887ADA1B49B217006ED96C /* Sources */,
-				87887AEF1B49B217006ED96C /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "mupen64plus-video-glide64";
-			productName = "mupen64plus-video-rice";
-			productReference = 87887AF71B49B217006ED96C /* mupen64plus-video-glide64.so */;
-			productType = "com.apple.product-type.library.dynamic";
-		};
 		8D5B49AC048680CD000E48DA /* Mupen64Plus */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "Mupen64Plus" */;
@@ -3819,7 +3541,6 @@
 			);
 			dependencies = (
 				875505951E74E958002222F3 /* PBXTargetDependency */,
-				87887B061B49B4F6006ED96C /* PBXTargetDependency */,
 				94E1B94318D0F6F7003ACCFF /* PBXTargetDependency */,
 				942130D61793E8FC00E57482 /* PBXTargetDependency */,
 				3DC21459166C6BE10014251E /* PBXTargetDependency */,
@@ -3890,7 +3611,6 @@
 				3DCABDB2166C4ACB002F2066 /* mupen64plus-rsp-hle */,
 				3DCABE0D166C6A20002F2066 /* mupen64plus-video-rice */,
 				94D58BAD16BE327A0093CD72 /* mupen64plus-video-glide64mk2 */,
-				87887AD91B49B217006ED96C /* mupen64plus-video-glide64 */,
 				875503771E74C51D002222F3 /* mupen64plus-video-GLideN64 */,
 			);
 		};
@@ -3907,7 +3627,6 @@
 				3D208DCD11824C2200BEAA42 /* README in Resources */,
 				3D208DCE11824C2200BEAA42 /* RELEASE in Resources */,
 				3DCABDC8166C5BE2002F2066 /* RiceVideoLinux.ini in Resources */,
-				87887B7A1B49B72F006ED96C /* Glide64.ini in Resources */,
 				94D58CAC16BE5DAD0093CD72 /* Glide64mk2.ini in Resources */,
 				3D208E4B11824D7A00BEAA42 /* lgpl-license in Resources */,
 				3D208E4C11824D7B00BEAA42 /* gpl-license in Resources */,
@@ -4121,36 +3840,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		87887ADA1B49B217006ED96C /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				87887B531B49B6AD006ED96C /* Debugger.cpp in Sources */,
-				87887B701B49B6F9006ED96C /* 2xsai.cpp in Sources */,
-				87887B5B1B49B6AD006ED96C /* TexCache.cpp in Sources */,
-				87887B521B49B6AD006ED96C /* CRC.cpp in Sources */,
-				87887B731B49B6F9006ED96C /* filter.cpp in Sources */,
-				87887B4E1B49B6AD006ED96C /* 3dmath.cpp in Sources */,
-				87887B571B49B6AD006ED96C /* osal_dynamiclib_unix.c in Sources */,
-				87887B771B49B6F9006ED96C /* main.cpp in Sources */,
-				87887B551B49B6AD006ED96C /* Ini.cpp in Sources */,
-				87887B5C1B49B6AD006ED96C /* Util.cpp in Sources */,
-				87887B561B49B6AD006ED96C /* Main.cpp in Sources */,
-				87887AEE1B49B217006ED96C /* SDLStubs.m in Sources */,
-				87887B751B49B6F9006ED96C /* hq2x.cpp in Sources */,
-				87887B761B49B6F9006ED96C /* hq4x.cpp in Sources */,
-				87887B591B49B6AD006ED96C /* rdp.cpp in Sources */,
-				87887B711B49B6F9006ED96C /* combiner.cpp in Sources */,
-				87887B741B49B6F9006ED96C /* geometry.cpp in Sources */,
-				87887B781B49B6F9006ED96C /* textures.cpp in Sources */,
-				87887B4F1B49B6AD006ED96C /* Combine.cpp in Sources */,
-				87887B541B49B6AD006ED96C /* DepthBufferRender.cpp in Sources */,
-				87887B5A1B49B6AD006ED96C /* TexBuffer.cpp in Sources */,
-				87887B511B49B6AD006ED96C /* Config.cpp in Sources */,
-				87887B721B49B6F9006ED96C /* config.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		8D5B49B1048680CD000E48DA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -4310,11 +3999,6 @@
 			isa = PBXTargetDependency;
 			target = 875503771E74C51D002222F3 /* mupen64plus-video-GLideN64 */;
 			targetProxy = 875505941E74E958002222F3 /* PBXContainerItemProxy */;
-		};
-		87887B061B49B4F6006ED96C /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 87887AD91B49B217006ED96C /* mupen64plus-video-glide64 */;
-			targetProxy = 87887B051B49B4F6006ED96C /* PBXContainerItemProxy */;
 		};
 		942130D61793E8FC00E57482 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -4761,68 +4445,6 @@
 			};
 			name = Release;
 		};
-		87887AF51B49B217006ED96C /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DYLIB_COMPATIBILITY_VERSION = "";
-				DYLIB_CURRENT_VERSION = "";
-				EXECUTABLE_EXTENSION = so;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../DerivedData/OpenEmu/Build/Products/Release\"",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/mupen64plus-core/src\"";
-				INSTALL_PATH = "";
-				LD_DYLIB_INSTALL_NAME = "";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/png\"",
-				);
-				MACH_O_TYPE = mh_bundle;
-				PRIVATE_HEADERS_FOLDER_PATH = "";
-				PRODUCT_NAME = "mupen64plus-video-glide64";
-				PUBLIC_HEADERS_FOLDER_PATH = "";
-			};
-			name = Debug;
-		};
-		87887AF61B49B217006ED96C /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DYLIB_COMPATIBILITY_VERSION = "";
-				DYLIB_CURRENT_VERSION = "";
-				EXECUTABLE_EXTENSION = so;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/../DerivedData/OpenEmu/Build/Products/Release\"",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/mupen64plus-core/src\"";
-				INSTALL_PATH = "";
-				LD_DYLIB_INSTALL_NAME = "";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/png\"",
-				);
-				MACH_O_TYPE = mh_bundle;
-				PRIVATE_HEADERS_FOLDER_PATH = "";
-				PRODUCT_NAME = "mupen64plus-video-glide64";
-				PUBLIC_HEADERS_FOLDER_PATH = "";
-			};
-			name = Release;
-		};
 		9449518714D8F95F00FC80E7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5084,15 +4706,6 @@
 			buildConfigurations = (
 				875503931E74C51D002222F3 /* Debug */,
 				875503941E74C51D002222F3 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		87887AF41B49B217006ED96C /* Build configuration list for PBXNativeTarget "mupen64plus-video-glide64" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				87887AF51B49B217006ED96C /* Debug */,
-				87887AF61B49B217006ED96C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

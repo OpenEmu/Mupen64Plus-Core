@@ -353,7 +353,6 @@ static void MupenSetAudioSpeed(int percent)
 
     // Load Video
     //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-rice.so");
-    //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-glide64.so");
     //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-glide64mk2.so");
     LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-GLideN64.so");
 
