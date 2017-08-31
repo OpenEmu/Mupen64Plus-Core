@@ -27,8 +27,6 @@
 #include <../GLideN64/src/Graphics/Parameters.h>
 #include "../GLideN64/src/DisplayWindow.h"
 
-#import <OpenGL/gl.h>
-
 using namespace std;
 using namespace graphics;
 
@@ -393,7 +391,7 @@ CachedTexture * FrameBuffer::_getSubTexture(u32 _t)
 
 	gfxContext.blitFramebuffers(blitParams);
 
-	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
+    gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
 	frameBufferList().setCurrentDrawBuffer();
 
@@ -464,7 +462,7 @@ void FrameBufferList::init()
 {
 	 m_pCurrent = nullptr;
 	 m_pCopy = nullptr;
-	 gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, ObjectHandle::null);
+	 gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, (graphics::ObjectHandle)1);
 	 m_prevColorImageHeight = 0;
 }
 
@@ -799,7 +797,7 @@ void FrameBufferList::_renderScreenSizeBuffer()
 	DisplayWindow & wnd = dwnd();
 	GraphicsDrawer & drawer = wnd.getDrawer();
 	FrameBuffer *pBuffer = &m_list.back();
-    FrameBuffer *OERenderBuffer = &m_list.back();
+    
 	PostProcessor & postProcessor = PostProcessor::get();
 	FrameBuffer * pFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
 		postProcessor.doOrientationCorrection(pBuffer)));
@@ -810,7 +808,7 @@ void FrameBufferList::_renderScreenSizeBuffer()
 	const s32 vOffset = (wnd.getScreenHeight() - wnd.getHeight()) / 2 + wnd.getHeightOffset();
 	s32 dstCoord[4] = { hOffset, vOffset, hOffset + pBufferTexture->realWidth, vOffset + pBufferTexture->realHeight };
 
-	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, ObjectHandle::null);
+    gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, ObjectHandle::null);
 
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	drawer.clearColorBuffer(clearColor);
@@ -835,13 +833,10 @@ void FrameBufferList::_renderScreenSizeBuffer()
 	blitParams.tex[0] = pBufferTexture;
 	blitParams.combiner = CombinerInfo::get().getTexrectCopyProgram();
 	blitParams.readBuffer = pFilteredBuffer->m_FBO;
-    blitParams.drawBuffer = OERenderBuffer->m_FBO;
 
 	drawer.blitOrCopyTexturedRect(blitParams);
 
-	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(OERenderBuffer->m_FBO));
+    gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
     wnd.swapBuffers();
 	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, pBuffer->m_FBO);
@@ -986,7 +981,6 @@ bool rdp_update(RdpUpdateResult & _result)
 #endif
 }
 
-
 void FrameBufferList::renderBuffer()
 {
 	if (VI.width == 0 || *REG.VI_WIDTH == 0 || *REG.VI_H_START == 0) // H width is zero. Don't draw
@@ -1007,7 +1001,6 @@ void FrameBufferList::renderBuffer()
 		return;
 
 	FrameBuffer *pBuffer = findBuffer(rdpRes.vi_origin);
-    FrameBuffer *OERenderBuffer = findBuffer(rdpRes.vi_origin);
     
 	if (pBuffer == nullptr)
 		return;
@@ -1112,7 +1105,7 @@ void FrameBufferList::renderBuffer()
 		readBuffer = pFilteredBuffer->m_FBO;
 	}
 
-	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, ObjectHandle::null);
+	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, (graphics::ObjectHandle) 1);
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	drawer.clearColorBuffer(clearColor);
 
@@ -1134,14 +1127,13 @@ void FrameBufferList::renderBuffer()
 	blitParams.tex[0] = pBufferTexture;
 	blitParams.combiner = CombinerInfo::get().getTexrectCopyProgram();
 	blitParams.readBuffer = readBuffer;
-    blitParams.drawBuffer = OERenderBuffer->m_FBO;
 	blitParams.invertY = true;
 
 	drawer.copyTexturedRect(blitParams);
 
 	if (pNextBuffer != nullptr) {
 		pNextBuffer->m_isMainBuffer = true;
-		FrameBuffer * pFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
+		pFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
 			postProcessor.doOrientationCorrection(pNextBuffer)));
 		srcY1 = srcPartHeight;
 		dstY0 = dstY1;
@@ -1168,16 +1160,13 @@ void FrameBufferList::renderBuffer()
 		blitParams.dstHeight = wnd.getScreenHeight() + wnd.getHeightOffset();
 		blitParams.tex[0] = pBufferTexture;
 		blitParams.readBuffer = readBuffer;
-        blitParams.drawBuffer = OERenderBuffer->m_FBO;
 
-		drawer.copyTexturedRect(blitParams);
+        drawer.copyTexturedRect(blitParams);
 	}
 
-	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
+    gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, (graphics::ObjectHandle) 1);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, GLuint(OERenderBuffer->m_FBO));
-
-	wnd.swapBuffers();
+    wnd.swapBuffers();
 	if (m_pCurrent != nullptr) {
 		gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, m_pCurrent->m_FBO);
 	}

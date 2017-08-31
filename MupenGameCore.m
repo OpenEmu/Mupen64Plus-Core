@@ -410,20 +410,6 @@ static void MupenSetAudioSpeed(int percent)
 
 - (void)swapBuffers
 {
-    //Get the FBO attached to the Frmaebuffer
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &curFBO);
-
-    //Bind GlideN64 FBO to read read and OpenEmu alternate FBO to draw buffer
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, curFBO);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FBO);
-
-    //Blit copy the GlideN64 FBO to the OpenEmu FBO
-    //  flip and delete the 1 pixel of overscan while we are at it
-    //  no more star trail left overs in Mario 64
-    glBlitFramebuffer(0,  videoHeight, videoWidth - 1 , 0, 0, 0, videoWidth, videoHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-    //Tell OpenEmu to Render the buffer
-    //[self.renderDelegate presentDoubleBufferedFBO];
 }
 
 - (void)executeFrame
