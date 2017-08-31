@@ -2,30 +2,30 @@
 #include <math.h>
 #include <algorithm>
 #include <vector>
-#include "FrameBuffer.h"
-#include "DepthBuffer.h"
-#include "N64.h"
-#include "RSP.h"
-#include "RDP.h"
-#include "gDP.h"
-#include "VI.h"
-#include "Textures.h"
-#include "Combiner.h"
-#include "Types.h"
-#include "Config.h"
-#include "Debugger.h"
-#include "DebugDump.h"
-#include "PostProcessor.h"
-#include "FrameBufferInfo.h"
-#include "Log.h"
+#include "../GLideN64/src/FrameBuffer.h"
+#include "../GLideN64/src/DepthBuffer.h"
+#include "../GLideN64/src/N64.h"
+#include "../GLideN64/src/RSP.h"
+#include "../GLideN64/src/RDP.h"
+#include "../GLideN64/src/gDP.h"
+#include "../GLideN64/src/VI.h"
+#include "../GLideN64/src/Textures.h"
+#include "../GLideN64/src/Combiner.h"
+#include "../GLideN64/src/Types.h"
+#include "../GLideN64/src/Config.h"
+#include "../GLideN64/src/Debugger.h"
+#include "../GLideN64/src/DebugDump.h"
+#include "../GLideN64/src/PostProcessor.h"
+#include "../GLideN64/src/FrameBufferInfo.h"
+#include "../GLideN64/src/Log.h"
 
-#include "BufferCopy/ColorBufferToRDRAM.h"
-#include "BufferCopy/DepthBufferToRDRAM.h"
-#include "BufferCopy/RDRAMtoColorBuffer.h"
+#include "../GLideN64/src/BufferCopy/ColorBufferToRDRAM.h"
+#include "../GLideN64/src/BufferCopy/DepthBufferToRDRAM.h"
+#include "../GLideN64/src/BufferCopy/RDRAMtoColorBuffer.h"
 
-#include <Graphics/Context.h>
-#include <Graphics/Parameters.h>
-#include "DisplayWindow.h"
+#include <../GLideN64/src/Graphics/Context.h>
+#include <../GLideN64/src/Graphics/Parameters.h>
+#include "../GLideN64/src/DisplayWindow.h"
 
 #import <OpenGL/gl.h>
 
