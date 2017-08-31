@@ -2,7 +2,7 @@
 #include "plugin.h"
 #include "core/msg.h"
 
-#include <GL/gl.h>
+#include <OpenGL/gl3.h>
 #include "glext.h"
 
 extern GFX_INFO gfx;
