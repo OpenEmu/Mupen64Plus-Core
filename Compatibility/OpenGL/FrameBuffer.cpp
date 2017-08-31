@@ -27,8 +27,6 @@
 #include <Graphics/Parameters.h>
 #include "DisplayWindow.h"
 
-#import <OpenGL/gl.h>
-
 using namespace std;
 using namespace graphics;
 
@@ -1135,7 +1133,7 @@ void FrameBufferList::renderBuffer()
 
 	if (pNextBuffer != nullptr) {
 		pNextBuffer->m_isMainBuffer = true;
-		FrameBuffer * pFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
+		pFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
 			postProcessor.doOrientationCorrection(pNextBuffer)));
 		srcY1 = srcPartHeight;
 		dstY0 = dstY1;
