@@ -375,9 +375,14 @@ static void MupenSetAudioSpeed(int percent)
     //LoadPlugin(M64PLUGIN_RSP, @"mupen64plus-rsp-hle.so");
 
     // Configure if using rsp-cxd4 plugin
+    const char *gfxPluginName;
+    gfx.getVersion(NULL, NULL, NULL, &gfxPluginName, NULL);
+
     m64p_handle configRSP;
     ConfigOpenSection("rsp-cxd4", &configRSP);
-    int usingHLE = 1; // Set to 0 if using LLE GPU plugin/software rasterizer such as Angry Lion
+    int usingHLE = 1;
+    if(strcmp(gfxPluginName, "Angrylion RDP Plus GFX Plugin") == 0)
+        usingHLE = 0; // LLE GPU plugin
     ConfigSetParameter(configRSP, "DisplayListToGraphicsPlugin", M64TYPE_BOOL, &usingHLE);
 
     LoadPlugin(M64PLUGIN_RSP, @"mupen64plus-rsp-cxd4.so");
