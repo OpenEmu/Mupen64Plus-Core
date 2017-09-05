@@ -247,7 +247,6 @@
 		8755058D1E74C7BF002222F3 /* ZSort.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875504FE1E74C7BF002222F3 /* ZSort.cpp */; };
 		875505961E74E966002222F3 /* mupen64plus-video-GLideN64.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 875503951E74C51D002222F3 /* mupen64plus-video-GLideN64.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		875505971E74EB2D002222F3 /* GLideN64.custom.ini in Resources */ = {isa = PBXBuildFile; fileRef = 875503991E74C7BE002222F3 /* GLideN64.custom.ini */; };
-		875505981E74EB2D002222F3 /* GLideN64.ini in Resources */ = {isa = PBXBuildFile; fileRef = 8755039A1E74C7BE002222F3 /* GLideN64.ini */; };
 		8759F0F11F579625009CBC01 /* SDLStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D00F0801183E52F002995A1 /* SDLStubs.m */; };
 		8759F0F31F579625009CBC01 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E9D1182551500BEAA42 /* libz.dylib */; };
 		8759F0F41F579625009CBC01 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E971182550400BEAA42 /* OpenGL.framework */; };
@@ -3883,7 +3882,6 @@
 				3D208E4B11824D7A00BEAA42 /* lgpl-license in Resources */,
 				3D208E4C11824D7B00BEAA42 /* gpl-license in Resources */,
 				875505971E74EB2D002222F3 /* GLideN64.custom.ini in Resources */,
-				875505981E74EB2D002222F3 /* GLideN64.ini in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
