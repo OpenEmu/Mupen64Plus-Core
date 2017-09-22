@@ -11,37 +11,34 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="gfx_1.3.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wgl_ext.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plugin_zilmar.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="screen_opengl_zilmar.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="gfx_1.3.c">
+    <ClCompile Include="screen_opengl_m64p.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="wgl_ext.c">
+    <ClCompile Include="gfx_m64p.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="plugin_zilmar.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="screen_opengl_zilmar.c">
+    <ClCompile Include="plugin_m64p.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="config.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ClInclude Include="screen_opengl_m64p.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="api\m64p_config.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="api\m64p_plugin.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="api\m64p_types.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="api\m64p_vidext.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gfx_m64p.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

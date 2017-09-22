@@ -1,4 +1,5 @@
 #include "vi.h"
+#include "rdp.h"
 #include "common.h"
 #include "rdram.h"
 #include "trace_write.h"
@@ -54,7 +55,6 @@ static uint32_t x_add;
 static uint32_t x_start_init;
 static uint32_t y_add;
 static uint32_t y_start;
-static uint32_t zb_address;
 static char screenshot_path[FILE_MAX_PATH];
 static enum vi_mode vi_mode;
 
@@ -85,8 +85,8 @@ static struct
 } onetimewarnings;
 
 // function pointers
-void vi_fetch_filter16(struct ccvg* res, uint32_t fboffset, uint32_t cur_x, uint32_t fsaa, uint32_t dither_filter, uint32_t vres, uint32_t fetchstate);
-void vi_fetch_filter32(struct ccvg* res, uint32_t fboffset, uint32_t cur_x, uint32_t fsaa, uint32_t dither_filter, uint32_t vres, uint32_t fetchstate);
+static void vi_fetch_filter16(struct ccvg* res, uint32_t fboffset, uint32_t cur_x, uint32_t fsaa, uint32_t dither_filter, uint32_t vres, uint32_t fetchstate);
+static void vi_fetch_filter32(struct ccvg* res, uint32_t fboffset, uint32_t cur_x, uint32_t fsaa, uint32_t dither_filter, uint32_t vres, uint32_t fetchstate);
 
 static void (*vi_fetch_filter_func[2])(struct ccvg*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) =
 {
@@ -152,7 +152,7 @@ static void vi_screenshot_write(char* path, int32_t* buffer, int width, int heig
     fclose(fp);
 }
 
-void restore_filter16(int* r, int* g, int* b, uint32_t fboffset, uint32_t num, uint32_t hres, uint32_t fetchbugstate)
+static STRICTINLINE void restore_filter16(int* r, int* g, int* b, uint32_t fboffset, uint32_t num, uint32_t hres, uint32_t fetchbugstate)
 {
 
 
@@ -201,7 +201,7 @@ void restore_filter16(int* r, int* g, int* b, uint32_t fboffset, uint32_t num, u
 
 #define VI_COMPARE_OPT(x)                                           \
 {                                                                   \
-    pix = rdram_read_idx16((x));                                    \
+    pix = rdram_read_idx16_fast((x));                               \
     tempr = (pix >> 11) & 0x1f;                                     \
     tempg = (pix >> 6) & 0x1f;                                      \
     tempb = (pix >> 1) & 0x1f;                                      \
@@ -239,7 +239,7 @@ void restore_filter16(int* r, int* g, int* b, uint32_t fboffset, uint32_t num, u
     *b = bend;
 }
 
-void restore_filter32(int* r, int* g, int* b, uint32_t fboffset, uint32_t num, uint32_t hres, uint32_t fetchbugstate)
+static STRICTINLINE void restore_filter32(int* r, int* g, int* b, uint32_t fboffset, uint32_t num, uint32_t hres, uint32_t fetchbugstate)
 {
     uint32_t idx = (fboffset >> 2) + num;
 
@@ -284,7 +284,7 @@ void restore_filter32(int* r, int* g, int* b, uint32_t fboffset, uint32_t num, u
 
 #define VI_COMPARE32_OPT(x)                                             \
 {                                                                       \
-    pix = rdram_read_idx32((x));                                        \
+    pix = rdram_read_idx32_fast((x));                                   \
     tempr = (pix >> 27) & 0x1f;                                         \
     tempg = (pix >> 19) & 0x1f;                                         \
     tempb = (pix >> 11) & 0x1f;                                         \
@@ -321,7 +321,7 @@ void restore_filter32(int* r, int* g, int* b, uint32_t fboffset, uint32_t num, u
     *b = bend;
 }
 
-STRICTINLINE void video_max_optimized(uint32_t* pixels, uint32_t* penumin, uint32_t* penumax, int numofels)
+static STRICTINLINE void video_max_optimized(uint32_t* pixels, uint32_t* penumin, uint32_t* penumax, int numofels)
 {
 
 
@@ -367,7 +367,7 @@ STRICTINLINE void video_max_optimized(uint32_t* pixels, uint32_t* penumin, uint3
 }
 
 
-void video_filter16(int* endr, int* endg, int* endb, uint32_t fboffset, uint32_t num, uint32_t hres, uint32_t centercvg, uint32_t fetchbugstate)
+static STRICTINLINE void video_filter16(int* endr, int* endg, int* endb, uint32_t fboffset, uint32_t num, uint32_t hres, uint32_t centercvg, uint32_t fetchbugstate)
 {
 
 
@@ -473,7 +473,7 @@ void video_filter16(int* endr, int* endg, int* endb, uint32_t fboffset, uint32_t
 
 }
 
-void video_filter32(int* endr, int* endg, int* endb, uint32_t fboffset, uint32_t num, uint32_t hres, uint32_t centercvg, uint32_t fetchbugstate)
+static STRICTINLINE void video_filter32(int* endr, int* endg, int* endb, uint32_t fboffset, uint32_t num, uint32_t hres, uint32_t centercvg, uint32_t fetchbugstate)
 {
 
     uint32_t penumaxr, penumaxg, penumaxb, penuminr, penuming, penuminb;
@@ -550,7 +550,7 @@ void video_filter32(int* endr, int* endg, int* endb, uint32_t fboffset, uint32_t
     *endb = colb & 0xff;
 }
 
-void vi_fetch_filter16(struct ccvg* res, uint32_t fboffset, uint32_t cur_x, uint32_t fsaa, uint32_t dither_filter, uint32_t vres, uint32_t fetchstate)
+static void vi_fetch_filter16(struct ccvg* res, uint32_t fboffset, uint32_t cur_x, uint32_t fsaa, uint32_t dither_filter, uint32_t vres, uint32_t fetchstate)
 {
     int r, g, b;
     uint32_t idx = (fboffset >> 1) + cur_x;
@@ -590,7 +590,7 @@ void vi_fetch_filter16(struct ccvg* res, uint32_t fboffset, uint32_t cur_x, uint
     res->cvg = cur_cvg;
 }
 
-void vi_fetch_filter32(struct ccvg* res, uint32_t fboffset, uint32_t cur_x, uint32_t fsaa, uint32_t dither_filter, uint32_t vres, uint32_t fetchstate)
+static void vi_fetch_filter32(struct ccvg* res, uint32_t fboffset, uint32_t cur_x, uint32_t fsaa, uint32_t dither_filter, uint32_t vres, uint32_t fetchstate)
 {
     int r, g, b;
     uint32_t pix, addr = (fboffset >> 2) + cur_x;
@@ -622,7 +622,7 @@ void vi_fetch_filter32(struct ccvg* res, uint32_t fboffset, uint32_t cur_x, uint
     res->cvg = cur_cvg;
 }
 
-void divot_filter(struct ccvg* final, struct ccvg centercolor, struct ccvg leftcolor, struct ccvg rightcolor)
+static STRICTINLINE void divot_filter(struct ccvg* final, struct ccvg centercolor, struct ccvg leftcolor, struct ccvg rightcolor)
 {
 
 
@@ -670,7 +670,7 @@ void divot_filter(struct ccvg* final, struct ccvg centercolor, struct ccvg leftc
         final->b = rightb;
 }
 
-STRICTINLINE void gamma_filters(int* r, int* g, int* b, int gamma_and_dither)
+static STRICTINLINE void gamma_filters(int* r, int* g, int* b, int gamma_and_dither)
 {
     int cdith, dith;
 
@@ -710,7 +710,7 @@ STRICTINLINE void gamma_filters(int* r, int* g, int* b, int gamma_and_dither)
     }
 }
 
-STRICTINLINE void vi_vl_lerp(struct ccvg* up, struct ccvg down, uint32_t frac)
+static STRICTINLINE void vi_vl_lerp(struct ccvg* up, struct ccvg down, uint32_t frac)
 {
     uint32_t r0, g0, b0;
     if (!frac)
@@ -726,7 +726,7 @@ STRICTINLINE void vi_vl_lerp(struct ccvg* up, struct ccvg down, uint32_t frac)
 
 }
 
-uint32_t vi_integer_sqrt(uint32_t a)
+static uint32_t vi_integer_sqrt(uint32_t a)
 {
     unsigned long op = a, res = 0, one = 1 << 30;
 
@@ -787,7 +787,7 @@ void vi_init(struct core_config* _config, struct plugin_api* _plugin, struct scr
     prevwasblank = 0;
 }
 
-int vi_process_start(void)
+static int vi_process_start(void)
 {
 
 
@@ -1087,9 +1087,7 @@ int vi_process_start(void)
     int i;
     if (!(vitype & 2))
     {
-        if (config->tv_fading) {
-            memset(tvfadeoutstate, 0, PRESCALE_HEIGHT * sizeof(uint32_t));
-        }
+        memset(tvfadeoutstate, 0, PRESCALE_HEIGHT * sizeof(uint32_t));
         for (i = 0; i < PRESCALE_HEIGHT; i++)
             memset(&prescale[i * PRESCALE_WIDTH], 0, PRESCALE_WIDTH * sizeof(int32_t));
         prevwasblank = 1;
@@ -1097,10 +1095,6 @@ int vi_process_start(void)
     else
     {
         prevwasblank = 0;
-
-        if (!config->tv_fading) {
-            return 1;
-        }
 
         int j;
         if (h_start > 0 && h_start < PRESCALE_WIDTH)
@@ -1187,7 +1181,7 @@ int vi_process_start(void)
     return 1;
 }
 
-void vi_process(void)
+static void vi_process(void)
 {
     struct ccvg viaa_array[0xa10 << 1];
     struct ccvg divot_array[0xa10 << 1];
@@ -1465,11 +1459,11 @@ void vi_process(void)
     }
 }
 
-void vi_process_end(void)
+static void vi_process_end(void)
 {
-    int output_width = ispal ? 768 : 640;
-    int output_height = ispal ? 576 : 480;
-    int height = output_height >> lineshifter;
+    int32_t output_width = ispal ? 768 : 640;
+    int32_t output_height = ispal ? 576 : 480;
+    int32_t height = output_height >> lineshifter;
     screen->upload(prescale, PRESCALE_WIDTH, height, output_width, output_height);
 
     if (screenshot_path[0]) {
@@ -1478,7 +1472,7 @@ void vi_process_end(void)
     }
 }
 
-int vi_process_start_fast(void)
+static int vi_process_start_fast(void)
 {
     int32_t v_start = (*vi_reg_ptr[VI_V_START] >> 16) & 0x3ff;
     int32_t h_start = (*vi_reg_ptr[VI_H_START] >> 16) & 0x3ff;
@@ -1560,7 +1554,7 @@ static void vi_process_fast(void)
                     break;
 
                 case VI_MODE_DEPTH: {
-                    r = g = b = rdram_read_idx16((zb_address >> 1) + line + x) >> 8;
+                    r = g = b = rdram_read_idx16((rdp_get_zb_address() >> 1) + line + x) >> 8;
                     break;
                 }
 
@@ -1584,9 +1578,9 @@ static void vi_process_fast(void)
     }
 }
 
-void vi_process_end_fast(void)
+static void vi_process_end_fast(void)
 {
-    screen->upload(prescale, hres_raw, vres_raw, hres_raw, vres_raw);
+    screen->upload(prescale, hres_raw, vres_raw, hres_raw << 1, vres_raw << 1);
     if (screenshot_path[0]) {
         vi_screenshot_write(screenshot_path, prescale, hres_raw, vres_raw, hres_raw, vres_raw);
         screenshot_path[0] = 0;
@@ -1638,11 +1632,6 @@ void vi_update(void)
 
     // render frame to screen
     screen->swap();
-}
-
-void vi_set_zb_address(uint32_t _zb_address)
-{
-    zb_address = _zb_address;
 }
 
 void vi_screenshot(char* path)

@@ -1,12 +1,18 @@
 #include "screen_sdl.h"
-#include "msg.h"
 #include "retrace.h"
+
+#include "core/version.h"
+#include "core/msg.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 
+#ifdef WIN32
 #include <SDL.h>
+#else
+#include <SDL2/SDL.h>
+#endif
 
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
@@ -22,7 +28,7 @@ static void screen_init(void)
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
     window = SDL_CreateWindow(
-        "RDP Retracer",             // window title
+        CORE_NAME,                  // window title
         SDL_WINDOWPOS_CENTERED,     // initial x position
         SDL_WINDOWPOS_CENTERED,     // initial y position
         640, 480,                   // width and height, in pixels
@@ -51,7 +57,7 @@ static void screen_swap(void)
     SDL_RenderPresent(renderer);
 }
 
-static void screen_upload(int* buffer, int width, int height, int output_width, int output_height)
+static void screen_upload(int32_t* buffer, int32_t width, int32_t height, int32_t output_width, int32_t output_height)
 {
     if (texture_width != width || texture_height != height) {
         texture_width = width;

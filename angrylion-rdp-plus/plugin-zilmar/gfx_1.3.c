@@ -1,20 +1,71 @@
 #include "gfx_1.3.h"
-#include "core.h"
-#include "parallel_c.hpp"
 #include "plugin_zilmar.h"
-#include "msg.h"
-#include "rdram.h"
-#include "screen_opengl.h"
+#include "screen_opengl_zilmar.h"
 #include "resource.h"
 
+#include "core/core.h"
+#include "core/version.h"
+#include "core/parallel_c.hpp"
+#include "core/msg.h"
+#include "core/rdram.h"
+#include "core/file.h"
+
 #include <Commctrl.h>
+#include <Shlwapi.h>
 #include <stdio.h>
+
+#define CONFIG_FILE_NAME "angrylionplus-config.bin"
 
 static bool warn_hle;
 static struct core_config config;
+static char config_path[MAX_PATH + 1];
 static HINSTANCE hinst;
 
 GFX_INFO gfx;
+
+static void get_config_path(void)
+{
+    config_path[0] = 0;
+    GetModuleFileName(hinst, config_path, sizeof(config_path));
+    PathRemoveFileSpec(config_path);
+    PathAppend(config_path, CONFIG_FILE_NAME);
+}
+
+static void load_config(struct core_config* config)
+{
+    get_config_path();
+
+    FILE* fp = fopen(config_path, "rb");
+
+    if (!fp) {
+        // file may not exist yet, don't display warning
+        return;
+    }
+
+    if (!fread(config, sizeof(struct core_config), 1, fp)) {
+        msg_warning("Invalid config file size.");
+    }
+
+    fclose(fp);
+}
+
+static void save_config(struct core_config* config)
+{
+    get_config_path();
+
+    FILE* fp = fopen(config_path, "wb");
+
+    if (!fp) {
+        msg_warning("Can't open config file '%s'.", config_path);
+        return;
+    }
+
+    if (!fwrite(config, sizeof(struct core_config), 1, fp)) {
+        msg_warning("Can't write contents to config file.");
+    }
+
+    fclose(fp);
+}
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
@@ -31,6 +82,8 @@ BOOL CALLBACK ConfigDialogProc(HWND hwnd, UINT iMessage, WPARAM wParam, LPARAM l
     switch (iMessage) {
         case WM_INITDIALOG: {
             SetWindowText(hwnd, CORE_BASE_NAME " Config");
+
+            load_config(&config);
 
             TCHAR vi_mode_strings[VI_MODE_NUM][16] = {
                 TEXT("Filtered"),   // VI_MODE_NORMAL
@@ -67,6 +120,8 @@ BOOL CALLBACK ConfigDialogProc(HWND hwnd, UINT iMessage, WPARAM wParam, LPARAM l
                     config.num_workers = GetDlgItemInt(hwnd, IDC_EDIT1, FALSE, FALSE);
 
                     core_update_config(&config);
+
+                    save_config(&config);
                 }
                 case IDCANCEL:
                     EndDialog(hwnd, 0);
@@ -152,6 +207,7 @@ EXPORT void CALL RomClosed(void)
 
 EXPORT void CALL RomOpen(void)
 {
+    load_config(&config);
     core_init(&config, screen_opengl, plugin_zilmar);
 }
 

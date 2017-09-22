@@ -381,7 +381,7 @@ static void MupenSetAudioSpeed(int percent)
     m64p_handle configRSP;
     ConfigOpenSection("rsp-cxd4", &configRSP);
     int usingHLE = 1;
-    if(strcmp(gfxPluginName, "Angrylion RDP Plus GFX Plugin") == 0)
+    if(strstr(gfxPluginName, "angrylion's RDP Plus") != 0)
         usingHLE = 0; // LLE GPU plugin
     ConfigSetParameter(configRSP, "DisplayListToGraphicsPlugin", M64TYPE_BOOL, &usingHLE);
 

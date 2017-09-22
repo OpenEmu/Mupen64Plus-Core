@@ -53,16 +53,31 @@ uint8_t rdram_read_idx8(uint32_t in)
     return rdram_valid_idx8(in) ? rdram8[in ^ BYTE_ADDR_XOR] : 0;
 }
 
+uint8_t rdram_read_idx8_fast(uint32_t in)
+{
+    return rdram8[in ^ BYTE_ADDR_XOR];
+}
+
 uint16_t rdram_read_idx16(uint32_t in)
 {
     in &= RDRAM_MASK >> 1;
     return rdram_valid_idx16(in) ? rdram16[in ^ WORD_ADDR_XOR] : 0;
 }
 
+uint16_t rdram_read_idx16_fast(uint32_t in)
+{
+    return rdram16[in ^ WORD_ADDR_XOR];
+}
+
 uint32_t rdram_read_idx32(uint32_t in)
 {
     in &= RDRAM_MASK >> 2;
     return rdram_valid_idx32(in) ? rdram32[in] : 0;
+}
+
+uint32_t rdram_read_idx32_fast(uint32_t in)
+{
+    return rdram32[in];
 }
 
 void rdram_write_idx8(uint32_t in, uint8_t val)

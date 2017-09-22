@@ -76,6 +76,7 @@ void core_sync_dp(void)
 
             trace_write_open(trace_path);
             trace_write_header(plugin.get_rdram_size());
+            trace_write_reset();
             trace_num_workers = config.num_workers;
             config.num_workers = 1;
         }

@@ -101,15 +101,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalOptions>ddraw.lib dxguid.lib %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention />
-      <ImportLibrary>$(OutDir)angrylion.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PreBuildEvent>
-      <Command>python $(SolutionDir)git_describe.py</Command>
+      <Command>python "$(SolutionDir)make_version.py" "$(ProjectDir)version.h.in" "$(ProjectDir)version.h"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -124,15 +121,11 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalOptions>ddraw.lib dxguid.lib %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <ImportLibrary>$(OutDir)angrylion.lib</ImportLibrary>
     </Link>
     <PreBuildEvent>
-      <Command>python $(SolutionDir)git_describe.py</Command>
+      <Command>python "$(SolutionDir)make_version.py" "$(ProjectDir)version.h.in" "$(ProjectDir)version.h"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -156,19 +149,16 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalOptions>ddraw.lib dxguid.lib %(AdditionalOptions)</AdditionalOptions>
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention />
-      <ImportLibrary>$(OutDir)angrylion.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PreBuildEvent>
-      <Command>python $(SolutionDir)git_describe.py</Command>
+      <Command>python "$(SolutionDir)make_version.py" "$(ProjectDir)version.h.in" "$(ProjectDir)version.h"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -193,25 +183,22 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalOptions>ddraw.lib dxguid.lib %(AdditionalOptions)</AdditionalOptions>
       <GenerateMapFile>true</GenerateMapFile>
       <MapExports>true</MapExports>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <ImportLibrary>$(OutDir)angrylion.lib</ImportLibrary>
     </Link>
     <PreBuildEvent>
-      <Command>python $(SolutionDir)git_describe.py</Command>
+      <Command>python "$(SolutionDir)make_version.py" "$(ProjectDir)version.h.in" "$(ProjectDir)version.h"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="core.c" />
     <ClCompile Include="file.c" />
-    <ClCompile Include="irand.h" />
+    <ClCompile Include="irand.c" />
+    <ClInclude Include="irand.h" />
     <ClCompile Include="msg.c" />
     <ClCompile Include="parallel.cpp" />
     <ClCompile Include="parallel_c.cpp" />
@@ -225,7 +212,6 @@
     <ClInclude Include="bitmap.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="core.h" />
-    <ClInclude Include="core_version.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="msg.h" />
     <ClInclude Include="parallel.hpp" />
@@ -236,6 +222,9 @@
     <ClInclude Include="trace_read.h" />
     <ClInclude Include="trace_write.h" />
     <ClInclude Include="vi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="version.h.in" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,13 +2,10 @@
 
 Parallel::Parallel(uint32_t num_workers, std::function<void(uint32_t)>&& func_worker_id)
 {
-    // create worker threads (worker 0 is the main thread, so start at 1)
-    for (uint32_t worker_id = 1; worker_id < num_workers; worker_id++) {
+    // create worker threads
+    for (uint32_t worker_id = 0; worker_id < num_workers; worker_id++) {
         m_workers.emplace_back(std::thread(&Parallel::do_work, this, worker_id, func_worker_id));
     }
-
-    // set worker ID for main thread
-    func_worker_id(0);
 }
 
 Parallel::~Parallel()
@@ -45,9 +42,6 @@ void Parallel::run(std::function<void(void)>&& task)
     m_task = task;
     m_workers_active = m_workers.size();
     m_signal_work.notify_all();
-
-    // run task in main thread
-    m_task();
 
     // wait for all workers to finish
     wait();

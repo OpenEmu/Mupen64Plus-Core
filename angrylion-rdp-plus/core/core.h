@@ -1,17 +1,7 @@
 #pragma once
 
-#include "core_version.h"
-
 #include <stdint.h>
 #include <stdbool.h>
-
-#define CORE_BASE_NAME "angrylion's RDP Plus"
-
-#ifdef _DEBUG
-#define CORE_NAME CORE_BASE_NAME " " CORE_VERSION " (Debug)"
-#else
-#define CORE_NAME CORE_BASE_NAME " " CORE_VERSION
-#endif
 
 enum dp_register
 {
@@ -59,7 +49,7 @@ struct screen_api
 {
     void (*init)(void);
     void (*swap)(void);
-    void (*upload)(int* buffer, int width, int height, int output_width, int output_height);
+    void (*upload)(int32_t* buffer, int32_t width, int32_t height, int32_t output_width, int32_t output_height);
     void (*set_fullscreen)(bool fullscreen);
     bool (*get_fullscreen)(void);
     void (*close)(void);
@@ -85,7 +75,6 @@ typedef void (*plugin_api_func)(struct plugin_api* api);
 struct core_config
 {
     uint32_t num_workers;
-    bool tv_fading;
     bool trace;
     enum vi_mode vi_mode;
 };
