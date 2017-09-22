@@ -4704,6 +4704,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
 				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/GLideN64/src\" \"$(SRCROOT)/GLideN64/src/inc\" \"$(SRCROOT)/GLideN64/src/osal\"";
+				USE_HEADERMAP = NO;
 			};
 			name = Debug;
 		};
@@ -4752,6 +4753,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
 				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/GLideN64/src\" \"$(SRCROOT)/GLideN64/src/inc\" \"$(SRCROOT)/GLideN64/src/osal\"";
+				USE_HEADERMAP = NO;
 			};
 			name = Release;
 		};
