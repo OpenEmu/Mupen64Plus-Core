@@ -94,7 +94,6 @@
 		3D208F821182B00300BEAA42 /* MupenGameCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D208F811182B00300BEAA42 /* MupenGameCore.m */; };
 		3D8B35D812260F9D00C4C844 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D8B35D712260F9D00C4C844 /* main.m */; };
 		3DC21456166C6BA70014251E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E971182550400BEAA42 /* OpenGL.framework */; };
-		3DC21457166C6BB90014251E /* mupen64plus-video-rice.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DCABE0E166C6A20002F2066 /* mupen64plus-video-rice.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		3DC2145A166C6C6E0014251E /* SDLStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D00F0801183E52F002995A1 /* SDLStubs.m */; };
 		3DC2145F166C6D7F0014251E /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC2145C166C6D7F0014251E /* libpng.a */; };
 		3DC21460166C6F170014251E /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E9D1182551500BEAA42 /* libz.dylib */; };
@@ -307,7 +306,6 @@
 		9419A0D31A0892E40065CB61 /* tlb.c in Sources */ = {isa = PBXBuildFile; fileRef = 9419A0D11A0892E40065CB61 /* tlb.c */; };
 		942130D01793DD8F00E57482 /* alist.c in Sources */ = {isa = PBXBuildFile; fileRef = 942130CB1793DD8F00E57482 /* alist.c */; };
 		942130D11793DD8F00E57482 /* cicx105.c in Sources */ = {isa = PBXBuildFile; fileRef = 942130CD1793DD8F00E57482 /* cicx105.c */; };
-		942130D71793E90800E57482 /* mupen64plus-video-glide64mk2.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94D58BE416BE327A0093CD72 /* mupen64plus-video-glide64mk2.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		948711A01A6B57FB008CDA87 /* module.c in Sources */ = {isa = PBXBuildFile; fileRef = 9487119D1A6B57FB008CDA87 /* module.c */; };
 		948711A21A6B581E008CDA87 /* su.c in Sources */ = {isa = PBXBuildFile; fileRef = 948711A11A6B581E008CDA87 /* su.c */; };
 		948711B01A6B583F008CDA87 /* add.c in Sources */ = {isa = PBXBuildFile; fileRef = 948711A31A6B583E008CDA87 /* add.c */; };
@@ -366,13 +364,6 @@
 			remoteGlobalIDString = 8D5B49AC048680CD000E48DA;
 			remoteInfo = Mupen64Plus;
 		};
-		3DC21458166C6BE10014251E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 3DCABE0D166C6A20002F2066;
-			remoteInfo = "mupen64plus-video-rice";
-		};
 		3DCABDC3166C4D86002F2066 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
@@ -393,13 +384,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 875503771E74C51D002222F3;
 			remoteInfo = "mupen64plus-video-GLideN64";
-		};
-		942130D51793E8FC00E57482 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 089C1669FE841209C02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 94D58BAD16BE327A0093CD72;
-			remoteInfo = "mupen64plus-video-glide64mk2";
 		};
 		9449518414D8F95F00FC80E7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -427,8 +411,6 @@
 				872587AC1F57A7B500ECDD73 /* mupen64plus-video-angrylion-rdp-plus.so in CopyFiles */,
 				875505961E74E966002222F3 /* mupen64plus-video-GLideN64.so in CopyFiles */,
 				94E1B94418D0F707003ACCFF /* mupen64plus-rsp-cxd4.so in CopyFiles */,
-				942130D71793E90800E57482 /* mupen64plus-video-glide64mk2.so in CopyFiles */,
-				3DC21457166C6BB90014251E /* mupen64plus-video-rice.so in CopyFiles */,
 				3DCABDC2166C4CB2002F2066 /* mupen64plus-rsp-hle.so in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3810,8 +3792,6 @@
 				872587AB1F57A7AB00ECDD73 /* PBXTargetDependency */,
 				875505951E74E958002222F3 /* PBXTargetDependency */,
 				94E1B94318D0F6F7003ACCFF /* PBXTargetDependency */,
-				942130D61793E8FC00E57482 /* PBXTargetDependency */,
-				3DC21459166C6BE10014251E /* PBXTargetDependency */,
 				3DCABDC4166C4D86002F2066 /* PBXTargetDependency */,
 			);
 			name = Mupen64Plus;
@@ -4288,11 +4268,6 @@
 			target = 8D5B49AC048680CD000E48DA /* Mupen64Plus */;
 			targetProxy = 3D2091141183B8F000BEAA42 /* PBXContainerItemProxy */;
 		};
-		3DC21459166C6BE10014251E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 3DCABE0D166C6A20002F2066 /* mupen64plus-video-rice */;
-			targetProxy = 3DC21458166C6BE10014251E /* PBXContainerItemProxy */;
-		};
 		3DCABDC4166C4D86002F2066 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 3DCABDB2166C4ACB002F2066 /* mupen64plus-rsp-hle */;
@@ -4307,11 +4282,6 @@
 			isa = PBXTargetDependency;
 			target = 875503771E74C51D002222F3 /* mupen64plus-video-GLideN64 */;
 			targetProxy = 875505941E74E958002222F3 /* PBXContainerItemProxy */;
-		};
-		942130D61793E8FC00E57482 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 94D58BAD16BE327A0093CD72 /* mupen64plus-video-glide64mk2 */;
-			targetProxy = 942130D51793E8FC00E57482 /* PBXContainerItemProxy */;
 		};
 		9449518314D8F95F00FC80E7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
