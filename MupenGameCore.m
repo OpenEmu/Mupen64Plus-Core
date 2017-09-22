@@ -374,10 +374,19 @@ static void MupenSetAudioSpeed(int percent)
     // Load RSP
     //LoadPlugin(M64PLUGIN_RSP, @"mupen64plus-rsp-hle.so");
 
-    // Configure if using rsp-cxd4 plugin
+    const char *ROMname = (const char *)ROM_HEADER.Name;
     const char *gfxPluginName;
     gfx.getVersion(NULL, NULL, NULL, &gfxPluginName, NULL);
 
+    // Workaround for https://github.com/gonetz/GLideN64/issues/1568
+    if(strstr(gfxPluginName, "GLideN64") != 0 && strstr(ROMname, "DR.MARIO 64") != 0) {
+        m64p_handle configGfx;
+        ConfigOpenSection("Video-GLideN64", &configGfx);
+        int enableCopyAuxToRDRAM = 1;
+        ConfigSetParameter(configGfx, "EnableCopyAuxiliaryToRDRAM", M64TYPE_BOOL, &enableCopyAuxToRDRAM);
+    }
+
+    // Configure if using rsp-cxd4 plugin
     m64p_handle configRSP;
     ConfigOpenSection("rsp-cxd4", &configRSP);
     int usingHLE = 1;
