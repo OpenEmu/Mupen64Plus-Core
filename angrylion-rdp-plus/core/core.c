@@ -5,6 +5,8 @@
 #include "rdram.h"
 #include "file.h"
 #include "msg.h"
+#include "plugin.h"
+#include "screen.h"
 #include "trace_write.h"
 #include "parallel_c.hpp"
 
@@ -18,31 +20,17 @@ static uint32_t num_workers;
 
 static struct core_config* config_new;
 static struct core_config config;
-static struct screen_api screen;
-static struct plugin_api plugin;
 
-void core_init(struct core_config* _config, screen_api_func screen_api, plugin_api_func plugin_api)
+void core_init(struct core_config* _config)
 {
     config = *_config;
 
-    if (!screen_api) {
-        msg_error("core: screen API not defined!");
-    }
+    screen_init();
+    plugin_init();
+    rdram_init();
 
-    screen_api(&screen);
-    screen.init();
-
-    if (!plugin_api) {
-        msg_error("core: plugin API not defined!");
-    }
-
-    plugin_api(&plugin);
-    plugin.init();
-
-    rdram_init(&plugin);
-
-    rdp_init(&config, &plugin);
-    vi_init(&config, &plugin, &screen);
+    rdp_init(&config);
+    vi_init(&config);
 
     num_workers = config.num_workers;
 
@@ -62,10 +50,10 @@ void core_sync_dp(void)
         config_new = NULL;
 
         // open trace file when tracing has been enabled with no file open
-        if (config.trace && !trace_write_is_open()) {
+        if (config.dp.trace_record && !trace_write_is_open()) {
             // get ROM name from plugin and use placeholder if empty
             char rom_name[32];
-            if (!plugin.get_rom_name(rom_name, sizeof(rom_name))) {
+            if (!plugin_get_rom_name(rom_name, sizeof(rom_name))) {
                 strcpy(rom_name, "trace");
             }
 
@@ -75,14 +63,14 @@ void core_sync_dp(void)
                 "dpt", &trace_index);
 
             trace_write_open(trace_path);
-            trace_write_header(plugin.get_rdram_size());
+            trace_write_header(plugin_get_rdram_size());
             trace_write_reset();
             trace_num_workers = config.num_workers;
             config.num_workers = 1;
         }
 
         // close trace file when tracing has been disabled
-        if (!config.trace && trace_write_is_open()) {
+        if (!config.dp.trace_record && trace_write_is_open()) {
             trace_write_close();
             config.num_workers = trace_num_workers;
         }
@@ -99,7 +87,7 @@ void core_sync_dp(void)
     }
 
     // signal plugin to handle interrupts
-    plugin.sync_dp();
+    plugin_sync_dp();
 }
 
 void core_update_config(struct core_config* _config)
@@ -121,7 +109,7 @@ void core_screenshot(char* directory)
 {
     // get ROM name from plugin and use placeholder if empty
     char rom_name[32];
-    if (!plugin.get_rom_name(rom_name, sizeof(rom_name))) {
+    if (!plugin_get_rom_name(rom_name, sizeof(rom_name))) {
         strcpy(rom_name, "screenshot");
     }
 
@@ -136,26 +124,16 @@ void core_screenshot(char* directory)
 
 void core_toggle_fullscreen(void)
 {
-    screen.set_fullscreen(!screen.get_fullscreen());
+    screen_set_fullscreen(!screen_get_fullscreen());
 }
 
 void core_close(void)
 {
     parallel_close();
     vi_close();
-    plugin.close();
-    screen.close();
+    plugin_close();
+    screen_close();
     if (trace_write_is_open()) {
         trace_write_close();
     }
-}
-
-struct screen_api* core_get_screen(void)
-{
-    return &screen;
-}
-
-struct plugin_api* core_get_plugin(void)
-{
-    return &plugin;
 }

@@ -1,6 +1,8 @@
 #include "vi.h"
 #include "rdp.h"
 #include "common.h"
+#include "plugin.h"
+#include "screen.h"
 #include "rdram.h"
 #include "trace_write.h"
 #include "msg.h"
@@ -33,8 +35,6 @@ struct ccvg
 
 // config
 static struct core_config* config;
-static struct screen_api* screen;
-static struct plugin_api* plugin;
 
 static uint32_t** vi_reg_ptr;
 
@@ -746,13 +746,11 @@ static uint32_t vi_integer_sqrt(uint32_t a)
     return res;
 }
 
-void vi_init(struct core_config* _config, struct plugin_api* _plugin, struct screen_api* _screen)
+void vi_init(struct core_config* _config)
 {
     config = _config;
-    screen = _screen;
-    plugin = _plugin;
 
-    vi_reg_ptr = plugin->get_vi_registers();
+    vi_reg_ptr = plugin_get_vi_registers();
 
     for (int i = 0; i < 256; i++)
     {
@@ -833,7 +831,7 @@ static int vi_process_start(void)
 
     // check for unexpected VI type bits set
     if (vitype & ~3) {
-        msg_warning("Unknown framebuffer format %d\n", vitype);
+        msg_warning("Unknown framebuffer format %d", vitype);
     }
 
     serration_pulses = (vi_control >> 6) & 1;
@@ -841,7 +839,7 @@ static int vi_process_start(void)
     if (((vi_control >> 5) & 1) && !onetimewarnings.vbusclock)
     {
         msg_warning("rdp_update: vbus_clock_enable bit set in VI_CONTROL_REG register. Never run this code on your N64! It's rumored that turning this bit on\
-                    will result in permanent damage to the hardware! Emulation will now continue.\n");
+                    will result in permanent damage to the hardware! Emulation will now continue.");
         onetimewarnings.vbusclock = 1;
     }
 
@@ -1464,7 +1462,12 @@ static void vi_process_end(void)
     int32_t output_width = ispal ? 768 : 640;
     int32_t output_height = ispal ? 576 : 480;
     int32_t height = output_height >> lineshifter;
-    screen->upload(prescale, PRESCALE_WIDTH, height, output_width, output_height);
+
+    if (config->vi.widescreen) {
+         output_height = ispal ? 432 : 360;
+    }
+
+    screen_upload(prescale, PRESCALE_WIDTH, height, output_width, output_height);
 
     if (screenshot_path[0]) {
         vi_screenshot_write(screenshot_path, prescale, PRESCALE_WIDTH, height, output_width, output_height);
@@ -1498,7 +1501,7 @@ static int vi_process_start_fast(void)
 
     // check for unexpected VI type bits set
     if (vitype & ~3) {
-        msg_warning("Unknown framebuffer format %d\n", vitype);
+        msg_warning("Unknown framebuffer format %d", vitype);
     }
 
     gamma_value = (vi_control >> 3) & 1;
@@ -1529,7 +1532,7 @@ static void vi_process_fast(void)
         for (int32_t x = 0; x < hres_raw; x++) {
             uint32_t r, g, b;
 
-            switch (config->vi_mode) {
+            switch (config->vi.mode) {
                 case VI_MODE_COLOR:
                     switch (vitype) {
                         case VI_TYPE_RGBA5551: {
@@ -1568,7 +1571,7 @@ static void vi_process_fast(void)
                 }
 
                 default:
-                    msg_warning("Unknown VI mode %d\n", config->vi_mode);
+                    msg_warning("Unknown VI mode %d", config->vi.mode);
             }
 
             gamma_filters(&r, &g, &b, gamma_and_dither);
@@ -1580,7 +1583,7 @@ static void vi_process_fast(void)
 
 static void vi_process_end_fast(void)
 {
-    screen->upload(prescale, hres_raw, vres_raw, hres_raw << 1, vres_raw << 1);
+    screen_upload(prescale, hres_raw, vres_raw, hres_raw << 1, vres_raw << 1);
     if (screenshot_path[0]) {
         vi_screenshot_write(screenshot_path, prescale, hres_raw, vres_raw, hres_raw, vres_raw);
         screenshot_path[0] = 0;
@@ -1591,9 +1594,9 @@ void vi_update(void)
 {
     // clear buffer after switching VI modes to make sure that black borders are
     // actually black and don't contain garbage
-    if (config->vi_mode != vi_mode) {
+    if (config->vi.mode != vi_mode) {
         memset(prescale, 0, sizeof(prescale));
-        vi_mode = config->vi_mode;
+        vi_mode = config->vi.mode;
     }
 
     if (trace_write_is_open()) {
@@ -1605,7 +1608,7 @@ void vi_update(void)
     void (*vi_process_ptr)(void);
     void (*vi_process_end_ptr)(void);
 
-    if (config->vi_mode == VI_MODE_NORMAL) {
+    if (config->vi.mode == VI_MODE_NORMAL) {
         vi_process_start_ptr = vi_process_start;
         vi_process_ptr = vi_process;
         vi_process_end_ptr = vi_process_end;
@@ -1631,7 +1634,7 @@ void vi_update(void)
     vi_process_end_ptr();
 
     // render frame to screen
-    screen->swap();
+    screen_swap();
 }
 
 void vi_screenshot(char* path)

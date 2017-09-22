@@ -12,3 +12,5 @@
 #else
 #define CORE_NAME CORE_BASE_NAME " " GIT_TAG
 #endif
+
+#define CORE_SIMPLE_NAME "angrylion-plus"

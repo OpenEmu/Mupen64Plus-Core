@@ -1,6 +1,6 @@
-#include "plugin_zilmar.h"
 #include "gfx_1.3.h"
 
+#include "core/plugin.h"
 #include "core/rdram.h"
 
 #include <ctype.h>
@@ -53,7 +53,7 @@ static char filter_char(char c)
     }
 }
 
-static void plugin_init(void)
+void plugin_init(void)
 {
     // Zilmar plugins can't know how much RDRAM is allocated, so use a Win32 hack
     // to detect it
@@ -64,47 +64,47 @@ static void plugin_init(void)
     memset(rdram_hidden_bits, 3, rdram_size);
 }
 
-static void plugin_sync_dp(void)
+void plugin_sync_dp(void)
 {
     *gfx.MI_INTR_REG |= DP_INTERRUPT;
     gfx.CheckInterrupts();
 }
 
-static uint32_t** plugin_get_dp_registers(void)
+uint32_t** plugin_get_dp_registers(void)
 {
     // HACK: this only works because the ordering of registers in GFX_INFO is
     // the same as in dp_register
     return (uint32_t**)&gfx.DPC_START_REG;
 }
 
-static uint32_t** plugin_get_vi_registers(void)
+uint32_t** plugin_get_vi_registers(void)
 {
     // HACK: this only works because the ordering of registers in GFX_INFO is
     // the same as in vi_register
     return (uint32_t**)&gfx.VI_STATUS_REG;
 }
 
-static uint8_t* plugin_get_rdram(void)
+uint8_t* plugin_get_rdram(void)
 {
     return gfx.RDRAM;
 }
 
-static uint8_t* plugin_get_rdram_hidden(void)
+uint8_t* plugin_get_rdram_hidden(void)
 {
     return rdram_hidden_bits;
 }
 
-static uint32_t plugin_get_rdram_size(void)
+uint32_t plugin_get_rdram_size(void)
 {
     return rdram_size;
 }
 
-static uint8_t* plugin_get_dmem(void)
+uint8_t* plugin_get_dmem(void)
 {
     return gfx.DMEM;
 }
 
-static uint32_t plugin_get_rom_name(char* name, uint32_t name_size)
+uint32_t plugin_get_rom_name(char* name, uint32_t name_size)
 {
     if (name_size < 21) {
         // buffer too small
@@ -142,24 +142,10 @@ static uint32_t plugin_get_rom_name(char* name, uint32_t name_size)
     return i;
 }
 
-static void plugin_close(void)
+void plugin_close(void)
 {
     if (rdram_hidden_bits) {
         free(rdram_hidden_bits);
         rdram_hidden_bits = NULL;
     }
-}
-
-void plugin_zilmar(struct plugin_api* api)
-{
-    api->init = plugin_init;
-    api->sync_dp = plugin_sync_dp;
-    api->get_dp_registers = plugin_get_dp_registers;
-    api->get_vi_registers = plugin_get_vi_registers;
-    api->get_rdram = plugin_get_rdram;
-    api->get_rdram_hidden = plugin_get_rdram_hidden;
-    api->get_rdram_size = plugin_get_rdram_size;
-    api->get_dmem = plugin_get_dmem;
-    api->get_rom_name = plugin_get_rom_name;
-    api->close = plugin_close;
 }

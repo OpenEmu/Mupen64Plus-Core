@@ -28,9 +28,10 @@
 #include <ctype.h>
 
 #include "gfx_m64p.h"
+#include "screen.h"
+
 #include "api/m64p_types.h"
 #include "api/m64p_config.h"
-#include "screen_opengl_m64p.h"
 
 #include "core/version.h"
 #include "core/msg.h"
@@ -44,8 +45,8 @@ static ptr_ConfigGetParamBool     ConfigGetParamBool = NULL;
 
 static bool warn_hle;
 static bool plugin_initialized;
-static void (*debug_callback)(void *, int, const char *);
-static void *debug_call_context;
+void (*debug_callback)(void *, int, const char *);
+void *debug_call_context;
 static struct core_config config;
 
 m64p_dynlib_handle CoreLibHandle;
@@ -55,7 +56,7 @@ void (*render_callback)(int);
 static m64p_handle configVideoGeneral = NULL;
 static m64p_handle configVideoAngrylionPlus = NULL;
 
-#define PLUGIN_VERSION              0x020000
+#define PLUGIN_VERSION              0x000100
 #define VIDEO_PLUGIN_API_VERSION    0x020200
 
 EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Context,
@@ -79,17 +80,18 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigGetParamBool = (ptr_ConfigGetParamBool)DLSYM(CoreLibHandle, "ConfigGetParamBool");
 
     ConfigOpenSection("Video-General", &configVideoGeneral);
-    ConfigOpenSection("Video-AngrylionPlus", &configVideoAngrylionPlus);
+    ConfigOpenSection("Video-Angrylion-Plus", &configVideoAngrylionPlus);
 
-    ConfigSetDefaultBool(configVideoGeneral, "Fullscreen", 0, "Use fullscreen mode if True, or windowed mode if False ");
+    ConfigSetDefaultBool(configVideoGeneral, "Fullscreen", 0, "Use fullscreen mode if True, or windowed mode if False");
     ConfigSetDefaultInt(configVideoGeneral, "ScreenWidth", 640, "Width of output window or fullscreen width");
     ConfigSetDefaultInt(configVideoGeneral, "ScreenHeight", 480, "Height of output window or fullscreen height");
 
     ConfigSetDefaultInt(configVideoAngrylionPlus, "NumWorkers", 0, "Rendering Workers (0=Use all logical processors)");
     ConfigSetDefaultInt(configVideoAngrylionPlus, "ViMode", 0, "VI Mode (0=Filtered, 1=Unfiltered, 2=Depth, 3=Coverage)");
+    ConfigSetDefaultBool(configVideoAngrylionPlus, "AnamorphicWidescreen", 0, "Use anamorphic 16:9 output mode if True");
 
     ConfigSaveSection("Video-General");
-    ConfigSaveSection("Video-AngrylionPlus");
+    ConfigSaveSection("Video-Angrylion-Plus");
 
     plugin_initialized = true;
     return M64ERR_SUCCESS;
@@ -166,9 +168,10 @@ EXPORT int CALL RomOpen (void)
     window_height = ConfigGetParamInt(configVideoGeneral, "ScreenHeight");
 
     config.num_workers = ConfigGetParamInt(configVideoAngrylionPlus, "NumWorkers");
-    config.vi_mode = ConfigGetParamInt(configVideoAngrylionPlus, "ViMode");
+    config.vi.mode = ConfigGetParamInt(configVideoAngrylionPlus, "ViMode");
+    config.vi.widescreen = ConfigGetParamBool(configVideoGeneral, "AnamorphicWidescreen");
 
-    core_init(&config, screen_opengl_m64p, plugin_mupen64plus);
+    core_init(&config);
     return 1;
 }
 

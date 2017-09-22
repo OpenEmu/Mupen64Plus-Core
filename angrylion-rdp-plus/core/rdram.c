@@ -3,10 +3,9 @@
 //
 
 #include "rdram.h"
+#include "plugin.h"
 
 #define RDRAM_MASK 0x00ffffff
-
-static struct plugin_api* plugin;
 
 // pointer indexing limits for aliasing RDRAM reads and writes
 static uint32_t idxlim8;
@@ -18,18 +17,16 @@ static uint16_t* rdram16;
 static uint8_t* rdram8;
 static uint8_t* rdram_hidden;
 
-void rdram_init(struct plugin_api* _plugin)
+void rdram_init(void)
 {
-    plugin = _plugin;
-
-    idxlim8 = plugin->get_rdram_size() - 1;
+    idxlim8 = plugin_get_rdram_size() - 1;
     idxlim16 = (idxlim8 >> 1) & 0xffffffu;
     idxlim32 = (idxlim8 >> 2) & 0xffffffu;
 
-    rdram32 = (uint32_t*)plugin->get_rdram();
-    rdram16 = (uint16_t*)plugin->get_rdram();
-    rdram8 = plugin->get_rdram();
-    rdram_hidden = plugin->get_rdram_hidden();
+    rdram32 = (uint32_t*)plugin_get_rdram();
+    rdram16 = (uint16_t*)plugin_get_rdram();
+    rdram8 = plugin_get_rdram();
+    rdram_hidden = plugin_get_rdram_hidden();
 }
 
 bool rdram_valid_idx8(uint32_t in)

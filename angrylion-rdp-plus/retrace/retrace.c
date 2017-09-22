@@ -1,12 +1,10 @@
-#include "screen_sdl.h"
-#include "screen_headless.h"
-#include "retrace.h"
-#include "plugin_retrace.h"
+#include "plugin.h"
 
 #include "core/core.h"
 #include "core/rdp.h"
 #include "core/vi.h"
 #include "core/trace_read.h"
+#include "core/screen.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -56,7 +54,7 @@ bool retrace_frame(uint64_t* num_cmds)
                 break;
 
             case TRACE_VI:
-                trace_read_vi(core_get_plugin()->get_vi_registers());
+                trace_read_vi(plugin_get_vi_registers());
                 vi_update();
                 break;
         }
@@ -110,7 +108,7 @@ void retrace_frames(void)
                 run = false;
             }
         } else {
-            core_get_screen()->swap();
+            screen_swap();
         }
     }
 }
@@ -166,25 +164,13 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    bool benchmark = false;
-
-    for (int i = 1; i < argc - 1; i++) {
-        if (!strcmp(argv[i], "--benchmark")) {
-            benchmark = true;
-        }
-    }
-
     uint32_t rdram_size;
     trace_read_header(&rdram_size);
     plugin_set_rdram_size(rdram_size);
 
-    core_init(&config, benchmark ? screen_headless : screen_sdl, plugin_retrace);
+    core_init(&config);
 
-    if (benchmark) {
-        retrace_frames_verbose();
-    } else {
-        retrace_frames();
-    }
+    retrace_frames();
 
     core_close();
 

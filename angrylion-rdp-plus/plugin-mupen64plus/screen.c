@@ -1,8 +1,10 @@
-#include "screen_opengl_m64p.h"
+#include "screen.h"
 #include "gfx_m64p.h"
 
+#include "plugin-common/gl_screen.h"
+#include "plugin-common/gl_core_3_3.h"
+
 #include "core/msg.h"
-#include "gl-screen/gl_screen.h"
 
 #include <stdlib.h>
 
@@ -26,7 +28,7 @@ int32_t window_width;
 int32_t window_height;
 int32_t window_fullscreen;
 
-static void screen_init(void)
+void screen_init(void)
 {
     /* Get the core Video Extension function pointers from the library handle */
     CoreVideo_Init = (ptr_VidExt_Init) DLSYM(CoreLibHandle, "VidExt_Init");
@@ -52,7 +54,7 @@ static void screen_init(void)
     gl_screen_init();
 }
 
-static void screen_swap(void)
+void screen_swap(void)
 {
     if (toggle_fs) {
         CoreVideo_ToggleFullScreen();
@@ -65,36 +67,26 @@ static void screen_swap(void)
     CoreVideo_GL_SwapBuffers();
 }
 
-static void screen_upload(int32_t* buffer, int32_t width, int32_t height, int32_t output_width, int32_t output_height)
+void screen_upload(int32_t* buffer, int32_t width, int32_t height, int32_t output_width, int32_t output_height)
 {
     gl_screen_upload(buffer, width, height, output_width, output_height);
 }
 
-static void screen_set_fullscreen(bool _fullscreen)
+void screen_set_fullscreen(bool _fullscreen)
 {
     toggle_fs = true;
 }
 
-static bool screen_get_fullscreen(void)
+bool screen_get_fullscreen(void)
 {
     return false;
 }
 
-static void screen_close(void)
+void screen_close(void)
 {
     gl_screen_close();
 
     CoreVideo_Quit();
-}
-
-void screen_opengl_m64p(struct screen_api* api)
-{
-    api->init = screen_init;
-    api->swap = screen_swap;
-    api->upload = screen_upload;
-    api->set_fullscreen = screen_set_fullscreen;
-    api->get_fullscreen = screen_get_fullscreen;
-    api->close = screen_close;
 }
 
 void ogl_readscreen(void *_dest, int32_t *_width, int32_t *_height, int32_t _front)

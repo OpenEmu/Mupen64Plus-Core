@@ -199,7 +199,6 @@
     <ClCompile Include="file.c" />
     <ClCompile Include="irand.c" />
     <ClInclude Include="irand.h" />
-    <ClCompile Include="msg.c" />
     <ClCompile Include="parallel.cpp" />
     <ClCompile Include="parallel_c.cpp" />
     <ClCompile Include="rdp.c" />
@@ -216,8 +215,10 @@
     <ClInclude Include="msg.h" />
     <ClInclude Include="parallel.hpp" />
     <ClInclude Include="parallel_c.hpp" />
+    <ClInclude Include="plugin.h" />
     <ClInclude Include="rdram.h" />
     <ClInclude Include="rdp.h" />
+    <ClInclude Include="screen.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="trace_read.h" />
     <ClInclude Include="trace_write.h" />

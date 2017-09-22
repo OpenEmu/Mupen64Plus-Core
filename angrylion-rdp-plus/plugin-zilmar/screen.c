@@ -1,8 +1,10 @@
-#include "screen_opengl_zilmar.h"
 #include "gfx_1.3.h"
-#include "gl-screen/gl_screen.h"
+
+#include "plugin-common/gl_screen.h"
+#include "plugin-common/gl_core_3_3.h"
 #include "wgl_ext.h"
 
+#include "core/screen.h"
 #include "core/msg.h"
 
 #include <stdlib.h>
@@ -37,7 +39,7 @@ void win32_client_resize(HWND hWnd, int32_t nWidth, int32_t nHeight)
     MoveWindow(hWnd, rwin.left, rwin.top, nWidth + pdiff.x, nHeight + pdiff.y, TRUE);
 }
 
-static void screen_update_size(int32_t width, int32_t height)
+void screen_update_size(int32_t width, int32_t height)
 {
     BOOL zoomed = IsZoomed(gfx.hWnd);
 
@@ -63,7 +65,7 @@ static void screen_update_size(int32_t width, int32_t height)
     }
 }
 
-static void screen_init(void)
+void screen_init(void)
 {
     // make window resizable for the user
     if (!fullscreen) {
@@ -122,7 +124,7 @@ static void screen_init(void)
     gl_screen_init();
 }
 
-static void screen_upload(int32_t* buffer, int32_t width, int32_t height, int32_t output_width, int32_t output_height)
+void screen_upload(int32_t* buffer, int32_t width, int32_t height, int32_t output_width, int32_t output_height)
 {
     // check if the framebuffer size has changed
     if (gl_screen_upload(buffer, width, height, output_width, output_height)) {
@@ -130,7 +132,7 @@ static void screen_upload(int32_t* buffer, int32_t width, int32_t height, int32_
     }
 }
 
-static void screen_swap(void)
+void screen_swap(void)
 {
     // don't render when the window is minimized
     if (IsIconic(gfx.hWnd)) {
@@ -165,7 +167,7 @@ static void screen_swap(void)
     SwapBuffers(dc);
 }
 
-static void screen_set_fullscreen(bool _fullscreen)
+void screen_set_fullscreen(bool _fullscreen)
 {
     static HMENU old_menu;
     static LONG old_style;
@@ -225,12 +227,12 @@ static void screen_set_fullscreen(bool _fullscreen)
     fullscreen = _fullscreen;
 }
 
-static bool screen_get_fullscreen(void)
+bool screen_get_fullscreen(void)
 {
     return fullscreen;
 }
 
-static void screen_close(void)
+void screen_close(void)
 {
     gl_screen_close();
 
@@ -239,14 +241,4 @@ static void screen_close(void)
     }
 
     wglDeleteContext(glrc);
-}
-
-void screen_opengl(struct screen_api* api)
-{
-    api->init = screen_init;
-    api->swap = screen_swap;
-    api->upload = screen_upload;
-    api->set_fullscreen = screen_set_fullscreen;
-    api->get_fullscreen = screen_get_fullscreen;
-    api->close = screen_close;
 }

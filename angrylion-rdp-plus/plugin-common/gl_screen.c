@@ -1,4 +1,5 @@
 #include "gl_screen.h"
+#include "gl_core_3_3.h"
 
 #include "core/msg.h"
 
@@ -135,10 +136,6 @@ bool gl_screen_upload(int32_t* buffer, int32_t width, int32_t height, int32_t ou
         tex_width = width;
         tex_height = height;
 
-        // update output size
-        tex_display_width = output_width;
-        tex_display_height = output_height;
-
         // reallocate texture buffer on GPU
         glTexImage2D(GL_TEXTURE_2D, 0, TEX_INTERNAL_FORMAT, tex_width,
             tex_height, 0, TEX_FORMAT, TEX_TYPE, buffer);
@@ -149,6 +146,10 @@ bool gl_screen_upload(int32_t* buffer, int32_t width, int32_t height, int32_t ou
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_width, tex_height,
             TEX_FORMAT, TEX_TYPE, buffer);
     }
+
+    // update output size
+    tex_display_width = output_width;
+    tex_display_height = output_height;
 
     return buffer_size_changed;
 }

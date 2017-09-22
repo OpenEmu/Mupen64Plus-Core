@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gl_core_3_3.h"
+#include <stdint.h>
 #include <stdbool.h>
 
 void gl_screen_init(void);

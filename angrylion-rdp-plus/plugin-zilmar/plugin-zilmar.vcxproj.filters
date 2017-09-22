@@ -17,13 +17,7 @@
     <ClInclude Include="wgl_ext.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="plugin_zilmar.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="screen_opengl_zilmar.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gfx_1.3.c">
@@ -32,10 +26,13 @@
     <ClCompile Include="wgl_ext.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="plugin_zilmar.c">
+    <ClCompile Include="msg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="screen_opengl_zilmar.c">
+    <ClCompile Include="screen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="plugin.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

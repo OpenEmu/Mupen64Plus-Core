@@ -1,6 +1,4 @@
 #include "gfx_1.3.h"
-#include "plugin_zilmar.h"
-#include "screen_opengl_zilmar.h"
 #include "resource.h"
 
 #include "core/core.h"
@@ -8,13 +6,15 @@
 #include "core/parallel_c.hpp"
 #include "core/msg.h"
 #include "core/rdram.h"
+#include "core/plugin.h"
 #include "core/file.h"
 
 #include <Commctrl.h>
 #include <Shlwapi.h>
 #include <stdio.h>
 
-#define CONFIG_FILE_NAME "angrylionplus-config.bin"
+#define CONFIG_FILE_NAME CORE_SIMPLE_NAME "-config.bin"
+#define CONFIG_VERSION 1
 
 static bool warn_hle;
 static struct core_config config;
@@ -39,11 +39,18 @@ static void load_config(struct core_config* config)
 
     if (!fp) {
         // file may not exist yet, don't display warning
+        msg_debug("Config file not found, using defaults");
         return;
     }
 
-    if (!fread(config, sizeof(struct core_config), 1, fp)) {
-        msg_warning("Invalid config file size.");
+    uint8_t version = fgetc(fp);
+
+    if (version == CONFIG_VERSION) {
+        if (!fread(config, sizeof(struct core_config), 1, fp)) {
+            msg_warning("Invalid config file size.");
+        }
+    } else {
+        msg_debug("Unsupported config version %d, ignoring config file", version);
     }
 
     fclose(fp);
@@ -60,7 +67,7 @@ static void save_config(struct core_config* config)
         return;
     }
 
-    if (!fwrite(config, sizeof(struct core_config), 1, fp)) {
+    if (!fputc(CONFIG_VERSION, fp) || !fwrite(config, sizeof(struct core_config), 1, fp)) {
         msg_warning("Can't write contents to config file.");
     }
 
@@ -97,10 +104,13 @@ BOOL CALLBACK ConfigDialogProc(HWND hwnd, UINT iMessage, WPARAM wParam, LPARAM l
             for (int i = 0; i < VI_MODE_NUM; i++) {
                 SendMessage(hCombo1, CB_ADDSTRING, i, (LPARAM)vi_mode_strings[i]);
             }
-            SendMessage(hCombo1, CB_SETCURSEL, (WPARAM)config.vi_mode, 0);
+            SendMessage(hCombo1, CB_SETCURSEL, (WPARAM)config.vi.mode, 0);
 
-            HWND hCheck1 = GetDlgItem(hwnd, IDC_CHECK1);
-            SendMessage(hCheck1, BM_SETCHECK, (WPARAM)config.trace, 0);
+            HWND hCheckTrace = GetDlgItem(hwnd, IDC_CHECK_TRACE);
+            SendMessage(hCheckTrace, BM_SETCHECK, (WPARAM)config.dp.trace_record, 0);
+
+            HWND hCheckWidescreen = GetDlgItem(hwnd, IDC_CHECK_WIDESCREEN);
+            SendMessage(hCheckWidescreen, BM_SETCHECK, (WPARAM)config.vi.widescreen, 0);
 
             SetDlgItemInt(hwnd, IDC_EDIT1, config.num_workers, FALSE);
 
@@ -112,10 +122,13 @@ BOOL CALLBACK ConfigDialogProc(HWND hwnd, UINT iMessage, WPARAM wParam, LPARAM l
             switch (LOWORD(wParam)) {
                 case IDOK: {
                     HWND hCombo1 = GetDlgItem(hwnd, IDC_COMBO1);
-                    config.vi_mode = SendMessage(hCombo1, CB_GETCURSEL, 0, 0);
+                    config.vi.mode = SendMessage(hCombo1, CB_GETCURSEL, 0, 0);
 
-                    HWND hCheck1 = GetDlgItem(hwnd, IDC_CHECK1);
-                    config.trace = SendMessage(hCheck1, BM_GETCHECK, 0, 0);
+                    HWND hCheckWidescreen = GetDlgItem(hwnd, IDC_CHECK_WIDESCREEN);
+                    config.vi.widescreen = SendMessage(hCheckWidescreen, BM_GETCHECK, 0, 0);
+
+                    HWND hCheckTrace = GetDlgItem(hwnd, IDC_CHECK_TRACE);
+                    config.dp.trace_record = SendMessage(hCheckTrace, BM_GETCHECK, 0, 0);
 
                     config.num_workers = GetDlgItemInt(hwnd, IDC_EDIT1, FALSE, FALSE);
 
@@ -150,7 +163,15 @@ EXPORT void CALL CloseDLL(void)
 
 EXPORT void CALL DllAbout(HWND hParent)
 {
-    msg_warning(CORE_BASE_NAME ". MESS source code used.");
+    msg_warning(
+        CORE_NAME "\n\n"
+        "Build commit:\n"
+        GIT_BRANCH "\n"
+        GIT_COMMIT_HASH "\n"
+        GIT_COMMIT_DATE "\n\n"
+        "Build date: " __DATE__ " " __TIME__ "\n\n"
+        "https://github.com/ata4/angrylion-rdp-plus"
+    );
 }
 
 EXPORT void CALL DllConfig(HWND hParent)
@@ -208,7 +229,7 @@ EXPORT void CALL RomClosed(void)
 EXPORT void CALL RomOpen(void)
 {
     load_config(&config);
-    core_init(&config, screen_opengl, plugin_zilmar);
+    core_init(&config);
 }
 
 EXPORT void CALL ShowCFB(void)

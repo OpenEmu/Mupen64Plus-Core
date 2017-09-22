@@ -14,9 +14,6 @@
     <ClCompile Include="rdp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="msg.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="vi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -85,7 +82,15 @@
     <ClInclude Include="bitmap.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="irand.h" />
+    <ClInclude Include="irand.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plugin.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="screen.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="version.h.in">

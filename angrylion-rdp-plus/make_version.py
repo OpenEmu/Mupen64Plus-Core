@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     # remove hash from git describe output
     tag = tag.split("-")
-    if tag[2][1:] in hash:
+    if len(tag) > 2 and tag[2][1:] in hash:
         del tag[2]
     tag = "-".join(tag)
 
