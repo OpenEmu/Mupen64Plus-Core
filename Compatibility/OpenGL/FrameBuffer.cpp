@@ -182,7 +182,7 @@ void FrameBuffer::init(u32 _address, u16 _format, u16 _size, u16 _width, bool _c
 
 void FrameBuffer::updateEndAddress()
 {
-	const u32 height = max(1U, m_height - 1);
+	const u32 height = max(1U, m_height);
 	m_endAddress = min(RDRAMSize, m_startAddress + (((m_width * height) << m_size >> 1) - 1));
 }
 
@@ -235,6 +235,12 @@ void FrameBuffer::copyRdram()
 	}
 	m_RdramCopy.resize(dataSize);
 	memcpy(m_RdramCopy.data(), RDRAM + m_startAddress, dataSize);
+}
+
+void FrameBuffer::setDirty()
+{
+	m_cleared = false;
+	m_RdramCopy.clear();
 }
 
 bool FrameBuffer::isValid(bool _forceCheck) const
@@ -391,7 +397,7 @@ CachedTexture * FrameBuffer::_getSubTexture(u32 _t)
 
 	gfxContext.blitFramebuffers(blitParams);
 
-    gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
+	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
 	frameBufferList().setCurrentDrawBuffer();
 
@@ -509,6 +515,20 @@ FrameBuffer * FrameBufferList::findBuffer(u32 _startAddress)
 	return nullptr;
 }
 
+inline
+bool isOverlapping(const FrameBuffer * _buf1, const FrameBuffer * _buf2)
+{
+	if (_buf1->m_endAddress < _buf2->m_endAddress && _buf1->m_width == _buf2->m_width && _buf1->m_size == _buf2->m_size) {
+		const u32 diff = _buf1->m_endAddress - _buf2->m_startAddress + 1;
+		const u32 stride = _buf1->m_width << _buf1->m_size >> 1;
+		if ((diff % stride == 0) && (diff / stride < 5))
+			return true;
+		else
+			return false;
+	}
+	return false;
+}
+
 void FrameBufferList::removeIntersections()
 {
 	assert(!m_list.empty());
@@ -518,8 +538,17 @@ void FrameBufferList::removeIntersections()
 		--iter;
 		if (&(*iter) == m_pCurrent)
 			continue;
-		if ((iter->m_startAddress <= m_pCurrent->m_startAddress && iter->m_endAddress >= m_pCurrent->m_startAddress) || // [  {  ]
-			(m_pCurrent->m_startAddress <= iter->m_startAddress && m_pCurrent->m_endAddress >= iter->m_startAddress)) { // {  [  }
+		if (iter->m_startAddress <= m_pCurrent->m_startAddress && iter->m_endAddress >= m_pCurrent->m_startAddress) { // [  {  ]
+			if (isOverlapping(&(*iter), m_pCurrent)) {
+				iter->m_endAddress = m_pCurrent->m_startAddress - 1;
+				continue;
+			}
+			iter = m_list.erase(iter);
+		} else if (m_pCurrent->m_startAddress <= iter->m_startAddress && m_pCurrent->m_endAddress >= iter->m_startAddress) { // {  [  }
+			if (isOverlapping(m_pCurrent, &(*iter))) {
+				m_pCurrent->m_endAddress = iter->m_startAddress - 1;
+				continue;
+			}
 			iter = m_list.erase(iter);
 		}
 	} while (iter != m_list.begin());
@@ -797,18 +826,18 @@ void FrameBufferList::_renderScreenSizeBuffer()
 	DisplayWindow & wnd = dwnd();
 	GraphicsDrawer & drawer = wnd.getDrawer();
 	FrameBuffer *pBuffer = &m_list.back();
-    
 	PostProcessor & postProcessor = PostProcessor::get();
 	FrameBuffer * pFilteredBuffer = postProcessor.doBlur(postProcessor.doGammaCorrection(
 		postProcessor.doOrientationCorrection(pBuffer)));
 	CachedTexture * pBufferTexture = pFilteredBuffer->m_pTexture;
+
 
 	s32 srcCoord[4] = { 0, 0, pBufferTexture->realWidth, pBufferTexture->realHeight };
 	const s32 hOffset = (wnd.getScreenWidth() - wnd.getWidth()) / 2;
 	const s32 vOffset = (wnd.getScreenHeight() - wnd.getHeight()) / 2 + wnd.getHeightOffset();
 	s32 dstCoord[4] = { hOffset, vOffset, hOffset + pBufferTexture->realWidth, vOffset + pBufferTexture->realHeight };
 
-    gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, ObjectHandle::null);
+	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, ObjectHandle::null);
 
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	drawer.clearColorBuffer(clearColor);
@@ -836,9 +865,9 @@ void FrameBufferList::_renderScreenSizeBuffer()
 
 	drawer.blitOrCopyTexturedRect(blitParams);
 
-    gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
+	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, ObjectHandle::null);
 
-    wnd.swapBuffers();
+	wnd.swapBuffers();
 	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, pBuffer->m_FBO);
 	gDP.changed |= CHANGED_SCISSOR;
 }
@@ -981,6 +1010,7 @@ bool rdp_update(RdpUpdateResult & _result)
 #endif
 }
 
+
 void FrameBufferList::renderBuffer()
 {
 	if (VI.width == 0 || *REG.VI_WIDTH == 0 || *REG.VI_H_START == 0) // H width is zero. Don't draw
@@ -1001,7 +1031,6 @@ void FrameBufferList::renderBuffer()
 		return;
 
 	FrameBuffer *pBuffer = findBuffer(rdpRes.vi_origin);
-    
 	if (pBuffer == nullptr)
 		return;
 	pBuffer->m_isMainBuffer = true;
@@ -1040,6 +1069,7 @@ void FrameBufferList::renderBuffer()
 
 	srcWidth = min(rdpRes.vi_width, (rdpRes.vi_hres * rdpRes.vi_x_add) >> 10);
 	srcHeight = rdpRes.vi_width * ((rdpRes.vi_vres*rdpRes.vi_y_add + rdpRes.vi_y_start) >> 10) / pBuffer->m_width;
+
 
 	const u32 stride = pBuffer->m_width << pBuffer->m_size >> 1;
 	FrameBuffer *pNextBuffer = findBuffer(rdpRes.vi_origin + stride * srcHeight);
@@ -1105,7 +1135,7 @@ void FrameBufferList::renderBuffer()
 		readBuffer = pFilteredBuffer->m_FBO;
 	}
 
-	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, (graphics::ObjectHandle) 1);
+	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, (graphics::ObjectHandle)1);
 	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	drawer.clearColorBuffer(clearColor);
 
@@ -1161,12 +1191,12 @@ void FrameBufferList::renderBuffer()
 		blitParams.tex[0] = pBufferTexture;
 		blitParams.readBuffer = readBuffer;
 
-        drawer.copyTexturedRect(blitParams);
+		drawer.copyTexturedRect(blitParams);
 	}
 
-    gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, (graphics::ObjectHandle) 1);
+	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, (graphics::ObjectHandle)1);
 
-    wnd.swapBuffers();
+	wnd.swapBuffers();
 	if (m_pCurrent != nullptr) {
 		gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, m_pCurrent->m_FBO);
 	}
