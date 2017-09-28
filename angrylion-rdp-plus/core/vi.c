@@ -1486,6 +1486,10 @@ static int vi_process_start_fast(void)
     hres =  h_end - h_start;
     vres = (v_end - v_start) >> 1; // vertical is measured in half-lines
 
+    if (hres <= 0 || vres <= 0) {
+        return 0;
+    }
+
     x_add = *vi_reg_ptr[VI_X_SCALE] & 0xfff;
     y_add = *vi_reg_ptr[VI_Y_SCALE] & 0xfff;
 

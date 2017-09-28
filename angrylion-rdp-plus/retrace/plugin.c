@@ -66,9 +66,9 @@ void plugin_close(void)
 {
 }
 
-uint32_t plugin_get_rom_name(char* name, uint32_t name_size)
+uint8_t* plugin_get_rom_header(void)
 {
-    return 0;
+    return NULL;
 }
 
 void plugin_set_rdram_size(uint32_t size)

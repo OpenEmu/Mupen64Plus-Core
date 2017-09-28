@@ -35,6 +35,7 @@ void msg_debug(const char* err, ...)
     va_start(arg, err);
     char buf[MSG_BUFFER_LEN];
     vsprintf_s(buf, sizeof(buf), err, arg);
+    strcat_s(buf, sizeof(buf), "\n");
     OutputDebugStringA(buf);
     va_end(arg);
 }
