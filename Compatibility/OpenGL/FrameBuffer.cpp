@@ -515,6 +515,15 @@ FrameBuffer * FrameBufferList::findBuffer(u32 _startAddress)
 	return nullptr;
 }
 
+FrameBuffer * FrameBufferList::getBuffer(u32 _startAddress)
+{
+	for (auto iter = m_list.begin(); iter != m_list.end(); ++iter) {
+		if (iter->m_startAddress == _startAddress)
+			return &(*iter);
+	}
+	return nullptr;
+}
+
 inline
 bool isOverlapping(const FrameBuffer * _buf1, const FrameBuffer * _buf2)
 {
@@ -1239,8 +1248,9 @@ void FrameBufferList::fillRDRAM(s32 ulx, s32 uly, s32 lrx, s32 lry)
 	m_pCurrent->setBufferClearParams(gDP.fillColor.color, ulx, uly, lrx, lry);
 }
 
-void FrameBuffer_ActivateBufferTexture(u32 t, FrameBuffer *pBuffer)
+void FrameBuffer_ActivateBufferTexture(u32 t, u32 _frameBufferAddress)
 {
+	FrameBuffer * pBuffer = frameBufferList().getBuffer(_frameBufferAddress);
 	if (pBuffer == nullptr)
 		return;
 
@@ -1253,8 +1263,9 @@ void FrameBuffer_ActivateBufferTexture(u32 t, FrameBuffer *pBuffer)
 	gDP.changed |= CHANGED_FB_TEXTURE;
 }
 
-void FrameBuffer_ActivateBufferTextureBG(u32 t, FrameBuffer *pBuffer )
+void FrameBuffer_ActivateBufferTextureBG(u32 t, u32 _frameBufferAddress)
 {
+	FrameBuffer * pBuffer = frameBufferList().getBuffer(_frameBufferAddress);
 	if (pBuffer == nullptr)
 		return;
 
