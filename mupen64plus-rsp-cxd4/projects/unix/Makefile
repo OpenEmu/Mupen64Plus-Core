@@ -129,11 +129,6 @@ ifeq ($(CPU), X86)
     CPPFLAGS += -DARCH_MIN_SSE2
     POSTFIX = -sse2
   endif
-  ifeq ($(SSE), SSSE3)
-    CFLAGS   += -mssse3
-    CPPFLAGS += -DARCH_MIN_SSSE3
-    POSTFIX = -ssse3
-  endif
   CFLAGS += -mstackrealign
 endif
 
@@ -307,7 +302,7 @@ targets:
 	@echo "    HLEVIDEO=(1|0) == Move task of gfx emulation to a HLE video plugins"
 	@echo "    POSTFIX=name  == String added to the name of the the build (default: '')"
 	@echo "    SSE=version   == Optimize for SSE technology version"
-	@echo "                     (none [default on non-x86], SSE2 [default on x86], SSSE3)"
+	@echo "                     (none [default on non-x86], SSE2 [default on x86])"
 	@echo "    NEON=(1|0)    == Optimize for NEON technology version"
 	@echo "  Install Options:"
 	@echo "    PREFIX=path   == install/uninstall prefix (default: /usr/local)"
