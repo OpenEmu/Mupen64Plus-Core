@@ -300,6 +300,7 @@
 		87F02C091F759A24002463A7 /* msg.c in Sources */ = {isa = PBXBuildFile; fileRef = 87F02C081F759A24002463A7 /* msg.c */; };
 		87F02C0D1F759A4B002463A7 /* screen.c in Sources */ = {isa = PBXBuildFile; fileRef = 87F02C0A1F759A4B002463A7 /* screen.c */; };
 		87F02C0E1F759A4B002463A7 /* plugin.c in Sources */ = {isa = PBXBuildFile; fileRef = 87F02C0C1F759A4B002463A7 /* plugin.c */; };
+		87F3EF981FA439A4007CF75E /* DisplayLoadProgress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F3EF971FA439A3007CF75E /* DisplayLoadProgress.cpp */; };
 		8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
 		9419A0C31A0891D60065CB61 /* profile.c in Sources */ = {isa = PBXBuildFile; fileRef = 9419A0C11A0891D60065CB61 /* profile.c */; };
@@ -1166,6 +1167,8 @@
 		87F02C0A1F759A4B002463A7 /* screen.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = screen.c; sourceTree = "<group>"; };
 		87F02C0B1F759A4B002463A7 /* screen.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = screen.h; sourceTree = "<group>"; };
 		87F02C0C1F759A4B002463A7 /* plugin.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = plugin.c; sourceTree = "<group>"; };
+		87F3EF961FA439A3007CF75E /* DisplayLoadProgress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DisplayLoadProgress.h; sourceTree = "<group>"; };
+		87F3EF971FA439A3007CF75E /* DisplayLoadProgress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DisplayLoadProgress.cpp; sourceTree = "<group>"; };
 		8D5B49B6048680CD000E48DA /* Mupen64Plus.oecoreplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Mupen64Plus.oecoreplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9419A0C11A0891D60065CB61 /* profile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = profile.c; sourceTree = "<group>"; };
@@ -2371,6 +2374,8 @@
 				875503CC1E74C7BE002222F3 /* DepthBuffer.cpp */,
 				875503CD1E74C7BE002222F3 /* DepthBuffer.h */,
 				875503CE1E74C7BE002222F3 /* DepthBufferRender */,
+				87F3EF971FA439A3007CF75E /* DisplayLoadProgress.cpp */,
+				87F3EF961FA439A3007CF75E /* DisplayLoadProgress.h */,
 				875503D31E74C7BE002222F3 /* DisplayWindow.cpp */,
 				875503D41E74C7BE002222F3 /* DisplayWindow.h */,
 				875503EB1E74C7BE002222F3 /* FrameBuffer.cpp */,
@@ -3968,6 +3973,7 @@
 				875505111E74C7BF002222F3 /* CommonPluginAPI.cpp in Sources */,
 				875505121E74C7BF002222F3 /* Config.cpp in Sources */,
 				875505131E74C7BF002222F3 /* convert.cpp in Sources */,
+				87F3EF981FA439A4007CF75E /* DisplayLoadProgress.cpp in Sources */,
 				8723F7001F74A36E003E572A /* CRC_OPT.cpp in Sources */,
 				875505161E74C7BF002222F3 /* DepthBuffer.cpp in Sources */,
 				875505191E74C7BF002222F3 /* DisplayWindow.cpp in Sources */,
