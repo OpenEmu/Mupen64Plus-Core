@@ -310,7 +310,7 @@ EXPORT unsigned int CALL DoRspCycles(unsigned int cycles)
         else
             GET_RSP_INFO(ProcessDlistList)();
 
-        if (GET_RCP_REG(SP_STATUS_REG) & SP_STATUS_INTR_BREAK) {
+        if ((GET_RCP_REG(SP_STATUS_REG) & SP_STATUS_INTR_BREAK) && (GET_RCP_REG(SP_STATUS_REG) & (SP_STATUS_SIG2 | SP_STATUS_BROKE | SP_STATUS_HALT))) {
             GET_RCP_REG(MI_INTR_REG) |= 0x00000001;
             GET_RSP_INFO(CheckInterrupts)();
         }
