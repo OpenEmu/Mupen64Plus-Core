@@ -572,6 +572,11 @@ static void MupenSetAudioSpeed(int percent)
     }
 }
 
+- (OEIntSize)aspectSize
+{
+    return OEIntSizeMake(videoWidth * (120.0 / 119.0), videoHeight);
+}
+
 - (OEIntSize)bufferSize
 {
     return OEIntSizeMake(videoWidth, videoHeight);
