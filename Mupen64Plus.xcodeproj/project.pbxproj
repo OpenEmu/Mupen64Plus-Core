@@ -147,8 +147,6 @@
 		3E82BC4D1F507B940081AF7B /* RSP_LoadMatrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */; };
 		3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC551F507C380081AF7B /* ColorBufferReader.cpp */; };
 		3E82BC5F1F507C8F0081AF7B /* GraphicBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC5E1F507C8F0081AF7B /* GraphicBuffer.cpp */; };
-		3E82BC6E1F507D6D0081AF7B /* FrameBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */; };
-		3E82BC6F1F507D6D0081AF7B /* TextDrawerStubs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC6D1F507D6D0081AF7B /* TextDrawerStubs.cpp */; };
 		8723F7001F74A36E003E572A /* CRC_OPT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */; };
 		8723F7041F74A3B1003E572A /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7021F74A3A3003E572A /* xxhash.c */; };
 		8723F7341F74A4D7003E572A /* F3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7061F74A49E003E572A /* F3D.cpp */; };
@@ -163,7 +161,6 @@
 		8723F73D1F74A4D7003E572A /* F3DGOLDEN.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7181F74A49E003E572A /* F3DGOLDEN.cpp */; };
 		8723F73E1F74A4D7003E572A /* F3DPD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F71A1F74A49E003E572A /* F3DPD.cpp */; };
 		8723F73F1F74A4D7003E572A /* F3DSETA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F71C1F74A49E003E572A /* F3DSETA.cpp */; };
-		8723F7401F74A4D7003E572A /* F3DSWRS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F71E1F74A49E003E572A /* F3DSWRS.cpp */; };
 		8723F7411F74A4D7003E572A /* F3DTEXA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7201F74A49E003E572A /* F3DTEXA.cpp */; };
 		8723F7421F74A4D7003E572A /* F3DZEX2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7221F74A49E003E572A /* F3DZEX2.cpp */; };
 		8723F7431F74A4D7003E572A /* L3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7241F74A49E003E572A /* L3D.cpp */; };
@@ -301,6 +298,12 @@
 		87F02C0D1F759A4B002463A7 /* screen.c in Sources */ = {isa = PBXBuildFile; fileRef = 87F02C0A1F759A4B002463A7 /* screen.c */; };
 		87F02C0E1F759A4B002463A7 /* plugin.c in Sources */ = {isa = PBXBuildFile; fileRef = 87F02C0C1F759A4B002463A7 /* plugin.c */; };
 		87F3EF981FA439A4007CF75E /* DisplayLoadProgress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F3EF971FA439A3007CF75E /* DisplayLoadProgress.cpp */; };
+		87FB3C05214DCEDD00A221BE /* TextDrawerStub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87FB3C04214DCEDC00A221BE /* TextDrawerStub.cpp */; };
+		87FB3C11214DD0C400A221BE /* ZSortBOSS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87FB3C10214DD0C400A221BE /* ZSortBOSS.cpp */; };
+		87FB3C17214DECE300A221BE /* F5Indi_Naboo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87FB3C0A214DD07700A221BE /* F5Indi_Naboo.cpp */; };
+		87FB3C18214DECE300A221BE /* F5Rogue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87FB3C0C214DD07700A221BE /* F5Rogue.cpp */; };
+		87FB3C19214DED1800A221BE /* glsl_FXAA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87FB3C06214DCFB000A221BE /* glsl_FXAA.cpp */; };
+		87FB3C1A214DF41700A221BE /* FrameBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */; };
 		8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
 		9419A0C31A0891D60065CB61 /* profile.c in Sources */ = {isa = PBXBuildFile; fileRef = 9419A0C11A0891D60065CB61 /* profile.c */; };
@@ -675,7 +678,6 @@
 		3E82BC691F507CBA0081AF7B /* vidext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vidext.h; sourceTree = "<group>"; };
 		3E82BC6A1F507CD60081AF7B /* osal_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_files.h; sourceTree = "<group>"; };
 		3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FrameBuffer.cpp; path = OpenGL/FrameBuffer.cpp; sourceTree = "<group>"; };
-		3E82BC6D1F507D6D0081AF7B /* TextDrawerStubs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TextDrawerStubs.cpp; path = OpenGL/TextDrawerStubs.cpp; sourceTree = "<group>"; };
 		8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CRC_OPT.cpp; sourceTree = "<group>"; };
 		8723F7021F74A3A3003E572A /* xxhash.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xxhash.c; sourceTree = "<group>"; };
 		8723F7031F74A3A3003E572A /* xxhash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
@@ -703,8 +705,6 @@
 		8723F71B1F74A49E003E572A /* F3DPD.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = F3DPD.h; sourceTree = "<group>"; };
 		8723F71C1F74A49E003E572A /* F3DSETA.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = F3DSETA.cpp; sourceTree = "<group>"; };
 		8723F71D1F74A49E003E572A /* F3DSETA.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = F3DSETA.h; sourceTree = "<group>"; };
-		8723F71E1F74A49E003E572A /* F3DSWRS.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = F3DSWRS.cpp; sourceTree = "<group>"; };
-		8723F71F1F74A49E003E572A /* F3DSWRS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = F3DSWRS.h; sourceTree = "<group>"; };
 		8723F7201F74A49E003E572A /* F3DTEXA.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = F3DTEXA.cpp; sourceTree = "<group>"; };
 		8723F7211F74A49E003E572A /* F3DTEXA.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = F3DTEXA.h; sourceTree = "<group>"; };
 		8723F7221F74A49E003E572A /* F3DZEX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = F3DZEX2.cpp; sourceTree = "<group>"; };
@@ -1169,6 +1169,15 @@
 		87F02C0C1F759A4B002463A7 /* plugin.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = plugin.c; sourceTree = "<group>"; };
 		87F3EF961FA439A3007CF75E /* DisplayLoadProgress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DisplayLoadProgress.h; sourceTree = "<group>"; };
 		87F3EF971FA439A3007CF75E /* DisplayLoadProgress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DisplayLoadProgress.cpp; sourceTree = "<group>"; };
+		87FB3C04214DCEDC00A221BE /* TextDrawerStub.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextDrawerStub.cpp; sourceTree = "<group>"; };
+		87FB3C06214DCFB000A221BE /* glsl_FXAA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_FXAA.cpp; sourceTree = "<group>"; };
+		87FB3C07214DCFB000A221BE /* glsl_FXAA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_FXAA.h; sourceTree = "<group>"; };
+		87FB3C09214DD07600A221BE /* F5Indi_Naboo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = F5Indi_Naboo.h; sourceTree = "<group>"; };
+		87FB3C0A214DD07700A221BE /* F5Indi_Naboo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = F5Indi_Naboo.cpp; sourceTree = "<group>"; };
+		87FB3C0B214DD07700A221BE /* F5Rogue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = F5Rogue.h; sourceTree = "<group>"; };
+		87FB3C0C214DD07700A221BE /* F5Rogue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = F5Rogue.cpp; sourceTree = "<group>"; };
+		87FB3C0F214DD0C400A221BE /* ZSortBOSS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZSortBOSS.h; sourceTree = "<group>"; };
+		87FB3C10214DD0C400A221BE /* ZSortBOSS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZSortBOSS.cpp; sourceTree = "<group>"; };
 		8D5B49B6048680CD000E48DA /* Mupen64Plus.oecoreplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Mupen64Plus.oecoreplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9419A0C11A0891D60065CB61 /* profile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = profile.c; sourceTree = "<group>"; };
@@ -2185,7 +2194,6 @@
 			children = (
 				3E5C54391F52698500323A31 /* Revision.h */,
 				3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */,
-				3E82BC6D1F507D6D0081AF7B /* TextDrawerStubs.cpp */,
 			);
 			name = OpenGL;
 			sourceTree = "<group>";
@@ -2226,12 +2234,14 @@
 				8723F71B1F74A49E003E572A /* F3DPD.h */,
 				8723F71C1F74A49E003E572A /* F3DSETA.cpp */,
 				8723F71D1F74A49E003E572A /* F3DSETA.h */,
-				8723F71E1F74A49E003E572A /* F3DSWRS.cpp */,
-				8723F71F1F74A49E003E572A /* F3DSWRS.h */,
 				8723F7201F74A49E003E572A /* F3DTEXA.cpp */,
 				8723F7211F74A49E003E572A /* F3DTEXA.h */,
 				8723F7221F74A49E003E572A /* F3DZEX2.cpp */,
 				8723F7231F74A49E003E572A /* F3DZEX2.h */,
+				87FB3C0A214DD07700A221BE /* F5Indi_Naboo.cpp */,
+				87FB3C09214DD07600A221BE /* F5Indi_Naboo.h */,
+				87FB3C0C214DD07700A221BE /* F5Rogue.cpp */,
+				87FB3C0B214DD07700A221BE /* F5Rogue.h */,
 				8723F7241F74A49E003E572A /* L3D.cpp */,
 				8723F7251F74A49E003E572A /* L3D.h */,
 				8723F7261F74A49E003E572A /* L3DEX.cpp */,
@@ -2248,6 +2258,8 @@
 				8723F7311F74A49E003E572A /* Turbo3D.h */,
 				8723F7321F74A49E003E572A /* ZSort.cpp */,
 				8723F7331F74A49E003E572A /* ZSort.h */,
+				87FB3C10214DD0C400A221BE /* ZSortBOSS.cpp */,
+				87FB3C0F214DD0C400A221BE /* ZSortBOSS.h */,
 			);
 			path = uCodes;
 			sourceTree = "<group>";
@@ -2431,6 +2443,7 @@
 				875504E51E74C7BF002222F3 /* TexrectDrawer.h */,
 				875504E61E74C7BF002222F3 /* TextDrawer.cpp */,
 				875504E71E74C7BF002222F3 /* TextDrawer.h */,
+				87FB3C04214DCEDC00A221BE /* TextDrawerStub.cpp */,
 				875504E81E74C7BF002222F3 /* TextureFilterHandler.cpp */,
 				875504E91E74C7BF002222F3 /* TextureFilterHandler.h */,
 				875504EA1E74C7BF002222F3 /* Textures.cpp */,
@@ -2690,6 +2703,8 @@
 				875504691E74C7BF002222F3 /* glsl_CombinerProgramImpl.h */,
 				8755046A1E74C7BF002222F3 /* glsl_CombinerProgramUniformFactory.cpp */,
 				8755046B1E74C7BF002222F3 /* glsl_CombinerProgramUniformFactory.h */,
+				87FB3C06214DCFB000A221BE /* glsl_FXAA.cpp */,
+				87FB3C07214DCFB000A221BE /* glsl_FXAA.h */,
 				8755046C1E74C7BF002222F3 /* glsl_ShaderPart.h */,
 				8755046D1E74C7BF002222F3 /* glsl_ShaderStorage.cpp */,
 				8755046E1E74C7BF002222F3 /* glsl_ShaderStorage.h */,
@@ -3980,7 +3995,7 @@
 				875505261E74C7BF002222F3 /* FrameBufferInfo.cpp in Sources */,
 				875505271E74C7BF002222F3 /* GBI.cpp in Sources */,
 				3E82BC5F1F507C8F0081AF7B /* GraphicBuffer.cpp in Sources */,
-				3E82BC6E1F507D6D0081AF7B /* FrameBuffer.cpp in Sources */,
+				87FB3C1A214DF41700A221BE /* FrameBuffer.cpp in Sources */,
 				875505281E74C7BF002222F3 /* gDP.cpp in Sources */,
 				875505291E74C7BF002222F3 /* GLideN64.cpp in Sources */,
 				875505671E74C7BF002222F3 /* GraphicsDrawer.cpp in Sources */,
@@ -4013,7 +4028,7 @@
 				8755054D1E74C7BF002222F3 /* GLFunctions.cpp in Sources */,
 				3E82BC481F507B940081AF7B /* DebugDump.cpp in Sources */,
 				875505581E74C7BF002222F3 /* opengl_Attributes.cpp in Sources */,
-				3E82BC6F1F507D6D0081AF7B /* TextDrawerStubs.cpp in Sources */,
+				87FB3C05214DCEDD00A221BE /* TextDrawerStub.cpp in Sources */,
 				875505591E74C7BF002222F3 /* opengl_BufferedDrawer.cpp in Sources */,
 				8755055A1E74C7BF002222F3 /* opengl_BufferManipulationObjectFactory.cpp in Sources */,
 				8755055B1E74C7BF002222F3 /* opengl_CachedFunctions.cpp in Sources */,
@@ -4030,6 +4045,7 @@
 				8755054F1E74C7BF002222F3 /* glsl_CombinerProgramBuilder.cpp in Sources */,
 				875505501E74C7BF002222F3 /* glsl_CombinerProgramImpl.cpp in Sources */,
 				875505511E74C7BF002222F3 /* glsl_CombinerProgramUniformFactory.cpp in Sources */,
+				87FB3C19214DED1800A221BE /* glsl_FXAA.cpp in Sources */,
 				875505521E74C7BF002222F3 /* glsl_ShaderStorage.cpp in Sources */,
 				875505531E74C7BF002222F3 /* glsl_SpecialShadersFactory.cpp in Sources */,
 				875505541E74C7BF002222F3 /* glsl_Utils.cpp in Sources */,
@@ -4054,9 +4070,10 @@
 				8723F73D1F74A4D7003E572A /* F3DGOLDEN.cpp in Sources */,
 				8723F73E1F74A4D7003E572A /* F3DPD.cpp in Sources */,
 				8723F73F1F74A4D7003E572A /* F3DSETA.cpp in Sources */,
-				8723F7401F74A4D7003E572A /* F3DSWRS.cpp in Sources */,
 				8723F7411F74A4D7003E572A /* F3DTEXA.cpp in Sources */,
 				8723F7421F74A4D7003E572A /* F3DZEX2.cpp in Sources */,
+				87FB3C17214DECE300A221BE /* F5Indi_Naboo.cpp in Sources */,
+				87FB3C18214DECE300A221BE /* F5Rogue.cpp in Sources */,
 				8723F7431F74A4D7003E572A /* L3D.cpp in Sources */,
 				8723F7441F74A4D7003E572A /* L3DEX.cpp in Sources */,
 				8723F7451F74A4D7003E572A /* L3DEX2.cpp in Sources */,
@@ -4065,6 +4082,7 @@
 				8723F7481F74A4D7003E572A /* T3DUX.cpp in Sources */,
 				8723F7491F74A4D7003E572A /* Turbo3D.cpp in Sources */,
 				8723F74A1F74A4D7003E572A /* ZSort.cpp in Sources */,
+				87FB3C11214DD0C400A221BE /* ZSortBOSS.cpp in Sources */,
 				8755038C1E74C51D002222F3 /* SDLStubs.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

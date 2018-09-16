@@ -39,7 +39,7 @@
 #endif
 
 /* local variables */
-static m64p_video_extension_functions l_ExternalVideoFuncTable = {11, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+static m64p_video_extension_functions l_ExternalVideoFuncTable = {12, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 static int l_VideoExtensionActive = 0;
 static int l_VideoOutputActive = 0;
 static int l_Fullscreen = 0;
@@ -51,7 +51,7 @@ m64p_error OverrideVideoFunctions(m64p_video_extension_functions *VideoFunctionS
     /* check input data */
     if (VideoFunctionStruct == NULL)
         return M64ERR_INPUT_ASSERT;
-    if (VideoFunctionStruct->Functions < 11)
+    if (VideoFunctionStruct->Functions < 12)
         return M64ERR_INPUT_INVALID;
 
     /* disable video extension if any of the function pointers are NULL */
@@ -65,10 +65,11 @@ m64p_error OverrideVideoFunctions(m64p_video_extension_functions *VideoFunctionS
         VideoFunctionStruct->VidExtFuncGLSwapBuf == NULL ||
         VideoFunctionStruct->VidExtFuncSetCaption == NULL ||
         VideoFunctionStruct->VidExtFuncToggleFS == NULL ||
-        VideoFunctionStruct->VidExtFuncResizeWindow == NULL)
+        VideoFunctionStruct->VidExtFuncResizeWindow == NULL ||
+        VideoFunctionStruct->VidExtFuncGLGetDefaultFramebuffer == NULL)
     {
-        l_ExternalVideoFuncTable.Functions = 11;
-        memset(&l_ExternalVideoFuncTable.VidExtFuncInit, 0, 11 * sizeof(void *));
+        l_ExternalVideoFuncTable.Functions = 12;
+        memset(&l_ExternalVideoFuncTable.VidExtFuncInit, 0, 12 * sizeof(void *));
         l_VideoExtensionActive = 0;
         return M64ERR_SUCCESS;
     }
@@ -507,4 +508,10 @@ EXPORT m64p_error CALL VidExt_GL_SwapBuffers(void)
     return M64ERR_SUCCESS;
 }
 
+EXPORT uint32_t CALL VidExt_GL_GetDefaultFramebuffer(void)
+{
+    if (l_VideoExtensionActive)
+        return (*l_ExternalVideoFuncTable.VidExtFuncGLGetDefaultFramebuffer)();
 
+    return 0;
+}
