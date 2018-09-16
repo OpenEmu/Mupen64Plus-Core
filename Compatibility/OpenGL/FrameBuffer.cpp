@@ -55,7 +55,7 @@ FrameBuffer::FrameBuffer()
 	, m_pSubTexture(nullptr)
 	, m_copied(false)
 	, m_pFrameBufferCopyTexture(nullptr)
-	, m_copyFBO(ObjectHandle::defaultFramebuffer)
+	, m_copyFBO(ObjectHandle::null)
 {
 	m_loadTileOrigin.uls = m_loadTileOrigin.ult = 0;
 	m_pTexture = textureCache().addFrameBufferTexture(config.video.multisampling != 0);
