@@ -19,7 +19,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>2.5.5</string>
+	<string>2.5.6</string>
 	<key>NSPrincipalClass</key>
 	<string>OEGameCoreController</string>
 	<key>OEGameCoreClass</key>
@@ -37,7 +37,7 @@
 	<key>OEGameCorePlayerCount</key>
 	<string>8</string>
 	<key>OEProjectURL</key>
-	<string>http://bitbucket.org/richard42/</string>
+	<string>https://github.com/mupen64plus</string>
 	<key>OESystemIdentifiers</key>
 	<array>
 		<string>openemu.system.n64</string>
