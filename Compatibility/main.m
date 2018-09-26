@@ -25,8 +25,8 @@
  */
 
 #import "MupenGameCore.h"
-#import "main.h"
-#import "cheat.h"
+#import "main/main.h"
+#import "main/cheat.h"
 
 void new_vi()
 {

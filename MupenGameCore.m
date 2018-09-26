@@ -34,18 +34,18 @@
 #import "api/m64p_frontend.h"
 #import "api/m64p_vidext.h"
 #import "api/callbacks.h"
-#import "rom.h"
-#import "savestates.h"
+#import "main/rom.h"
+#import "main/savestates.h"
 #import "osal/dynamiclib.h"
-#import "version.h"
-#import "memory.h"
-#import "main.h"
+#import "main/version.h"
+#import "memory/memory.h"
+#import "main/main.h"
 
 #import <OpenEmuBase/OERingBuffer.h>
 #import <OpenEmuBase/OETimingUtils.h>
 #import <OpenGL/gl.h>
 
-#import "plugin.h"
+#import "plugin/plugin.h"
 
 #import <dlfcn.h>
 
