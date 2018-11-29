@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2010, OpenEmu Team
+ Copyright (c) 2018, OpenEmu Team
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -28,6 +28,11 @@
 #define M64P_CORE_PROTOTYPES 1
 
 #import "MupenGameCore.h"
+#import <OpenEmuBase/OERingBuffer.h>
+#import <OpenEmuBase/OETimingUtils.h>
+#import "OEN64SystemResponderClient.h"
+#import <OpenGL/gl.h>
+
 #import "api/config.h"
 #import "api/m64p_common.h"
 #import "api/m64p_config.h"
@@ -40,10 +45,7 @@
 #import "main/version.h"
 #import "memory/memory.h"
 #import "main/main.h"
-
-#import <OpenEmuBase/OERingBuffer.h>
-#import <OpenEmuBase/OETimingUtils.h>
-#import <OpenGL/gl.h>
+#import "r4300/r4300.h"
 
 #import "plugin/plugin.h"
 
@@ -53,10 +55,26 @@ NSString *MupenControlNames[] = {
     @"N64_DPadU", @"N64_DPadD", @"N64_DPadL", @"N64_DPadR",
     @"N64_CU", @"N64_CD", @"N64_CL", @"N64_CR",
     @"N64_B", @"N64_A", @"N64_R", @"N64_L", @"N64_Z", @"N64_Start"
-}; // FIXME: missing: joypad X, joypad Y, mempak switch, rumble switch
+};
 
 @interface MupenGameCore () <OEN64SystemResponderClient>
+{
+    uint8_t _padData[4][OEN64ButtonCount];
+    int8_t _xAxis[4];
+    int8_t _yAxis[4];
+    NSUInteger _frameCounter;
+    double _sampleRate;
+    BOOL _isNTSC;
+    BOOL _initializing;
+
+    m64p_emu_state _emulatorState;
+
+    dispatch_queue_t _callbackQueue;
+    NSMutableDictionary *_callbackHandlers;
+}
+
 - (void)OE_didReceiveStateChangeForParamType:(m64p_core_param)paramType value:(int)newValue;
+
 @end
 
 __weak MupenGameCore *_current = 0;
@@ -65,32 +83,37 @@ static void (*ptr_OE_ForceUpdateWindowSize)(int width, int height);
 
 static void MupenDebugCallback(void *context, int level, const char *message)
 {
-    if (level >= 5) return;
-    NSLog(@"Mupen (%d): %s", level, message);
+    NSDictionary<NSNumber *, NSString *> *levels = @{
+        @(M64MSG_ERROR)   : @"Error",
+        @(M64MSG_WARNING) : @"Warning",
+        @(M64MSG_INFO)    : @"Info",
+        @(M64MSG_STATUS)  : @"Status",
+        @(M64MSG_VERBOSE) : @"Verbose",
+    };
+
+    // Ignore "Verbose" messages (maybe too console spammy?) and plugin warnings that aren't relevant
+    if (level >= M64MSG_VERBOSE) return;
+    if (strcmp(message, "No audio plugin attached.  There will be no sound output.") == 0) return;
+    if (strcmp(message, "No input plugin attached.  You won't be able to control the game.") == 0) return;
+    NSLog(@"[Mupen64Plus] (%@): %s", levels[@(level)], message);
 }
 
 static void MupenStateCallback(void *context, m64p_core_param paramType, int newValue)
 {
-    NSLog(@"Mupen: param %d -> %d", paramType, newValue);
+    NSDictionary<NSNumber *, NSString *> *params = @{
+        @(M64CORE_EMU_STATE)          : @"Emu State",
+        @(M64CORE_STATE_LOADCOMPLETE) : @"State Load Complete",
+        @(M64CORE_STATE_SAVECOMPLETE) : @"State Save Complete",
+    };
+
+    if (params[@(paramType)])
+        NSLog(@"[Mupen64Plus] (state) %@ -> %d", params[@(paramType)], newValue);
+    else
+        NSLog(@"[Mupen64Plus] param %d -> %d", paramType, newValue);
     [((__bridge MupenGameCore *)context) OE_didReceiveStateChangeForParamType:paramType value:newValue];
 }
 
 @implementation MupenGameCore
-{
-    NSData *romData;
-
-    m64p_emu_state _emulatorState;
-
-    dispatch_queue_t _callbackQueue;
-    NSMutableDictionary *_callbackHandlers;
-
-    BOOL _initializing;
-    NSUInteger _frameCounter;
-
-    //FBO obkects for OpenEmu and GlideN64 respectively
-    GLint FBO, curFBO;
-
-}
 
 - (instancetype)init
 {
@@ -98,17 +121,16 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
         _initializing = YES;
         _frameCounter = 0;
 
-        videoWidth  = 640;
-        videoHeight = 480;
-        videoBitDepth = 32; // ignored
-        videoDepthBitDepth = 0; // TODO
+        _videoWidth  = 640;
+        _videoHeight = 480;
+        _videoBitDepth = 32; // ignored
         
-        sampleRate = 33600;
+        _sampleRate = 33600;
         
-        isNTSC = YES;
+        _isNTSC = YES;
 
         _callbackQueue = dispatch_queue_create("org.openemu.MupenGameCore.CallbackHandlerQueue", DISPATCH_QUEUE_SERIAL);
-        _callbackHandlers = [[NSMutableDictionary alloc] init];
+        _callbackHandlers = [NSMutableDictionary dictionary];
     }
     _current = self;
     return self;
@@ -133,7 +155,7 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
         NSMutableSet *callbacks = _callbackHandlers[@(paramType)];
         if(callbacks == nil)
         {
-            callbacks = [[NSMutableSet alloc] init];
+            callbacks = [NSMutableSet set];
             _callbackHandlers[@(paramType)] = callbacks;
         }
 
@@ -175,22 +197,22 @@ static void MupenGetKeys(int Control, BUTTONS *Keys)
 {
     GET_CURRENT_OR_RETURN();
 
-    Keys->R_DPAD = current->padData[Control][OEN64ButtonDPadRight];
-    Keys->L_DPAD = current->padData[Control][OEN64ButtonDPadLeft];
-    Keys->D_DPAD = current->padData[Control][OEN64ButtonDPadDown];
-    Keys->U_DPAD = current->padData[Control][OEN64ButtonDPadUp];
-    Keys->START_BUTTON = current->padData[Control][OEN64ButtonStart];
-    Keys->Z_TRIG = current->padData[Control][OEN64ButtonZ];
-    Keys->B_BUTTON = current->padData[Control][OEN64ButtonB];
-    Keys->A_BUTTON = current->padData[Control][OEN64ButtonA];
-    Keys->R_CBUTTON = current->padData[Control][OEN64ButtonCRight];
-    Keys->L_CBUTTON = current->padData[Control][OEN64ButtonCLeft];
-    Keys->D_CBUTTON = current->padData[Control][OEN64ButtonCDown];
-    Keys->U_CBUTTON = current->padData[Control][OEN64ButtonCUp];
-    Keys->R_TRIG = current->padData[Control][OEN64ButtonR];
-    Keys->L_TRIG = current->padData[Control][OEN64ButtonL];
-    Keys->X_AXIS = current->xAxis[Control];
-    Keys->Y_AXIS = current->yAxis[Control];
+    Keys->R_DPAD = current->_padData[Control][OEN64ButtonDPadRight];
+    Keys->L_DPAD = current->_padData[Control][OEN64ButtonDPadLeft];
+    Keys->D_DPAD = current->_padData[Control][OEN64ButtonDPadDown];
+    Keys->U_DPAD = current->_padData[Control][OEN64ButtonDPadUp];
+    Keys->START_BUTTON = current->_padData[Control][OEN64ButtonStart];
+    Keys->Z_TRIG = current->_padData[Control][OEN64ButtonZ];
+    Keys->B_BUTTON = current->_padData[Control][OEN64ButtonB];
+    Keys->A_BUTTON = current->_padData[Control][OEN64ButtonA];
+    Keys->R_CBUTTON = current->_padData[Control][OEN64ButtonCRight];
+    Keys->L_CBUTTON = current->_padData[Control][OEN64ButtonCLeft];
+    Keys->D_CBUTTON = current->_padData[Control][OEN64ButtonCDown];
+    Keys->U_CBUTTON = current->_padData[Control][OEN64ButtonCUp];
+    Keys->R_TRIG = current->_padData[Control][OEN64ButtonR];
+    Keys->L_TRIG = current->_padData[Control][OEN64ButtonL];
+    Keys->X_AXIS = current->_xAxis[Control];
+    Keys->Y_AXIS = current->_yAxis[Control];
 }
 
 static void MupenInitiateControllers (CONTROL_INFO ControlInfo)
@@ -211,21 +233,21 @@ static void MupenAudioSampleRateChanged(int SystemType)
 {
     GET_CURRENT_OR_RETURN();
 
-    float currentRate = current->sampleRate;
+    double currentRate = current->_sampleRate;
     
     switch (SystemType)
     {
         default:
         case SYSTEM_NTSC:
-            current->sampleRate = 48681812 / (*AudioInfo.AI_DACRATE_REG + 1);
+            current->_sampleRate = 48681812 / (*AudioInfo.AI_DACRATE_REG + 1);
             break;
         case SYSTEM_PAL:
-            current->sampleRate = 49656530 / (*AudioInfo.AI_DACRATE_REG + 1);
+            current->_sampleRate = 49656530 / (*AudioInfo.AI_DACRATE_REG + 1);
             break;
     }
 
     [[current audioDelegate] audioSampleRateDidChange];
-    NSLog(@"Mupen rate changed %f -> %f\n", currentRate, current->sampleRate);
+    NSLog(@"[Mupen64Plus] samplerate changed %f -> %f\n", currentRate, current->_sampleRate);
 }
 
 static void MupenAudioLenChanged()
@@ -264,13 +286,13 @@ static void SetIsNTSC()
         case 0x55:
         case 0x58:
         case 0x59:
-            current->isNTSC = NO;
+            current->_isNTSC = NO;
             break;
         case 0x37:
         case 0x41:
         case 0x45:
         case 0x4a:
-            current->isNTSC = YES;
+            current->_isNTSC = YES;
             break;
     }
 }
@@ -289,46 +311,45 @@ static void MupenSetAudioSpeed(int percent)
     // do we need this?
 }
 
+#pragma mark - Execution
+
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
     // Load ROM
-    romData = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:error];
+    NSData *romData = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:error];
 
     if (romData == nil) return NO;
 
     NSBundle *coreBundle = [NSBundle bundleForClass:[self class]];
-    const char *dataPath;
+    NSURL *dataURL = coreBundle.resourceURL;
 
-    NSString *configPath = [[self supportDirectoryPath] stringByAppendingString:@"/"];
-    dataPath = [[coreBundle resourcePath] fileSystemRepresentation];
+    NSURL *configURL = [NSURL fileURLWithPath:self.supportDirectoryPath];
 
-    [[NSFileManager defaultManager] createDirectoryAtPath:configPath withIntermediateDirectories:YES attributes:nil error:nil];
-
-    NSString *batterySavesDirectory = [self batterySavesDirectoryPath];
-    [[NSFileManager defaultManager] createDirectoryAtPath:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:NULL];
+    NSURL *batterySavesDirectory = [NSURL fileURLWithPath:self.batterySavesDirectoryPath];
+    [NSFileManager.defaultManager createDirectoryAtURL:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:nil];
 
     // open core here
-    CoreStartup(FRONTEND_API_VERSION, [configPath fileSystemRepresentation], dataPath, (__bridge void *)self, MupenDebugCallback, (__bridge void *)self, MupenStateCallback);
+    CoreStartup(FRONTEND_API_VERSION, configURL.fileSystemRepresentation, dataURL.fileSystemRepresentation, (__bridge void *)self, MupenDebugCallback, (__bridge void *)self, MupenStateCallback);
 
     // set SRAM path
     m64p_handle config;
     ConfigOpenSection("Core", &config);
     ConfigSetParameter(config, "SaveSRAMPath", M64TYPE_STRING, batterySavesDirectory.fileSystemRepresentation);
-    ConfigSetParameter(config, "SharedDataPath", M64TYPE_STRING, dataPath);
+    ConfigSetParameter(config, "SharedDataPath", M64TYPE_STRING, dataURL.fileSystemRepresentation);
     ConfigSaveSection("Core");
 
     // Disable dynarec (for debugging)
     m64p_handle section;
 //#ifdef DEBUG
-//    int ival = 0;
+//    int ival = CORE_PURE_INTERPRETER;
 //#else
-    int ival = 2;
+    int ival = CORE_DYNAREC;
 //#endif
 
     ConfigOpenSection("Core", &section);
     ConfigSetParameter(section, "R4300Emulator", M64TYPE_INT, &ival);
 
-    if (CoreDoCommand(M64CMD_ROM_OPEN, (int)[romData length], (void *)[romData bytes]) != M64ERR_SUCCESS)
+    if (CoreDoCommand(M64CMD_ROM_OPEN, (int)romData.length, (void *)romData.bytes) != M64ERR_SUCCESS)
         return NO;
 
     return YES;
@@ -342,9 +363,9 @@ static void MupenSetAudioSpeed(int percent)
 
     void (^LoadPlugin)(m64p_plugin_type, NSString *) = ^(m64p_plugin_type pluginType, NSString *pluginName){
         m64p_dynlib_handle rsp_handle;
-        NSString *rspPath = [[coreBundle builtInPlugInsPath] stringByAppendingPathComponent:pluginName];
+        NSString *rspPath = [coreBundle.builtInPlugInsPath stringByAppendingPathComponent:pluginName];
 
-        rsp_handle = dlopen([rspPath fileSystemRepresentation], RTLD_NOW);
+        rsp_handle = dlopen(rspPath.fileSystemRepresentation, RTLD_NOW);
         ptr_PluginStartup rsp_start = osal_dynlib_getproc(rsp_handle, "PluginStartup");
         rsp_start(core_handle, (__bridge void *)self, MupenDebugCallback);
         
@@ -420,9 +441,6 @@ static void MupenSetAudioSpeed(int percent)
         OESetThreadRealtime(1. / 50, .007, .03); // guessed from bsnes
         [self.renderDelegate willRenderFrameOnAlternateThread];
 
-        // Link the OpenEmu presentation buffer to the local FBO
-        FBO = (GLint)[[self.renderDelegate presentationFramebuffer] integerValue];
-
         CoreDoCommand(M64CMD_EXECUTE, 0, NULL);
     }
 }
@@ -458,128 +476,22 @@ static void MupenSetAudioSpeed(int percent)
     CoreDoCommand(M64CMD_RESET, 1 /* hard reset */, NULL);
 }
 
-- (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
+- (NSTimeInterval)frameInterval
 {
-    /*
-     Blocks run in this order:
-     scheduleSaveState -> M64CORE_STATE_SAVECOMPLETE
-     */
-
-    [self OE_addHandlerForType:M64CORE_STATE_SAVECOMPLETE usingBlock:
-     ^ BOOL (m64p_core_param paramType, int newValue)
-     {
-         // Reset the paused state back to where it was.
-         [self endPausedExecution];
-         NSAssert(paramType == M64CORE_STATE_SAVECOMPLETE, @"This block should only be called for save completion!");
-         dispatch_async(dispatch_get_main_queue(), ^{
-             if(newValue == 0)
-             {
-                 NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotSaveStateError userInfo:@{
-                     NSLocalizedDescriptionKey : @"Mupen Could not save the current state.",
-                     NSFilePathErrorKey : fileName
-                 }];
-                 block(NO, error);
-                 return;
-             }
-
-             block(YES, nil);
-         });
-         return NO;
-     }];
-
-    BOOL (^scheduleSaveState)(void) =
-    ^ BOOL {
-        if(CoreDoCommand(M64CMD_STATE_SAVE, 1, (void *)[fileName fileSystemRepresentation]) == M64ERR_SUCCESS)
-        {
-            // Mupen needs to be running to process the save.
-            [self beginPausedExecution];
-            return YES;
-        }
-
-        return NO;
-    };
-
-    if(scheduleSaveState()) return;
-
-    [self OE_addHandlerForType:M64CORE_EMU_STATE usingBlock:
-     ^ BOOL (m64p_core_param paramType, int newValue)
-     {
-         NSAssert(paramType == M64CORE_EMU_STATE, @"This block should only be called for load completion!");
-         if(newValue != M64EMU_RUNNING && newValue != M64EMU_PAUSED)
-             return YES;
-
-         return !scheduleSaveState();
-     }];
+    // Mupen uses 60 but it's probably wrong
+    return _isNTSC ? 60 : 50;
 }
 
-- (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
-{
-    if(_initializing)
-    {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1000 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
-            int success = CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName fileSystemRepresentation]);
-            if(block) block(success==M64ERR_SUCCESS, nil);
-       });
-    }
-    else
-    {
-        [self OE_addHandlerForType:M64CORE_STATE_LOADCOMPLETE usingBlock:
-         ^ BOOL (m64p_core_param paramType, int newValue)
-         {
-             NSAssert(paramType == M64CORE_STATE_LOADCOMPLETE, @"This block should only be called for load completion!");
-
-             [self endPausedExecution];
-             dispatch_async(dispatch_get_main_queue(), ^{
-                 if(newValue == 0)
-                 {
-                     NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:@{
-                         NSLocalizedDescriptionKey : @"Mupen Could not load the save state",
-                         NSLocalizedRecoverySuggestionErrorKey : @"The loaded file is probably corrupted.",
-                         NSFilePathErrorKey : fileName
-                     }];
-                     block(NO, error);
-                     return;
-                 }
-
-                 block(YES, nil);
-             });
-             return NO;
-         }];
-
-        BOOL (^scheduleLoadState)(void) =
-        ^ BOOL {
-            if(CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)[fileName fileSystemRepresentation]) == M64ERR_SUCCESS)
-            {
-                // Mupen needs to be running to process the save.
-                [self beginPausedExecution];
-                return YES;
-            }
-
-            return NO;
-        };
-
-        if(scheduleLoadState()) return;
-
-        [self OE_addHandlerForType:M64CORE_EMU_STATE usingBlock:
-         ^ BOOL (m64p_core_param paramType, int newValue)
-         {
-             NSAssert(paramType == M64CORE_EMU_STATE, @"This block should only be called for load completion!");
-             if(newValue != M64EMU_RUNNING && newValue != M64EMU_PAUSED)
-                 return YES;
-
-             return !scheduleLoadState();
-         }];
-    }
-}
+#pragma mark - Video
 
 - (OEIntSize)aspectSize
 {
-    return OEIntSizeMake(isNTSC ? videoWidth * (120.0 / 119.0) : videoWidth, videoHeight);
+    return OEIntSizeMake(_isNTSC ? _videoWidth * (120.0 / 119.0) : _videoWidth, _videoHeight);
 }
 
 - (OEIntSize)bufferSize
 {
-    return OEIntSizeMake(videoWidth, videoHeight);
+    return OEIntSizeMake(_videoWidth, _videoHeight);
 }
 
 - (BOOL)tryToResizeVideoTo:(OEIntSize)size
@@ -625,12 +537,11 @@ static void MupenSetAudioSpeed(int percent)
     return GL_RGB8;
 }
 
-#pragma mark Mupen Audio
+#pragma mark - Audio
 
-- (NSTimeInterval)frameInterval
+- (double)audioSampleRate
 {
-    // Mupen uses 60 but it's probably wrong
-    return isNTSC ? 60 : 50;
+    return _sampleRate;
 }
 
 - (NSUInteger)channelCount
@@ -638,10 +549,123 @@ static void MupenSetAudioSpeed(int percent)
     return 2;
 }
 
-- (double)audioSampleRate
+#pragma mark - Save States
+
+- (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-    return sampleRate;
+    /*
+     Blocks run in this order:
+     scheduleSaveState -> M64CORE_STATE_SAVECOMPLETE
+     */
+
+    [self OE_addHandlerForType:M64CORE_STATE_SAVECOMPLETE usingBlock:
+     ^ BOOL (m64p_core_param paramType, int newValue)
+     {
+         // Reset the paused state back to where it was.
+         [self endPausedExecution];
+         NSAssert(paramType == M64CORE_STATE_SAVECOMPLETE, @"This block should only be called for save completion!");
+         dispatch_async(dispatch_get_main_queue(), ^{
+             if(newValue == 0)
+             {
+                 NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotSaveStateError userInfo:@{
+                     NSLocalizedDescriptionKey : @"Mupen Could not save the current state.",
+                     NSFilePathErrorKey : fileName
+                 }];
+                 block(NO, error);
+                 return;
+             }
+
+             block(YES, nil);
+         });
+         return NO;
+     }];
+
+    BOOL (^scheduleSaveState)(void) =
+    ^ BOOL {
+        if(CoreDoCommand(M64CMD_STATE_SAVE, 1, (void *)fileName.fileSystemRepresentation) == M64ERR_SUCCESS)
+        {
+            // Mupen needs to be running to process the save.
+            [self beginPausedExecution];
+            return YES;
+        }
+
+        return NO;
+    };
+
+    if(scheduleSaveState()) return;
+
+    [self OE_addHandlerForType:M64CORE_EMU_STATE usingBlock:
+     ^ BOOL (m64p_core_param paramType, int newValue)
+     {
+         NSAssert(paramType == M64CORE_EMU_STATE, @"This block should only be called for load completion!");
+         if(newValue != M64EMU_RUNNING && newValue != M64EMU_PAUSED)
+             return YES;
+
+         return !scheduleSaveState();
+     }];
 }
+
+- (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
+{
+    if(_initializing)
+    {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1000 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+            int success = CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)fileName.fileSystemRepresentation);
+            if(block) block(success==M64ERR_SUCCESS, nil);
+       });
+    }
+    else
+    {
+        [self OE_addHandlerForType:M64CORE_STATE_LOADCOMPLETE usingBlock:
+         ^ BOOL (m64p_core_param paramType, int newValue)
+         {
+             NSAssert(paramType == M64CORE_STATE_LOADCOMPLETE, @"This block should only be called for load completion!");
+
+             [self endPausedExecution];
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 if(newValue == 0)
+                 {
+                     NSError *error = [NSError errorWithDomain:OEGameCoreErrorDomain code:OEGameCoreCouldNotLoadStateError userInfo:@{
+                         NSLocalizedDescriptionKey : @"Mupen Could not load the save state",
+                         NSLocalizedRecoverySuggestionErrorKey : @"The loaded file is probably corrupted.",
+                         NSFilePathErrorKey : fileName
+                     }];
+                     block(NO, error);
+                     return;
+                 }
+
+                 block(YES, nil);
+             });
+             return NO;
+         }];
+
+        BOOL (^scheduleLoadState)(void) =
+        ^ BOOL {
+            if(CoreDoCommand(M64CMD_STATE_LOAD, 1, (void *)fileName.fileSystemRepresentation) == M64ERR_SUCCESS)
+            {
+                // Mupen needs to be running to process the save.
+                [self beginPausedExecution];
+                return YES;
+            }
+
+            return NO;
+        };
+
+        if(scheduleLoadState()) return;
+
+        [self OE_addHandlerForType:M64CORE_EMU_STATE usingBlock:
+         ^ BOOL (m64p_core_param paramType, int newValue)
+         {
+             NSAssert(paramType == M64CORE_EMU_STATE, @"This block should only be called for load completion!");
+             if(newValue != M64EMU_RUNNING && newValue != M64EMU_PAUSED)
+                 return YES;
+
+             return !scheduleLoadState();
+         }];
+    }
+}
+
+#pragma mark - Input
 
 - (oneway void)didMoveN64JoystickDirection:(OEN64Button)button withValue:(CGFloat)value forPlayer:(NSUInteger)player
 {
@@ -660,16 +684,16 @@ static void MupenSetAudioSpeed(int percent)
     switch (button)
     {
         case OEN64AnalogUp:
-            yAxis[player] = value * 80;
+            _yAxis[player] = value * 80;
             break;
         case OEN64AnalogDown:
-            yAxis[player] = value * -80;
+            _yAxis[player] = value * -80;
             break;
         case OEN64AnalogLeft:
-            xAxis[player] = value * -80;
+            _xAxis[player] = value * -80;
             break;
         case OEN64AnalogRight:
-            xAxis[player] = value * 80;
+            _xAxis[player] = value * 80;
             break;
         default:
             break;
@@ -679,31 +703,33 @@ static void MupenSetAudioSpeed(int percent)
 - (oneway void)didPushN64Button:(OEN64Button)button forPlayer:(NSUInteger)player
 {
     player -= 1;
-    padData[player][button] = 1;
+    _padData[player][button] = 1;
 }
 
 - (oneway void)didReleaseN64Button:(OEN64Button)button forPlayer:(NSUInteger)player
 {
     player -= 1;
-    padData[player][button] = 0;
+    _padData[player][button] = 0;
 }
+
+#pragma mark - Cheats
 
 - (void)setCheat:(NSString *)code setType:(NSString *)type setEnabled:(BOOL)enabled
 {
     // Sanitize
-    code = [code stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    code = [code stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
     
     // Remove any spaces
     code = [code stringByReplacingOccurrencesOfString:@" " withString:@""];
     
     NSString *singleCode;
-    NSArray *multipleCodes = [code componentsSeparatedByString:@"+"];
-    m64p_cheat_code *gsCode = (m64p_cheat_code*) calloc([multipleCodes count], sizeof(m64p_cheat_code));
+    NSArray<NSString *> *multipleCodes = [code componentsSeparatedByString:@"+"];
+    m64p_cheat_code *gsCode = (m64p_cheat_code*) calloc(multipleCodes.count, sizeof(m64p_cheat_code));
     int codeCounter = 0;
     
     for (singleCode in multipleCodes)
     {
-        if ([singleCode length] == 12) // GameShark
+        if (singleCode.length == 12) // GameShark
         {
             // GameShark N64 format: XXXXXXXX YYYY
             NSString *address = [singleCode substringWithRange:NSMakeRange(0, 8)];
@@ -711,8 +737,8 @@ static void MupenSetAudioSpeed(int percent)
             
             // Convert GS hex to int
             unsigned int outAddress, outValue;
-            NSScanner* scanAddress = [NSScanner scannerWithString:address];
-            NSScanner* scanValue = [NSScanner scannerWithString:value];
+            NSScanner *scanAddress = [NSScanner scannerWithString:address];
+            NSScanner *scanValue = [NSScanner scannerWithString:value];
             [scanAddress scanHexInt:&outAddress];
             [scanValue scanHexInt:&outValue];
             
@@ -734,8 +760,10 @@ static void MupenSetAudioSpeed(int percent)
     // Else add code as normal
     else
     {
-        enabled ? CoreAddCheat([code UTF8String], gsCode, codeCounter+1) : CoreCheatEnabled([code UTF8String], 0);
+        enabled ? CoreAddCheat(code.UTF8String, gsCode, codeCounter+1) : CoreCheatEnabled(code.UTF8String, 0);
     }
+
+    free(gsCode);
 }
 
 @end

@@ -57,9 +57,9 @@ EXPORT m64p_error CALL VidExt_SetVideoMode(int Width, int Height, int BitsPerPix
 {
     GET_CURRENT_OR_RETURN(M64ERR_SUCCESS);
 
-    current->videoWidth = Width;
-    current->videoHeight = Height;
-    current->videoBitDepth = BitsPerPixel;
+    current->_videoWidth = Width;
+    current->_videoHeight = Height;
+    current->_videoBitDepth = BitsPerPixel;
     
     sActive = 1;
     
@@ -114,6 +114,7 @@ EXPORT m64p_error CALL VidExt_ResizeWindow(int width, int height)
 
 EXPORT uint32_t CALL VidExt_GL_GetDefaultFramebuffer(void)
 {
+    //GLint FBO = (GLint)[[self.renderDelegate presentationFramebuffer] integerValue];
     GLint defaultFramebuffer;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFramebuffer);
 

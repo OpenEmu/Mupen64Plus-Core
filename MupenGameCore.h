@@ -26,28 +26,18 @@
 
 #import <Cocoa/Cocoa.h>
 #import <OpenEmuBase/OEGameCore.h>
-#import <dispatch/dispatch.h>
-#import "OEN64SystemResponderClient.h"
 
 OE_EXPORTED_CLASS
 @interface MupenGameCore : OEGameCore
 {
 @private
-    uint8_t padData[4][OEN64ButtonCount];
-    int8_t xAxis[4];
-    int8_t yAxis[4];
-    int videoWidth;
-    int videoHeight;
-    int videoBitDepth;
-    int videoDepthBitDepth; // eh
-    
-    float sampleRate;
-    
-    BOOL isNTSC;
+    int _videoWidth;
+    int _videoHeight;
+    int _videoBitDepth;
 }
 
-- (void) videoInterrupt;
-- (void) swapBuffers;
+- (void)videoInterrupt;
+- (void)swapBuffers;
 @end
 
 extern __weak MupenGameCore *_current;
