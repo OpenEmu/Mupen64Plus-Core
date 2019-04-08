@@ -146,7 +146,6 @@
 		3E82BC491F507B940081AF7B /* Debugger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC3F1F507B930081AF7B /* Debugger.cpp */; };
 		3E82BC4D1F507B940081AF7B /* RSP_LoadMatrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */; };
 		3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC551F507C380081AF7B /* ColorBufferReader.cpp */; };
-		3E82BC5F1F507C8F0081AF7B /* GraphicBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC5E1F507C8F0081AF7B /* GraphicBuffer.cpp */; };
 		8723F7001F74A36E003E572A /* CRC_OPT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */; };
 		8723F7041F74A3B1003E572A /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7021F74A3A3003E572A /* xxhash.c */; };
 		8723F7341F74A4D7003E572A /* F3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7061F74A49E003E572A /* F3D.cpp */; };
@@ -362,6 +361,10 @@
 		C62301A8171227B300576081 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
 		C62301A9171227B900576081 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
 		C6D120F71711312600E868A8 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
+		EE2BBC40225AD5050007BF6F /* libhardware.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EE2BBC35225AD5040007BF6F /* libhardware.cpp */; };
+		EE2BBC41225AD5050007BF6F /* GraphicBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EE2BBC38225AD5040007BF6F /* GraphicBuffer.cpp */; };
+		EE2BBC46225AD5380007BF6F /* iob.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EE2BBC45225AD5370007BF6F /* iob.cpp */; };
+		EE2BBC48225AD6520007BF6F /* MemoryStatus_mupenplus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EE2BBC47225AD6510007BF6F /* MemoryStatus_mupenplus.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -665,7 +668,6 @@
 		3E82BC5B1F507C560081AF7B /* Parameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parameters.h; sourceTree = "<group>"; };
 		3E82BC5C1F507C560081AF7B /* PixelBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelBuffer.h; sourceTree = "<group>"; };
 		3E82BC5D1F507C6D0081AF7B /* opengl_Attributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = opengl_Attributes.h; sourceTree = "<group>"; };
-		3E82BC5E1F507C8F0081AF7B /* GraphicBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicBuffer.cpp; sourceTree = "<group>"; };
 		3E82BC601F507CBA0081AF7B /* callbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = callbacks.h; sourceTree = "<group>"; };
 		3E82BC611F507CBA0081AF7B /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		3E82BC621F507CBA0081AF7B /* debugger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debugger.h; sourceTree = "<group>"; };
@@ -902,11 +904,6 @@
 		875504701E74C7BF002222F3 /* glsl_SpecialShadersFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_SpecialShadersFactory.h; sourceTree = "<group>"; };
 		875504711E74C7BF002222F3 /* glsl_Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_Utils.cpp; sourceTree = "<group>"; };
 		875504721E74C7BF002222F3 /* glsl_Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_Utils.h; sourceTree = "<group>"; };
-		875504741E74C7BF002222F3 /* gralloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gralloc.h; sourceTree = "<group>"; };
-		875504751E74C7BF002222F3 /* GraphicBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicBuffer.cpp; sourceTree = "<group>"; };
-		875504761E74C7BF002222F3 /* GraphicBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphicBuffer.h; sourceTree = "<group>"; };
-		875504771E74C7BF002222F3 /* libhardware.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = libhardware.cpp; sourceTree = "<group>"; };
-		875504781E74C7BF002222F3 /* libhardware.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libhardware.h; sourceTree = "<group>"; };
 		8755047A1E74C7BF002222F3 /* mupen64plus_DisplayWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mupen64plus_DisplayWindow.cpp; sourceTree = "<group>"; };
 		8755047B1E74C7BF002222F3 /* opengl_Attributes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_Attributes.cpp; sourceTree = "<group>"; };
 		8755047D1E74C7BF002222F3 /* opengl_BufferedDrawer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_BufferedDrawer.cpp; sourceTree = "<group>"; };
@@ -1531,6 +1528,14 @@
 		94F2868616C6CFDB0075A73E /* Gfx_1.3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Gfx_1.3.h; sourceTree = "<group>"; };
 		C6D120F61711312600E868A8 /* OpenEmuBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenEmuBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E65807B2D6F200F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		EE2BBC34225AD5040007BF6F /* GraphicBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GraphicBuffer.h; sourceTree = "<group>"; };
+		EE2BBC35225AD5040007BF6F /* libhardware.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = libhardware.cpp; sourceTree = "<group>"; };
+		EE2BBC36225AD5040007BF6F /* libhardware.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libhardware.h; sourceTree = "<group>"; };
+		EE2BBC37225AD5040007BF6F /* gralloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gralloc.h; sourceTree = "<group>"; };
+		EE2BBC38225AD5040007BF6F /* GraphicBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicBuffer.cpp; sourceTree = "<group>"; };
+		EE2BBC44225AD5370007BF6F /* MemoryStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MemoryStatus.h; path = ../../../Mupen64plus/GLideN64/src/MemoryStatus.h; sourceTree = "<group>"; };
+		EE2BBC45225AD5370007BF6F /* iob.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = iob.cpp; path = ../../../Mupen64plus/GLideN64/src/iob.cpp; sourceTree = "<group>"; };
+		EE2BBC47225AD6510007BF6F /* MemoryStatus_mupenplus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MemoryStatus_mupenplus.cpp; path = ../../../../Mupen64plus/GLideN64/src/mupenplus/MemoryStatus_mupenplus.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2355,6 +2360,8 @@
 		875503AF1E74C7BE002222F3 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				EE2BBC45225AD5370007BF6F /* iob.cpp */,
+				EE2BBC44225AD5370007BF6F /* MemoryStatus.h */,
 				3E82BC331F507B930081AF7B /* DebugDump.h */,
 				3E82BC341F507B930081AF7B /* Debugger.h */,
 				3E82BC3A1F507B930081AF7B /* ZilmarGFX_1_3.h */,
@@ -2655,11 +2662,11 @@
 		875504601E74C7BF002222F3 /* OpenGLContext */ = {
 			isa = PBXGroup;
 			children = (
+				EE2BBC32225AD5040007BF6F /* GraphicBuffer */,
 				3E82BC5D1F507C6D0081AF7B /* opengl_Attributes.h */,
 				875504611E74C7BF002222F3 /* GLFunctions.cpp */,
 				875504621E74C7BF002222F3 /* GLFunctions.h */,
 				875504631E74C7BF002222F3 /* GLSL */,
-				875504731E74C7BF002222F3 /* GraphicBufferPrivateApi */,
 				875504791E74C7BF002222F3 /* mupen64plus */,
 				8755047B1E74C7BF002222F3 /* opengl_Attributes.cpp */,
 				8755047D1E74C7BF002222F3 /* opengl_BufferedDrawer.cpp */,
@@ -2716,19 +2723,6 @@
 			path = GLSL;
 			sourceTree = "<group>";
 		};
-		875504731E74C7BF002222F3 /* GraphicBufferPrivateApi */ = {
-			isa = PBXGroup;
-			children = (
-				3E82BC5E1F507C8F0081AF7B /* GraphicBuffer.cpp */,
-				875504741E74C7BF002222F3 /* gralloc.h */,
-				875504751E74C7BF002222F3 /* GraphicBuffer.cpp */,
-				875504761E74C7BF002222F3 /* GraphicBuffer.h */,
-				875504771E74C7BF002222F3 /* libhardware.cpp */,
-				875504781E74C7BF002222F3 /* libhardware.h */,
-			);
-			path = GraphicBufferPrivateApi;
-			sourceTree = "<group>";
-		};
 		875504791E74C7BF002222F3 /* mupen64plus */ = {
 			isa = PBXGroup;
 			children = (
@@ -2781,6 +2775,7 @@
 		875504C01E74C7BF002222F3 /* mupenplus */ = {
 			isa = PBXGroup;
 			children = (
+				EE2BBC47225AD6510007BF6F /* MemoryStatus_mupenplus.cpp */,
 				875504C11E74C7BF002222F3 /* CommonAPIImpl_mupenplus.cpp */,
 				875504C21E74C7BF002222F3 /* Config_mupenplus.cpp */,
 				875504C31E74C7BF002222F3 /* GLideN64_mupenplus.h */,
@@ -3703,6 +3698,27 @@
 			path = liblinux;
 			sourceTree = "<group>";
 		};
+		EE2BBC32225AD5040007BF6F /* GraphicBuffer */ = {
+			isa = PBXGroup;
+			children = (
+				EE2BBC33225AD5040007BF6F /* PrivateApi */,
+			);
+			name = GraphicBuffer;
+			path = ../../../../../Mupen64plus/GLideN64/src/Graphics/OpenGLContext/GraphicBuffer;
+			sourceTree = "<group>";
+		};
+		EE2BBC33225AD5040007BF6F /* PrivateApi */ = {
+			isa = PBXGroup;
+			children = (
+				EE2BBC34225AD5040007BF6F /* GraphicBuffer.h */,
+				EE2BBC35225AD5040007BF6F /* libhardware.cpp */,
+				EE2BBC36225AD5040007BF6F /* libhardware.h */,
+				EE2BBC37225AD5040007BF6F /* gralloc.h */,
+				EE2BBC38225AD5040007BF6F /* GraphicBuffer.cpp */,
+			);
+			path = PrivateApi;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -3994,7 +4010,6 @@
 				875505191E74C7BF002222F3 /* DisplayWindow.cpp in Sources */,
 				875505261E74C7BF002222F3 /* FrameBufferInfo.cpp in Sources */,
 				875505271E74C7BF002222F3 /* GBI.cpp in Sources */,
-				3E82BC5F1F507C8F0081AF7B /* GraphicBuffer.cpp in Sources */,
 				87FB3C1A214DF41700A221BE /* FrameBuffer.cpp in Sources */,
 				875505281E74C7BF002222F3 /* gDP.cpp in Sources */,
 				875505291E74C7BF002222F3 /* GLideN64.cpp in Sources */,
@@ -4040,6 +4055,7 @@
 				875505621E74C7BF002222F3 /* opengl_Parameters.cpp in Sources */,
 				875505631E74C7BF002222F3 /* opengl_TextureManipulationObjectFactory.cpp in Sources */,
 				875505641E74C7BF002222F3 /* opengl_UnbufferedDrawer.cpp in Sources */,
+				EE2BBC41225AD5050007BF6F /* GraphicBuffer.cpp in Sources */,
 				875505651E74C7BF002222F3 /* opengl_Utils.cpp in Sources */,
 				8755054E1E74C7BF002222F3 /* glsl_CombinerInputs.cpp in Sources */,
 				8755054F1E74C7BF002222F3 /* glsl_CombinerProgramBuilder.cpp in Sources */,
@@ -4051,11 +4067,13 @@
 				875505541E74C7BF002222F3 /* glsl_Utils.cpp in Sources */,
 				875505851E74C7BF002222F3 /* TxFilterStub.cpp in Sources */,
 				875505731E74C7BF002222F3 /* MupenPlusPluginAPI.cpp in Sources */,
+				EE2BBC48225AD6520007BF6F /* MemoryStatus_mupenplus.cpp in Sources */,
 				3E82BC491F507B940081AF7B /* Debugger.cpp in Sources */,
 				875505711E74C7BF002222F3 /* Config_mupenplus.cpp in Sources */,
 				875505701E74C7BF002222F3 /* CommonAPIImpl_mupenplus.cpp in Sources */,
 				875505721E74C7BF002222F3 /* MupenPlusAPIImpl.cpp in Sources */,
 				3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */,
+				EE2BBC46225AD5380007BF6F /* iob.cpp in Sources */,
 				875505571E74C7BF002222F3 /* mupen64plus_DisplayWindow.cpp in Sources */,
 				8723F7041F74A3B1003E572A /* xxhash.c in Sources */,
 				8723F7341F74A4D7003E572A /* F3D.cpp in Sources */,
@@ -4076,6 +4094,7 @@
 				87FB3C18214DECE300A221BE /* F5Rogue.cpp in Sources */,
 				8723F7431F74A4D7003E572A /* L3D.cpp in Sources */,
 				8723F7441F74A4D7003E572A /* L3DEX.cpp in Sources */,
+				EE2BBC40225AD5050007BF6F /* libhardware.cpp in Sources */,
 				8723F7451F74A4D7003E572A /* L3DEX2.cpp in Sources */,
 				8723F7461F74A4D7003E572A /* S2DEX.cpp in Sources */,
 				8723F7471F74A4D7003E572A /* S2DEX2.cpp in Sources */,
