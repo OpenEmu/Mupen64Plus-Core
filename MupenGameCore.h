@@ -31,9 +31,9 @@ OE_EXPORTED_CLASS
 @interface MupenGameCore : OEGameCore
 {
 @private
-    int _videoWidth;
-    int _videoHeight;
-    int _videoBitDepth;
+    _Atomic int _videoWidth;
+    _Atomic int _videoHeight;
+    _Atomic int _videoBitDepth;
 }
 
 - (void)videoInterrupt;
