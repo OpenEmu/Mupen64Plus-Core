@@ -3855,6 +3855,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 089C166AFE841209C02AAC07 /* Mupen64Plus */;
@@ -4434,6 +4435,7 @@
 					"-fvisibility-inlines-hidden",
 				);
 				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
 		};
@@ -4479,6 +4481,7 @@
 					"-fvisibility-inlines-hidden",
 				);
 				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
 			};
 			name = Release;
 		};
