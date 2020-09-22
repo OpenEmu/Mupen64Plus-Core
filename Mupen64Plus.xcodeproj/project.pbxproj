@@ -4423,7 +4423,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "";
 				LLVM_LTO = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.14.4;
 				OTHER_CFLAGS = (
 					"-fno-strict-aliasing",
 					"-fvisibility=hidden",
@@ -4470,7 +4470,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "";
 				LLVM_LTO = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.14.4;
 				OTHER_CFLAGS = (
 					"-fno-strict-aliasing",
 					"-fvisibility=hidden",
