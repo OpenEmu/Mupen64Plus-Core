@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - dbg_debugger.h                                              *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2008 DarkJeztr                                          *
  *   Copyright (C) 2002 davFr                                              *
  *                                                                         *
@@ -24,16 +24,18 @@
 #define __DBG_DEBUGGER_H__
 
 #include "api/m64p_types.h"
-#include "dbg_types.h"
 
 extern int g_DebuggerActive;  /* True if the debugger is running */
 
 extern m64p_dbg_runstate g_dbg_runstate;
 
-extern uint32 previousPC;
+extern uint32_t previousPC;
+
+extern uint32_t breakpointAccessed;
+extern uint32_t breakpointFlag;
 
 void init_debugger(void);
-void update_debugger(uint32 pc);
+void update_debugger(uint32_t pc);
 void destroy_debugger(void);
 void debugger_step(void);
 

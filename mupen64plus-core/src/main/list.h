@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - util.h                                                  *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2012 Mupen64plus development team                       *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -21,10 +21,6 @@
 
 #ifndef __LIST_H__
 #define __LIST_H__
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stddef.h>
 
@@ -86,8 +82,8 @@ static osal_inline int list_empty(const struct list_head *head)
 
 #ifdef __GNUC__
 
-#define container_of(ptr, type, member) ({ \
-    const typeof( ((type *)0)->member ) *__mptr = (ptr); \
+#define container_of(ptr, type, member) __extension__ ({ \
+    const __typeof__( ((type *)0)->member ) *__mptr = (ptr); \
     (type *)( (char *)__mptr - offsetof(type,member) );})
 
 #else
@@ -120,9 +116,5 @@ static osal_inline int list_empty(const struct list_head *head)
          &pos->member != (head); \
          pos = safe, \
          safe = list_entry(safe->member.next, type, member))
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

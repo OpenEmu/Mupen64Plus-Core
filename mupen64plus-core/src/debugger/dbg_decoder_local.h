@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - dbg_debugger_local.h                                    *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2010 Marshall B. Rogers <mbr@64.vg>                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -1253,40 +1253,77 @@ do {									\
  * Define the instruction formats.
  */
  
- 
-typedef union {
-	unsigned word;
-	struct {
-		unsigned imm: 16;
-		unsigned rt: 5;
-		unsigned rs: 5;
-		unsigned op: 6;
-	} IType;
+#if defined(M64P_BIG_ENDIAN)
+    /* Big Endian */
+    typedef union {
+	    unsigned word;
+	    struct {
+		    unsigned op: 6;
+		    unsigned rs: 5;
+		    unsigned rt: 5;
+		    unsigned imm: 16;
+	    } IType;
 
-	struct {
-		unsigned target: 26;
-		unsigned op: 6;
-	} JType;
+	    struct {
+		    unsigned op: 6;
+		    unsigned target: 26;
+	    } JType;
 
-	struct {
-		unsigned func: 6;
-		unsigned shamt: 5;
-		unsigned rd: 5;
-		unsigned rt: 5;
-		unsigned rs: 5;
-		unsigned op: 6;
-	} RType;
+	    struct {
+		    unsigned op: 6;
+		    unsigned rs: 5;
+		    unsigned rt: 5;
+		    unsigned rd: 5;
+		    unsigned shamt: 5;
+		    unsigned func: 6;
+	    } RType;
 
-	struct {
-		unsigned func: 6;
-		unsigned fd: 5;
-		unsigned fs: 5;
-		unsigned ft: 5;
-		unsigned fmt: 4;
-		unsigned : 1;		/* always '1' */
-		unsigned op: 6;		/* always '0x11' */
-	} FRType;
-} InstFmt;
+	    struct {
+		    unsigned op: 6;		/* always '0x11' */
+		    unsigned : 1;		/* always '1' */
+		    unsigned fmt: 4;
+		    unsigned ft: 5;
+		    unsigned fs: 5;
+		    unsigned fd: 5;
+		    unsigned func: 6;
+	    } FRType;
+    } InstFmt;
+#else
+    /* Little Endian */
+    typedef union {
+	    unsigned word;
+	    struct {
+		    unsigned imm: 16;
+		    unsigned rt: 5;
+		    unsigned rs: 5;
+		    unsigned op: 6;
+	    } IType;
+
+	    struct {
+		    unsigned target: 26;
+		    unsigned op: 6;
+	    } JType;
+
+	    struct {
+		    unsigned func: 6;
+		    unsigned shamt: 5;
+		    unsigned rd: 5;
+		    unsigned rt: 5;
+		    unsigned rs: 5;
+		    unsigned op: 6;
+	    } RType;
+
+	    struct {
+		    unsigned func: 6;
+		    unsigned fd: 5;
+		    unsigned fs: 5;
+		    unsigned ft: 5;
+		    unsigned fmt: 4;
+		    unsigned : 1;		/* always '1' */
+		    unsigned op: 6;		/* always '0x11' */
+	    } FRType;
+    } InstFmt;
+#endif
 
 /*
  * Values for the 'op' field.

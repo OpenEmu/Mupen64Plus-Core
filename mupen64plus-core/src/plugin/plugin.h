@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - plugin.h                                                *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2002 Hacktarux                                          *
  *   Copyright (C) 2009 Richard Goedeken                                   *
  *                                                                         *
@@ -31,7 +31,8 @@ extern m64p_error plugin_connect(m64p_plugin_type, m64p_dynlib_handle plugin_han
 extern m64p_error plugin_start(m64p_plugin_type);
 extern m64p_error plugin_check(void);
 
-extern CONTROL Controls[4];
+enum { NUM_CONTROLLER = 4 };
+extern CONTROL Controls[NUM_CONTROLLER];
 
 /*** Version requirement information ***/
 #define RSP_API_VERSION   0x20000

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - debugger.c                                              *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2008 DarkJeztr                                          *
  *   Copyright (C) 2002 davFr                                              *
  *                                                                         *
@@ -22,11 +22,11 @@
 
 #include <SDL.h>
 
+#include "api/callbacks.h"
 #include "api/debugger.h"
 #include "dbg_breakpoints.h"
 #include "dbg_debugger.h"
 #include "dbg_memory.h"
-#include "dbg_types.h"
 
 #ifdef DBG
 
@@ -37,12 +37,21 @@ m64p_dbg_runstate g_dbg_runstate;
 // Holds the number of pending steps the debugger needs to perform.
 static SDL_sem *sem_pending_steps;
 
-uint32 previousPC;
+uint32_t previousPC;
+
+uint32_t breakpointAccessed;
+uint32_t breakpointFlag;
 
 //]=-=-=-=-=-=-=-=-=-=-=[ Initialisation du Debugger ]=-=-=-=-=-=-=-=-=-=-=-=[
 
 void init_debugger()
 {
+    if (!DebuggerCallbacksAreSet())
+    {
+        DebugMessage(M64MSG_WARNING, "Front-end debugger callbacks are not set, so debugger will remain disabled.");
+        return;
+    }
+    
     g_DebuggerActive = 1;
     g_dbg_runstate = M64P_DBG_RUNSTATE_PAUSED;
 
@@ -62,7 +71,7 @@ void destroy_debugger()
 
 //]=-=-=-=-=-=-=-=-=-=-=-=-=[ Mise-a-Jour Debugger ]=-=-=-=-=-=-=-=-=-=-=-=-=[
 
-void update_debugger(uint32 pc)
+void update_debugger(uint32_t pc)
 // Update debugger state and display.
 // Should be called after each R4300 instruction
 // Checks for breakpoint hits on PC
@@ -74,6 +83,8 @@ void update_debugger(uint32 pc)
         if (bpt != -1) {
             g_dbg_runstate = M64P_DBG_RUNSTATE_PAUSED;
 
+            breakpointAccessed = 0;
+            breakpointFlag = M64P_BKP_FLAG_EXEC;
             if (BPT_CHECK_FLAG(g_Breakpoints[bpt], M64P_BKP_FLAG_LOG))
                 log_breakpoint(pc, M64P_BKP_FLAG_EXEC, 0);
         }

@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - profile.c                                               *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2014 Bobby Smiles                                       *
  *   Copyright (C) 2012 CasualJames                                        *
  *   Copyright (C) 2002 Hacktarux                                          *
@@ -21,7 +21,6 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifdef PROFILE
 #include "profile.h"
 
 #include "api/callbacks.h"
@@ -98,6 +97,3 @@ void timed_sections_refresh()
       last_start[TIMED_SECTION_ALL] = curr_time;
    }
 }
-
-#endif
-

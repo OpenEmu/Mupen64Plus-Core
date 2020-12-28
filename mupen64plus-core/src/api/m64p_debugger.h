@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-core - m64p_debugger.h                                    *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2009 Richard Goedeken                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -192,6 +192,26 @@ EXPORT int CALL DebugBreakpointLookup(unsigned int, unsigned int, unsigned int);
 typedef int (*ptr_DebugBreakpointCommand)(m64p_dbg_bkp_command, unsigned int, m64p_breakpoint *);
 #if defined(M64P_CORE_PROTOTYPES)
 EXPORT int CALL DebugBreakpointCommand(m64p_dbg_bkp_command, unsigned int, m64p_breakpoint *);
+#endif
+
+/* DebugBreakpointTriggeredBy()
+ *
+ * This function is used to retrieve the trigger flags and address for the
+ * most recently triggered breakpoint.
+ */
+typedef void (*ptr_DebugBreakpointTriggeredBy)(uint32_t *, uint32_t *);
+#if defined(M64P_CORE_PROTOTYPES)
+EXPORT void CALL DebugBreakpointTriggeredBy(uint32_t *, uint32_t *);
+#endif
+
+/* DebugVirtualToPhysical()
+ *
+ * This function is used to translate virtual addresses to physical addresses.
+ * Memory read/write breakpoints operate on physical addresses.
+ */
+typedef uint32_t (*ptr_DebugVirtualToPhysical)(uint32_t);
+#if defined(M64P_CORE_PROTOTYPES)
+EXPORT uint32_t CALL DebugVirtualToPhysical(uint32_t);
 #endif
 
 #ifdef __cplusplus

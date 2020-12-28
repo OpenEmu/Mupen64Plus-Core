@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - main.c                                                  *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2012 CasualJames                                        *
  *   Copyright (C) 2008-2009 Richard Goedeken                              *
  *   Copyright (C) 2008 Ebenblues Nmn Okaygo Tillin9                       *
@@ -29,6 +29,7 @@
  */
 
 #include <SDL.h>
+#include <assert.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -36,7 +37,6 @@
 #include <string.h>
 
 #define M64P_CORE_PROTOTYPES 1
-#include "ai/ai_controller.h"
 #include "api/callbacks.h"
 #include "api/config.h"
 #include "api/debugger.h"
@@ -44,40 +44,41 @@
 #include "api/m64p_types.h"
 #include "api/m64p_vidext.h"
 #include "api/vidext.h"
+#include "backends/api/audio_out_backend.h"
+#include "backends/api/clock_backend.h"
+#include "backends/api/controller_input_backend.h"
+#include "backends/api/joybus.h"
+#include "backends/api/rumble_backend.h"
+#include "backends/api/storage_backend.h"
+#include "backends/api/video_capture_backend.h"
+#include "backends/plugins_compat/plugins_compat.h"
+#include "backends/clock_ctime_plus_delta.h"
+#include "backends/file_storage.h"
 #include "cheat.h"
-#include "eep_file.h"
+#include "device/device.h"
+#include "device/controllers/paks/biopak.h"
+#include "device/controllers/paks/mempak.h"
+#include "device/controllers/paks/rumblepak.h"
+#include "device/controllers/paks/transferpak.h"
+#include "device/gb/gb_cart.h"
+#include "device/pif/bootrom_hle.h"
 #include "eventloop.h"
-#include "fla_file.h"
 #include "main.h"
-#include "memory/memory.h"
-#include "mpk_file.h"
+#include "cheat.h"
 #include "osal/files.h"
 #include "osal/preproc.h"
 #include "osd/osd.h"
-#include "osd/screenshot.h"
-#include "pi/pi_controller.h"
-#include "plugin/emulate_game_controller_via_input_plugin.h"
-#include "plugin/emulate_speaker_via_audio_plugin.h"
-#include "plugin/get_time_using_C_localtime.h"
 #include "plugin/plugin.h"
-#include "plugin/rumble_via_input_plugin.h"
+#if defined(PROFILE)
 #include "profile.h"
-#include "r4300/r4300.h"
-#include "r4300/r4300_core.h"
-#include "r4300/reset.h"
-#include "rdp/rdp_core.h"
-#include "ri/ri_controller.h"
+#endif
 #include "rom.h"
-#include "rsp/rsp_core.h"
 #include "savestates.h"
-#include "si/si_controller.h"
-#include "sra_file.h"
+#include "screenshot.h"
 #include "util.h"
-#include "vi/vi_controller.h"
 
 #ifdef DBG
 #include "debugger/dbg_debugger.h"
-#include "debugger/dbg_types.h"
 #endif
 
 #ifdef WITH_LIRC
@@ -92,20 +93,23 @@ m64p_handle g_CoreConfig = NULL;
 
 m64p_frame_callback g_FrameCallback = NULL;
 
-int         g_MemHasBeenBSwapped = 0;   // store byte-swapped flag so we don't swap twice when re-playing game
+int         g_RomWordsLittleEndian = 0; // after loading, ROM words are in native N64 byte order (big endian). We will swap them on x86
 int         g_EmulatorRunning = 0;      // need separate boolean to tell if emulator is running, since --nogui doesn't use a thread
 
-ALIGN(16, uint32_t g_rdram[RDRAM_MAX_SIZE/4]);
-struct ai_controller g_ai;
-struct pi_controller g_pi;
-struct ri_controller g_ri;
-struct si_controller g_si;
-struct vi_controller g_vi;
-struct r4300_core g_r4300;
-struct rdp_core g_dp;
-struct rsp_core g_sp;
 
-int g_delay_si = 0;
+int g_rom_pause;
+
+struct cheat_ctx g_cheat_ctx;
+
+/* g_mem_base is global to allow plugins early access (before device is initialized).
+ * Do not use this variable directly in emulation code.
+ * Initialization and DeInitialization of this variable is done at CoreStartup and CoreShutdown.
+ */
+void* g_mem_base = NULL;
+
+struct device g_dev;
+
+m64p_media_loader g_media_loader;
 
 int g_gs_vi_counter = 0;
 
@@ -119,6 +123,13 @@ static int   l_MainSpeedLimit = 1;       // insert delay during vi_interrupt to 
 static osd_message_t *l_msgVol = NULL;
 static osd_message_t *l_msgFF = NULL;
 static osd_message_t *l_msgPause = NULL;
+
+/* compatible paks */
+enum { PAK_MAX_SIZE = 5 };
+static size_t l_paks_idx[GAME_CONTROLLERS_COUNT];
+static void* l_paks[GAME_CONTROLLERS_COUNT][PAK_MAX_SIZE];
+static const struct pak_interface* l_ipaks[PAK_MAX_SIZE];
+static size_t l_pak_type_idx[6];
 
 /*********************************************************************************************************
 * static functions
@@ -162,6 +173,50 @@ static char *get_flashram_path(void)
     return formatstr("%s%s.fla", get_savesrampath(), ROM_SETTINGS.goodname);
 }
 
+static char *get_gb_ram_path(const char* gbrom, unsigned int control_id)
+{
+    return formatstr("%s%s.%u.sav", get_savesrampath(), gbrom, control_id);
+}
+
+static m64p_error init_video_capture_backend(const struct video_capture_backend_interface** ivcap, void** vcap, m64p_handle config, const char* key)
+{
+    m64p_error err;
+
+    const char* name = ConfigGetParamString(config, key);
+    if (name == NULL) {
+        DebugMessage(M64MSG_WARNING, "Couldn't get %s value. Using NULL value instead.", key);
+    }
+
+    /* try to find desired backend (by name) */
+    *ivcap = get_video_capture_backend(name);
+
+    /* handle not found case */
+    if (*ivcap == NULL) {
+        /* default to dummy backend */
+        *ivcap = get_video_capture_backend(NULL);
+
+        DebugMessage(M64MSG_WARNING, "Could not find %s video_capture_backend_interface. Using %s instead.",
+            name, (*ivcap)->name);
+    }
+
+    /* build section name */
+    char* section = formatstr("%s:%s", key, (*ivcap)->name);
+
+    /* init backend */
+    err = (*ivcap)->init(vcap, section);
+
+    if (err == M64ERR_SUCCESS) {
+        DebugMessage(M64MSG_INFO, "Using video capture backend: %s", (*ivcap)->name);
+    }
+    else {
+        DebugMessage(M64MSG_ERROR, "Failed to initialize video capture backend %s: %s", (*ivcap)->name, CoreErrorMessage(err));
+        *ivcap = NULL;
+    }
+
+    free(section);
+
+    return err;
+}
 
 /*********************************************************************************************************
 * helper functions
@@ -196,12 +251,11 @@ void main_message(m64p_msg_level level, unsigned int corner, const char *format,
     DebugMessage(level, "%s", buffer);
 }
 
-void main_check_inputs(void)
+static void main_check_inputs(void)
 {
 #ifdef WITH_LIRC
     lircCheckInput();
 #endif
-    SDL_PumpEvents();
 }
 
 /*********************************************************************************************************
@@ -211,21 +265,19 @@ void main_check_inputs(void)
 int main_set_core_defaults(void)
 {
     float fConfigParamsVersion;
-    int bSaveConfig = 0, bUpgrade = 0;
+    int bUpgrade = 0;
 
     if (ConfigGetParameter(g_CoreConfig, "Version", M64TYPE_FLOAT, &fConfigParamsVersion, sizeof(float)) != M64ERR_SUCCESS)
     {
         DebugMessage(M64MSG_WARNING, "No version number in 'Core' config section. Setting defaults.");
         ConfigDeleteSection("Core");
         ConfigOpenSection("Core", &g_CoreConfig);
-        bSaveConfig = 1;
     }
     else if (((int) fConfigParamsVersion) != ((int) CONFIG_PARAM_VERSION))
     {
         DebugMessage(M64MSG_WARNING, "Incompatible version %.2f in 'Core' config section: current is %.2f. Setting defaults.", fConfigParamsVersion, (float) CONFIG_PARAM_VERSION);
         ConfigDeleteSection("Core");
         ConfigOpenSection("Core", &g_CoreConfig);
-        bSaveConfig = 1;
     }
     else if ((CONFIG_PARAM_VERSION - fConfigParamsVersion) >= 0.0001f)
     {
@@ -233,7 +285,6 @@ int main_set_core_defaults(void)
         ConfigSetParameter(g_CoreConfig, "Version", M64TYPE_FLOAT, &fVersion);
         DebugMessage(M64MSG_INFO, "Updating parameter set version in 'Core' config section to %.2f", fVersion);
         bUpgrade = 1;
-        bSaveConfig = 1;
     }
 
     /* parameters controlling the operation of the core */
@@ -249,12 +300,14 @@ int main_set_core_defaults(void)
     ConfigSetDefaultBool(g_CoreConfig, "AutoStateSlotIncrement", 0, "Increment the save state slot after each save operation");
     ConfigSetDefaultBool(g_CoreConfig, "EnableDebugger", 0, "Activate the R4300 debugger when ROM execution begins, if core was built with Debugger support");
     ConfigSetDefaultInt(g_CoreConfig, "CurrentStateSlot", 0, "Save state slot (0-9) to use when saving/loading the emulator state");
-    ConfigSetDefaultString(g_CoreConfig, "ScreenshotPath", "", "Path to directory where screenshots are saved. If this is blank, the default value of ${UserConfigPath}/screenshot will be used");
-    ConfigSetDefaultString(g_CoreConfig, "SaveStatePath", "", "Path to directory where emulator save states (snapshots) are saved. If this is blank, the default value of ${UserConfigPath}/save will be used");
-    ConfigSetDefaultString(g_CoreConfig, "SaveSRAMPath", "", "Path to directory where SRAM/EEPROM data (in-game saves) are stored. If this is blank, the default value of ${UserConfigPath}/save will be used");
+    ConfigSetDefaultString(g_CoreConfig, "ScreenshotPath", "", "Path to directory where screenshots are saved. If this is blank, the default value of ${UserDataPath}/screenshot will be used");
+    ConfigSetDefaultString(g_CoreConfig, "SaveStatePath", "", "Path to directory where emulator save states (snapshots) are saved. If this is blank, the default value of ${UserDataPath}/save will be used");
+    ConfigSetDefaultString(g_CoreConfig, "SaveSRAMPath", "", "Path to directory where SRAM/EEPROM data (in-game saves) are stored. If this is blank, the default value of ${UserDataPath}/save will be used");
     ConfigSetDefaultString(g_CoreConfig, "SharedDataPath", "", "Path to a directory to search when looking for shared data files");
-    ConfigSetDefaultBool(g_CoreConfig, "DelaySI", 1, "Delay interrupt after DMA SI read/write");
     ConfigSetDefaultInt(g_CoreConfig, "CountPerOp", 0, "Force number of cycles per emulated instruction");
+    ConfigSetDefaultBool(g_CoreConfig, "RandomizeInterrupt", 1, "Randomize PI/SI Interrupt Timing");
+    ConfigSetDefaultInt(g_CoreConfig, "SiDmaDuration", -1, "Duration of SI DMA (-1: use per game settings)");
+    ConfigSetDefaultString(g_CoreConfig, "GbCameraVideoCaptureBackend1", DEFAULT_VIDEO_CAPTURE_BACKEND, "Gameboy Camera Video Capture backend");
 
     /* handle upgrades */
     if (bUpgrade)
@@ -266,9 +319,6 @@ int main_set_core_defaults(void)
                 ConfigSetParameter(g_CoreConfig, "SaveSRAMPath", M64TYPE_STRING, pccSaveStatePath);
         }
     }
-
-    if (bSaveConfig)
-        ConfigSaveSection("Core");
 
     /* set config parameters for keyboard and joystick commands */
     return event_set_core_defaults();
@@ -349,7 +399,7 @@ static void main_set_speedlimiter(int enable)
 
 static int main_is_paused(void)
 {
-    return (g_EmulatorRunning && rompause);
+    return (g_EmulatorRunning && g_rom_pause);
 }
 
 void main_toggle_pause(void)
@@ -357,7 +407,7 @@ void main_toggle_pause(void)
     if (!g_EmulatorRunning)
         return;
 
-    if (rompause)
+    if (g_rom_pause)
     {
         DebugMessage(M64MSG_STATUS, "Emulation continued.");
         if(l_msgPause)
@@ -379,14 +429,14 @@ void main_toggle_pause(void)
         StateChanged(M64CORE_EMU_STATE, M64EMU_PAUSED);
     }
 
-    rompause = !rompause;
+    g_rom_pause = !g_rom_pause;
     l_FrameAdvance = 0;
 }
 
 void main_advance_one(void)
 {
     l_FrameAdvance = 1;
-    rompause = 0;
+    g_rom_pause = 0;
     StateChanged(M64CORE_EMU_STATE, M64EMU_RUNNING);
 }
 
@@ -431,7 +481,6 @@ void main_state_set_slot(int slot)
     }
 
     savestates_select_slot(slot);
-    StateChanged(M64CORE_SAVESTATE_SLOT, slot);
 }
 
 void main_state_inc_slot(void)
@@ -441,11 +490,6 @@ void main_state_inc_slot(void)
 
 void main_state_load(const char *filename)
 {
-    rumblepak_rumble(&g_si.pif.controllers[0].rumblepak, RUMBLE_STOP);
-    rumblepak_rumble(&g_si.pif.controllers[1].rumblepak, RUMBLE_STOP);
-    rumblepak_rumble(&g_si.pif.controllers[2].rumblepak, RUMBLE_STOP);
-    rumblepak_rumble(&g_si.pif.controllers[3].rumblepak, RUMBLE_STOP);
-
     if (filename == NULL) // Save to slot
         savestates_set_job(savestates_job_load, savestates_type_m64p, NULL);
     else
@@ -467,7 +511,7 @@ m64p_error main_core_state_query(m64p_core_param param, int *rval)
         case M64CORE_EMU_STATE:
             if (!g_EmulatorRunning)
                 *rval = M64EMU_STOPPED;
-            else if (rompause)
+            else if (g_rom_pause)
                 *rval = M64EMU_PAUSED;
             else
                 *rval = M64EMU_RUNNING;
@@ -677,10 +721,13 @@ int main_volume_get_muted(void)
 
 m64p_error main_reset(int do_hard_reset)
 {
-    if (do_hard_reset)
-        reset_hard_job |= 1;
-    else
-        reset_soft();
+    if (do_hard_reset) {
+        hard_reset_device(&g_dev);
+    }
+    else {
+        soft_reset_device(&g_dev);
+    }
+
     return M64ERR_SUCCESS;
 }
 
@@ -726,93 +773,117 @@ void new_frame(void)
     l_CurrentFrame++;
 
     if (l_FrameAdvance) {
-        rompause = 1;
+        g_rom_pause = 1;
         l_FrameAdvance = 0;
         StateChanged(M64CORE_EMU_STATE, M64EMU_PAUSED);
     }
 }
 
+#define SAMPLE_COUNT 3
 static void apply_speed_limiter(void)
 {
-    unsigned int CurrentFPSTime;
-    static unsigned int LastFPSTime = 0;
-    static int VITotalDelta;
-    static int VIDeltas[64];
-    static unsigned int VIDeltasIndex;
+    static unsigned long totalVIs = 0;
+    static int resetOnce = 0;
+    static int lastSpeedFactor = 100;
+    static unsigned int StartFPSTime = 0;
+    static const double defaultSpeedFactor = 100.0;
+    unsigned int CurrentFPSTime = SDL_GetTicks();
+    static double sleepTimes[SAMPLE_COUNT];
+    static unsigned int sleepTimesIndex = 0;
 
-    double VILimitMilliseconds = 1000.0 / ROM_PARAMS.vilimit;
-    double AdjustedLimit = VILimitMilliseconds * 100.0 / l_SpeedFactor;  // adjust for selected emulator speed
-    int ThisFrameDelta, IntegratedDelta, TimeToWait;
+    // calculate frame duration based upon ROM setting (50/60hz) and mupen64plus speed adjustment
+    const double VILimitMilliseconds = 1000.0 / g_dev.vi.expected_refresh_rate;
+    const double SpeedFactorMultiple = defaultSpeedFactor/l_SpeedFactor;
+    const double AdjustedLimit = VILimitMilliseconds * SpeedFactorMultiple;
 
+    //if this is the first time or we are resuming from pause
+    if(StartFPSTime == 0 || !resetOnce || lastSpeedFactor != l_SpeedFactor)
+    {
+       StartFPSTime = CurrentFPSTime;
+       totalVIs = 0;
+       resetOnce = 1;
+    }
+    else
+    {
+        ++totalVIs;
+    }
+
+    lastSpeedFactor = l_SpeedFactor;
+
+#if defined(PROFILE)
     timed_section_start(TIMED_SECTION_IDLE);
+#endif
 
 #ifdef DBG
     if(g_DebuggerActive) DebuggerCallback(DEBUG_UI_VI, 0);
 #endif
 
-    // if this is the first frame, initialize our data structures
-    if(LastFPSTime == 0)
+    double totalElapsedGameTime = AdjustedLimit*totalVIs;
+    double elapsedRealTime = CurrentFPSTime - StartFPSTime;
+    double sleepTime = totalElapsedGameTime - elapsedRealTime;
+
+    //Reset if the sleep needed is an unreasonable value
+    static const double minSleepNeeded = -50;
+    static const double maxSleepNeeded = 50;
+    if(sleepTime < minSleepNeeded || sleepTime > (maxSleepNeeded*SpeedFactorMultiple))
     {
-        LastFPSTime = SDL_GetTicks();
-        VITotalDelta = 0;
-        memset(VIDeltas, 0, sizeof(VIDeltas));
-        VIDeltasIndex = 0;
-        return;
+       resetOnce = 0;
     }
 
-    // calculate # of milliseconds that have passed since the last video interrupt
-    CurrentFPSTime = SDL_GetTicks();
-    ThisFrameDelta = CurrentFPSTime - LastFPSTime - (int) AdjustedLimit;
+    sleepTimes[sleepTimesIndex%SAMPLE_COUNT] = sleepTime;
+    sleepTimesIndex++;
 
-    // are we too fast?
-    if (ThisFrameDelta < 0)
+    unsigned int elementsForAverage = sleepTimesIndex > SAMPLE_COUNT ? SAMPLE_COUNT : sleepTimesIndex;
+
+    // compute the average sleepTime
+    double sum = 0;
+    unsigned int index;
+    for(index = 0; index < elementsForAverage; index++)
     {
-        // calculate the total time error over the last 64 frames
-        IntegratedDelta = VITotalDelta  + ThisFrameDelta;
-        // if we are still too fast, and then speed limiter is on, then we should wait
-        if (IntegratedDelta < 0 && l_MainSpeedLimit)
-        {
-            TimeToWait = (IntegratedDelta > ThisFrameDelta) ? -IntegratedDelta : -ThisFrameDelta;
-            DebugMessage(M64MSG_VERBOSE, "    apply_speed_limiter(): Waiting %ims", TimeToWait);
-            SDL_Delay(TimeToWait);
-            // recalculate # of milliseconds that have passed since the last video interrupt,
-            // taking into account the time we just waited
-            CurrentFPSTime = SDL_GetTicks();
-            ThisFrameDelta = CurrentFPSTime - LastFPSTime - (int) AdjustedLimit;
-        }
+        sum += sleepTimes[index];
     }
 
-    // update our data structures
-    LastFPSTime = CurrentFPSTime ;
-    VITotalDelta += ThisFrameDelta - VIDeltas[VIDeltasIndex];
-    VIDeltas[VIDeltasIndex] = ThisFrameDelta;
-    VIDeltasIndex = (VIDeltasIndex + 1) & 63;
+    double averageSleep = sum/elementsForAverage;
 
+    int sleepMs = (int)averageSleep;
+
+    if(sleepMs > 0 && sleepMs < maxSleepNeeded*SpeedFactorMultiple && l_MainSpeedLimit)
+    {
+       DebugMessage(M64MSG_VERBOSE, "    apply_speed_limiter(): Waiting %ims", sleepMs);
+
+       SDL_Delay(sleepMs);
+    }
+
+
+#if defined(PROFILE)
     timed_section_end(TIMED_SECTION_IDLE);
+#endif
 }
 
 /* TODO: make a GameShark module and move that there */
-static void gs_apply_cheats(void)
+static void gs_apply_cheats(struct cheat_ctx* ctx)
 {
-    if(g_gs_vi_counter < 60)
+    struct r4300_core* r4300 = &g_dev.r4300;
+
+    if (g_gs_vi_counter < 60)
     {
         if (g_gs_vi_counter == 0)
-            cheat_apply_cheats(ENTRY_BOOT);
+            cheat_apply_cheats(ctx, r4300, ENTRY_BOOT);
         g_gs_vi_counter++;
     }
     else
     {
-        cheat_apply_cheats(ENTRY_VI);
+        cheat_apply_cheats(ctx, r4300, ENTRY_VI);
     }
 }
 
 static void pause_loop(void)
 {
-    if(rompause)
+    if(g_rom_pause)
     {
         osd_render();  // draw Paused message in case gfx.updateScreen didn't do it
         VidExt_GL_SwapBuffers();
-        while(rompause)
+        while(g_rom_pause)
         {
             SDL_Delay(10);
             main_check_inputs();
@@ -824,93 +895,671 @@ static void pause_loop(void)
  * Allow the core to perform various things */
 void new_vi(void)
 {
-    gs_apply_cheats();
-
-    main_check_inputs();
-
+#if defined(PROFILE)
     timed_sections_refresh();
+#endif
 
-    pause_loop();
+    gs_apply_cheats(&g_cheat_ctx);
 
     apply_speed_limiter();
+    main_check_inputs();
+
+    pause_loop();
 }
 #endif
-static void connect_all(
-        struct r4300_core* r4300,
-        struct rdp_core* dp,
-        struct rsp_core* sp,
-        struct ai_controller* ai,
-        struct pi_controller* pi,
-        struct ri_controller* ri,
-        struct si_controller* si,
-        struct vi_controller* vi,
-        uint32_t* dram,
-        size_t dram_size,
-        uint8_t* rom,
-        size_t rom_size)
+static void main_switch_pak(int control_id)
 {
-    connect_rdp(dp, r4300, sp, ri);
-    connect_rsp(sp, r4300, dp, ri);
-    connect_ai(ai, r4300, ri, vi);
-    connect_pi(pi, r4300, ri, rom, rom_size);
-    connect_ri(ri, dram, dram_size);
-    connect_si(si, r4300, ri);
-    connect_vi(vi, r4300);
+    struct game_controller* cont = &g_dev.controllers[control_id];
+
+    change_pak(cont, l_paks[control_id][l_paks_idx[control_id]], l_ipaks[l_paks_idx[control_id]]);
+
+    if (cont->ipak != NULL) {
+        DebugMessage(M64MSG_INFO, "Controller %u pak changed to %s", control_id, cont->ipak->name);
+    }
+    else {
+        DebugMessage(M64MSG_INFO, "Removing pak from controller %u", control_id);
+    }
 }
+
+void main_switch_next_pak(int control_id)
+{
+    if (l_ipaks[l_paks_idx[control_id]] == NULL ||
+        ++l_paks_idx[control_id] >= PAK_MAX_SIZE) {
+        l_paks_idx[control_id] = 0;
+    }
+
+    main_switch_pak(control_id);
+}
+
+void main_switch_plugin_pak(int control_id)
+{
+    //Don't switch to the selected pak if it's not available for the game
+    if (l_ipaks[l_pak_type_idx[Controls[control_id].Plugin]] == NULL) {
+        Controls[control_id].Plugin = PLUGIN_NONE;
+    }
+
+    l_paks_idx[control_id] = l_pak_type_idx[Controls[control_id].Plugin];
+
+    main_switch_pak(control_id);
+}
+
+static void open_mpk_file(struct file_storage* fstorage)
+{
+    unsigned int i;
+    int ret = open_file_storage(fstorage, GAME_CONTROLLERS_COUNT*MEMPAK_SIZE, get_mempaks_path());
+
+    if (ret == (int)file_open_error) {
+        /* if file doesn't exists provide default content */
+        for(i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
+            format_mempak(fstorage->data + i * MEMPAK_SIZE);
+        }
+    }
+}
+
+static void open_fla_file(struct file_storage* fstorage)
+{
+    int ret = open_file_storage(fstorage, FLASHRAM_SIZE, get_flashram_path());
+
+    if (ret == (int)file_open_error) {
+        /* if file doesn't exists provide default content */
+        format_flashram(fstorage->data);
+    }
+}
+
+static void open_sra_file(struct file_storage* fstorage)
+{
+    int ret = open_file_storage(fstorage, SRAM_SIZE, get_sram_path());
+
+    if (ret == (int)file_open_error) {
+        /* if file doesn't exists provide default content */
+        format_sram(fstorage->data);
+    }
+}
+
+static void open_eep_file(struct file_storage* fstorage)
+{
+    /* Note: EEP files are all EEPROM_MAX_SIZE bytes long,
+     * whatever the real EEPROM size is.
+     */
+    enum { EEPROM_MAX_SIZE = 0x800 };
+
+    int ret = open_file_storage(fstorage, EEPROM_MAX_SIZE, get_eeprom_path());
+
+    if (ret == (int)file_open_error) {
+        /* if file doesn't exists provide default content */
+        format_eeprom(fstorage->data, EEPROM_MAX_SIZE);
+    }
+
+    /* Truncate to 4k bit if necessary */
+    if (ROM_SETTINGS.savetype != EEPROM_16KB) {
+        fstorage->size = 0x200;
+    }
+}
+
+static void load_dd_rom(uint8_t* rom, size_t* rom_size)
+{
+    /* ask the core loader for DD disk filename */
+    char* dd_ipl_rom_filename = (g_media_loader.get_dd_rom == NULL)
+        ? NULL
+        : g_media_loader.get_dd_rom(g_media_loader.cb_data);
+
+    if ((dd_ipl_rom_filename == NULL) || (strlen(dd_ipl_rom_filename) == 0)) {
+        goto no_dd;
+    }
+
+    struct file_storage dd_rom;
+    memset(&dd_rom, 0, sizeof(dd_rom));
+
+    if (open_rom_file_storage(&dd_rom, dd_ipl_rom_filename) != file_ok) {
+        DebugMessage(M64MSG_ERROR, "Failed to load DD IPL ROM: %s. Disabling 64DD", dd_ipl_rom_filename);
+        goto no_dd;
+    }
+
+    DebugMessage(M64MSG_INFO, "DD IPL ROM: %s", dd_ipl_rom_filename);
+
+    /* load and swap DD IPL ROM */
+    *rom_size = g_ifile_storage_ro.size(&dd_rom);
+    memcpy(rom, g_ifile_storage_ro.data(&dd_rom), *rom_size);
+    close_file_storage(&dd_rom);
+
+    /* fetch 1st word to identify IPL ROM format */
+    /* FIXME: use more robust ROM detection heuristic - do the same for regular ROMs */
+    uint32_t pi_bsd_dom1_config = 0
+        | ((uint32_t)rom[0] << 24)
+        | ((uint32_t)rom[1] << 16)
+        | ((uint32_t)rom[2] <<  8)
+        | ((uint32_t)rom[3] <<  0);
+
+    switch (pi_bsd_dom1_config)
+    {
+    case 0x80270740: /* Z64 - big endian */
+        to_big_endian_buffer(rom, 4, *rom_size/4);
+        break;
+
+    case 0x40072780: /* N64 - little endian */
+        to_little_endian_buffer(rom, 4, *rom_size/4);
+        break;
+
+    case 0x27804007: /* V64 - bi-endian */
+        swap_buffer(rom, 2, *rom_size/2);
+        break;
+
+    default: /* unknown */
+        DebugMessage(M64MSG_ERROR, "Invalid DD IPL ROM: Disabling 64DD.");
+        *rom_size = 0;
+        return;
+    }
+
+    return;
+
+no_dd:
+    free(dd_ipl_rom_filename);
+    *rom_size = 0;
+}
+
+static void load_dd_disk(struct file_storage* dd_disk, const struct storage_backend_interface** dd_idisk)
+{
+    const char* format_desc;
+    /* ask the core loader for DD disk filename */
+    char* dd_disk_filename = (g_media_loader.get_dd_disk == NULL)
+        ? NULL
+        : g_media_loader.get_dd_disk(g_media_loader.cb_data);
+
+    /* handle the no disk case */
+    if (dd_disk_filename == NULL || strlen(dd_disk_filename) == 0) {
+        goto no_disk;
+    }
+
+    /* open file */
+    if (open_rom_file_storage(dd_disk, dd_disk_filename) != file_ok) {
+        DebugMessage(M64MSG_ERROR, "Failed to load DD Disk: %s.", dd_disk_filename);
+        goto no_disk;
+    }
+
+    /* FIXME: handle byte swapping */
+
+
+    switch (dd_disk->size)
+    {
+    case MAME_FORMAT_DUMP_SIZE:
+        /* already in a compatible format */
+        *dd_idisk = &g_ifile_storage;
+        format_desc = "MAME";
+        break;
+
+    case SDK_FORMAT_DUMP_SIZE: {
+        /* convert to mame format */
+        uint8_t* buffer = malloc(MAME_FORMAT_DUMP_SIZE);
+        if (buffer == NULL) {
+            DebugMessage(M64MSG_ERROR, "Failed to allocate memory for MAME disk dump");
+            close_file_storage(dd_disk);
+            goto no_disk;
+        }
+
+        dd_convert_to_mame(buffer, dd_disk->data);
+        free(dd_disk->data);
+        dd_disk->data = buffer;
+        dd_disk->size = MAME_FORMAT_DUMP_SIZE;
+        *dd_idisk = &g_ifile_storage_dd_sdk_dump;
+        format_desc = "SDK";
+        } break;
+
+    default:
+        DebugMessage(M64MSG_ERROR, "Invalid DD Disk size %u.", dd_disk->size);
+        close_file_storage(dd_disk);
+        goto no_disk;
+    }
+
+    DebugMessage(M64MSG_INFO, "DD Disk: %s - %zu - %s",
+            dd_disk->filename,
+            dd_disk->size,
+            format_desc);
+
+    uint32_t w = *(uint32_t*)dd_disk->data;
+    if (w == DD_REGION_JP || w == DD_REGION_US) {
+        DebugMessage(M64MSG_WARNING, "Loading a saved disk ");
+    }
+
+    return;
+
+no_disk:
+    free(dd_disk_filename);
+    *dd_idisk = NULL;
+}
+
+
+struct gb_cart_data
+{
+    int control_id;
+    struct file_storage rom_fstorage;
+    struct file_storage ram_fstorage;
+    void* gbcam_backend;
+    const struct video_capture_backend_interface* igbcam_backend;
+};
+
+static struct gb_cart_data l_gb_carts_data[GAME_CONTROLLERS_COUNT];
+
+static void init_gb_rom(void* opaque, void** storage, const struct storage_backend_interface** istorage)
+{
+    struct gb_cart_data* data = (struct gb_cart_data*)opaque;
+
+    /* Ask the core loader for rom filename */
+    char* rom_filename = (g_media_loader.get_gb_cart_rom == NULL)
+        ? NULL
+        : g_media_loader.get_gb_cart_rom(g_media_loader.cb_data, data->control_id);
+
+    /* Handle the no cart case */
+    if (rom_filename == NULL || strlen(rom_filename) == 0) {
+        goto no_cart;
+    }
+
+    /* Open ROM file */
+    if (open_rom_file_storage(&data->rom_fstorage, rom_filename) != file_ok) {
+        DebugMessage(M64MSG_ERROR, "Failed to load ROM file: %s", rom_filename);
+        goto no_cart;
+    }
+
+    DebugMessage(M64MSG_INFO, "GB Loader ROM: %s - %zu",
+            data->rom_fstorage.filename,
+            data->rom_fstorage.size);
+
+    /* init GB ROM storage */
+    *storage = &data->rom_fstorage;
+    *istorage = &g_ifile_storage_ro;
+    return;
+
+no_cart:
+    free(rom_filename);
+    *storage = NULL;
+    *istorage = NULL;
+}
+
+static void release_gb_rom(void* opaque)
+{
+    struct gb_cart_data* data = (struct gb_cart_data*)opaque;
+
+    close_file_storage(&data->rom_fstorage);
+
+    memset(&data->rom_fstorage, 0, sizeof(data->rom_fstorage));
+}
+
+static void init_gb_ram(void* opaque, size_t ram_size, void** storage, const struct storage_backend_interface** istorage)
+{
+    struct gb_cart_data* data = (struct gb_cart_data*)opaque;
+
+    /* Ask the core loader for ram filename */
+    char* ram_filename = (g_media_loader.get_gb_cart_ram == NULL)
+        ? NULL
+        : g_media_loader.get_gb_cart_ram(g_media_loader.cb_data, data->control_id);
+
+    /* Handle the no RAM case
+     * if NULL or empty string generate a filename
+     */
+    if (ram_filename == NULL || strlen(ram_filename) == 0) {
+        free(ram_filename);
+        ram_filename = get_gb_ram_path(namefrompath(data->rom_fstorage.filename), data->control_id+1);
+    }
+
+    /* Open RAM file
+     * if file doesn't exists provide default content */
+    int err = open_file_storage(&data->ram_fstorage, ram_size, ram_filename);
+    if (err == file_open_error) {
+        memset(data->ram_fstorage.data, 0, data->ram_fstorage.size);
+        DebugMessage(M64MSG_INFO, "Providing default RAM content");
+    }
+    else if (err == file_read_error) {
+        DebugMessage(M64MSG_WARNING, "Size mismatch between expected RAM size and effective file size");
+    }
+
+    DebugMessage(M64MSG_INFO, "GB Loader RAM: %s - %zu",
+            data->ram_fstorage.filename,
+            data->ram_fstorage.size);
+
+    /* init GB RAM storage */
+    *storage = &data->ram_fstorage;
+    *istorage = &g_ifile_storage;
+}
+
+static void release_gb_ram(void* opaque)
+{
+    struct gb_cart_data* data = (struct gb_cart_data*)opaque;
+
+    close_file_storage(&data->ram_fstorage);
+
+    memset(&data->ram_fstorage, 0, sizeof(data->ram_fstorage));
+}
+
+void main_change_gb_cart(int control_id)
+{
+    struct transferpak* tpk = &g_dev.transferpaks[control_id];
+    struct gb_cart* gb_cart = &g_dev.gb_carts[control_id];
+    struct gb_cart_data* data = &l_gb_carts_data[control_id];
+
+    /* reset gb_cart_data */
+    memset(data, 0, sizeof(*data));
+    data->control_id = control_id;
+
+    init_gb_cart(gb_cart,
+            data, init_gb_rom, release_gb_rom,
+            data, init_gb_ram, release_gb_ram,
+            NULL, &g_iclock_ctime_plus_delta,
+            &data->control_id, &g_irumble_backend_plugin_compat,
+            data->gbcam_backend, data->igbcam_backend);
+
+    if (gb_cart->read_gb_cart == NULL) {
+        gb_cart = NULL;
+    }
+
+    change_gb_cart(tpk, gb_cart);
+
+    if (tpk->gb_cart != NULL) {
+        const uint8_t* rom_data = gb_cart->irom_storage->data(gb_cart->rom_storage);
+        DebugMessage(M64MSG_INFO, "Inserting GB cart %s into transferpak %u", rom_data + 0x134, control_id);
+    }
+    else {
+        DebugMessage(M64MSG_INFO, "Removing GB cart from transferpak %u", control_id);
+    }
+}
+
 
 /*********************************************************************************************************
 * emulation thread - runs the core
 */
+
+
 m64p_error main_run(void)
 {
-    size_t i;
+    size_t i, k;
+    size_t rdram_size;
+    unsigned int count_per_op;
+    unsigned int emumode;
     unsigned int disable_extra_mem;
-    struct eep_file eep;
-    struct fla_file fla;
-    struct mpk_file mpk;
-    struct sra_file sra;
-    static int channels[] = { 0, 1, 2, 3 };
+    int si_dma_duration;
+    int no_compiled_jump;
+    int randomize_interrupt;
+    struct file_storage eep;
+    struct file_storage fla;
+    struct file_storage sra;
+    size_t dd_rom_size;
+    struct file_storage dd_disk;
+
+    int control_ids[GAME_CONTROLLERS_COUNT];
+    struct controller_input_compat cin_compats[GAME_CONTROLLERS_COUNT];
+
+    struct file_storage mpk_storages[GAME_CONTROLLERS_COUNT];
+    struct file_storage mpk;
+
+    void* gbcam_backend;
+    const struct video_capture_backend_interface* igbcam_backend;
+
+    /* XXX: select type of flashram from db */
+    uint32_t flashram_type = MX29L1100_ID;
+
 
     /* take the r4300 emulator mode from the config file at this point and cache it in a global variable */
-    r4300emu = ConfigGetParamInt(g_CoreConfig, "R4300Emulator");
+    emumode = ConfigGetParamInt(g_CoreConfig, "R4300Emulator");
 
     /* set some other core parameters based on the config file values */
     savestates_set_autoinc_slot(ConfigGetParamBool(g_CoreConfig, "AutoStateSlotIncrement"));
     savestates_select_slot(ConfigGetParamInt(g_CoreConfig, "CurrentStateSlot"));
     no_compiled_jump = ConfigGetParamBool(g_CoreConfig, "NoCompiledJump");
-    g_delay_si = ConfigGetParamBool(g_CoreConfig, "DelaySI");
-    disable_extra_mem = ConfigGetParamInt(g_CoreConfig, "DisableExtraMem");
+    randomize_interrupt = ConfigGetParamBool(g_CoreConfig, "RandomizeInterrupt");
     count_per_op = ConfigGetParamInt(g_CoreConfig, "CountPerOp");
+
+    if (ROM_PARAMS.disableextramem)
+        disable_extra_mem = ROM_PARAMS.disableextramem;
+    else
+        disable_extra_mem = ConfigGetParamInt(g_CoreConfig, "DisableExtraMem");
+
+
+    rdram_size = (disable_extra_mem == 0) ? 0x800000 : 0x400000;
+
     if (count_per_op <= 0)
         count_per_op = ROM_PARAMS.countperop;
-    cheat_add_hacks();
 
-    /* do byte-swapping if it's not been done yet */
-    if (g_MemHasBeenBSwapped == 0)
+    si_dma_duration = ConfigGetParamInt(g_CoreConfig, "SiDmaDuration");
+    if (si_dma_duration < 0)
+        si_dma_duration = ROM_PARAMS.sidmaduration;
+
+    cheat_add_hacks(&g_cheat_ctx, ROM_PARAMS.cheats);
+
+    /* do byte-swapping if it hasn't been done yet */
+#if !defined(M64P_BIG_ENDIAN)
+    if (g_RomWordsLittleEndian == 0)
     {
-        swap_buffer(g_rom, 4, g_rom_size/4);
-        g_MemHasBeenBSwapped = 1;
+        swap_buffer((uint8_t*)mem_base_u32(g_mem_base, MM_CART_ROM), 4, g_rom_size/4);
+        g_RomWordsLittleEndian = 1;
+    }
+#endif
+
+    /* Fill-in l_pak_type_idx and l_ipaks according to game compatibility */
+    k = 0;
+    if (ROM_SETTINGS.biopak) {
+        l_ipaks[k++] = &g_ibiopak;
+    }
+    if (ROM_SETTINGS.mempak) {
+        l_pak_type_idx[PLUGIN_MEMPAK] = k;
+        l_ipaks[k] = &g_imempak;
+        ++k;
+    }
+    if (ROM_SETTINGS.rumble) {
+        l_pak_type_idx[PLUGIN_RUMBLE_PAK] = k;
+        l_pak_type_idx[PLUGIN_RAW] = k;
+        l_ipaks[k] = &g_irumblepak;
+        ++k;
+    }
+    if (ROM_SETTINGS.transferpak) {
+        l_pak_type_idx[PLUGIN_TRANSFER_PAK] = k;
+        l_ipaks[k] = &g_itransferpak;
+        ++k;
+    }
+    l_pak_type_idx[PLUGIN_NONE] = k;
+    l_ipaks[k] = NULL;
+
+    if (!ROM_SETTINGS.mempak) {
+        l_pak_type_idx[PLUGIN_MEMPAK] = k;
+    }
+    if (!ROM_SETTINGS.rumble) {
+        l_pak_type_idx[PLUGIN_RUMBLE_PAK] = k;
+        l_pak_type_idx[PLUGIN_RAW] = k;
+    }
+    if (!ROM_SETTINGS.transferpak) {
+        l_pak_type_idx[PLUGIN_TRANSFER_PAK] = k;
     }
 
-    connect_all(&g_r4300, &g_dp, &g_sp,
-                &g_ai, &g_pi, &g_ri, &g_si, &g_vi,
-                g_rdram, (disable_extra_mem == 0) ? 0x800000 : 0x400000,
-                g_rom, g_rom_size);
+    /* init GbCamera backend specified in the configuration file */
+    init_video_capture_backend(&igbcam_backend, &gbcam_backend,
+        g_CoreConfig, "GbCameraVideoCaptureBackend1");
 
-    init_memory();
+    /* open GB cam video device */
+    igbcam_backend->open(gbcam_backend, M64282FP_SENSOR_W, M64282FP_SENSOR_H);
+
+    /* open storage files, provide default content if not present */
+    open_mpk_file(&mpk);
+    open_eep_file(&eep);
+    open_fla_file(&fla);
+    open_sra_file(&sra);
+
+    /* Load 64DD IPL ROM and Disk */
+    const struct clock_backend_interface* dd_rtc_iclock = NULL;
+    const struct storage_backend_interface* dd_idisk = NULL;
+    memset(&dd_disk, 0, sizeof(dd_disk));
+
+    load_dd_rom((uint8_t*)mem_base_u32(g_mem_base, MM_DD_ROM), &dd_rom_size);
+    if (dd_rom_size > 0) {
+        dd_rtc_iclock = &g_iclock_ctime_plus_delta;
+        load_dd_disk(&dd_disk, &dd_idisk);
+    }
+
+    /* setup pif channel devices */
+    void* joybus_devices[PIF_CHANNELS_COUNT];
+    const struct joybus_device_interface* ijoybus_devices[PIF_CHANNELS_COUNT];
+
+    memset(&g_dev.gb_carts, 0, GAME_CONTROLLERS_COUNT*sizeof(*g_dev.gb_carts));
+    memset(&l_gb_carts_data, 0, GAME_CONTROLLERS_COUNT*sizeof(*l_gb_carts_data));
+    memset(cin_compats, 0, GAME_CONTROLLERS_COUNT*sizeof(*cin_compats));
+
+    for (i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
+
+        control_ids[i] = (int)i;
+
+        /* if input plugin requests RawData let the input plugin do the channel device processing */
+        if (Controls[i].RawData) {
+            joybus_devices[i] = &control_ids[i];
+            ijoybus_devices[i] = &g_ijoybus_device_plugin_compat;
+        }
+        /* otherwise let the core do the processing */
+        else {
+            /* select appropriate controller
+             * FIXME: assume for now that only standard controller is compatible
+             * Use the rom db to know if other peripherals are compatibles (VRU, mouse, train, ...)
+             */
+            const struct game_controller_flavor* cont_flavor =
+                &g_standard_controller_flavor;
+
+            joybus_devices[i] = &g_dev.controllers[i];
+            ijoybus_devices[i] = &g_ijoybus_device_controller;
+
+            cin_compats[i].control_id = (int)i;
+            cin_compats[i].cont = &g_dev.controllers[i];
+            cin_compats[i].tpk = &g_dev.transferpaks[i];
+            cin_compats[i].last_pak_type = Controls[i].Plugin;
+
+            l_gb_carts_data[i].control_id = (int)i;
+
+            l_gb_carts_data[i].gbcam_backend = gbcam_backend;
+            l_gb_carts_data[i].igbcam_backend = igbcam_backend;
+
+            l_paks_idx[i] = 0;
+
+            //Don't use the selected pak if it's not available for the game, instead use NONE
+            if (l_ipaks[l_pak_type_idx[Controls[i].Plugin]] == NULL) {
+                Controls[i].Plugin = PLUGIN_NONE;
+            }
+
+            /* init all compatibles paks */
+            for(k = 0; k < PAK_MAX_SIZE; ++k) {
+                /* Bio Pak */
+                if (l_ipaks[k] == &g_ibiopak) {
+                    init_biopak(&g_dev.biopaks[i], 64);
+                    l_paks[i][k] = &g_dev.biopaks[i];
+
+                    if (Controls[i].Plugin == PLUGIN_BIO_PAK) {
+                        l_paks_idx[i] = k;
+                    }
+                }
+                /* Memory Pak */
+                else if (l_ipaks[k] == &g_imempak) {
+                    mpk_storages[i].data = mpk.data + i * MEMPAK_SIZE;
+                    mpk_storages[i].size = MEMPAK_SIZE;
+                    mpk_storages[i].filename = (void*)&mpk; /* OK for isubfile_storage */
+
+                    init_mempak(&g_dev.mempaks[i], &mpk_storages[i], &g_isubfile_storage);
+                    l_paks[i][k] = &g_dev.mempaks[i];
+
+                    if (Controls[i].Plugin == PLUGIN_MEMPAK) {
+                        l_paks_idx[i] = k;
+                    }
+                }
+                /* Rumble Pak */
+                else if (l_ipaks[k] == &g_irumblepak) {
+                    init_rumblepak(&g_dev.rumblepaks[i], &control_ids[i], &g_irumble_backend_plugin_compat);
+                    l_paks[i][k] = &g_dev.rumblepaks[i];
+
+                    if (Controls[i].Plugin == PLUGIN_RUMBLE_PAK
+                     || Controls[i].Plugin == PLUGIN_RAW) {
+                        l_paks_idx[i] = k;
+                    }
+                }
+                /* Transfer Pak */
+                else if (l_ipaks[k] == &g_itransferpak) {
+
+                    /* init GB cart */
+                    init_gb_cart(&g_dev.gb_carts[i],
+                            &l_gb_carts_data[i], init_gb_rom, release_gb_rom,
+                            &l_gb_carts_data[i], init_gb_ram, release_gb_ram,
+                            NULL, &g_iclock_ctime_plus_delta,
+                            &l_gb_carts_data[i].control_id, &g_irumble_backend_plugin_compat,
+                            l_gb_carts_data[i].gbcam_backend, l_gb_carts_data[i].igbcam_backend);
+
+                    init_transferpak(&g_dev.transferpaks[i], (g_dev.gb_carts[i].read_gb_cart == NULL) ? NULL : &g_dev.gb_carts[i]);
+                    l_paks[i][k] = &g_dev.transferpaks[i];
+
+                    if (Controls[i].Plugin == PLUGIN_TRANSFER_PAK) {
+                        l_paks_idx[i] = k;
+                    }
+
+                    /* enable GB cart switch */
+                    cin_compats[i].gb_cart_switch_enabled = 1;
+                }
+                /* No Pak */
+                else {
+                    l_ipaks[k] = NULL;
+                    l_paks[i][k] = NULL;
+
+                    if (Controls[i].Plugin == PLUGIN_NONE) {
+                        l_paks_idx[i] = k;
+                    }
+
+                    break;
+                }
+            }
+
+            /* init game_controller */
+            init_game_controller(&g_dev.controllers[i],
+                    cont_flavor,
+                    &cin_compats[i], &g_icontroller_input_backend_plugin_compat,
+                    l_paks[i][l_paks_idx[i]], l_ipaks[l_paks_idx[i]]);
+
+            if (l_ipaks[l_paks_idx[i]] != NULL) {
+                DebugMessage(M64MSG_INFO, "Game controller %u (%s) has a %s plugged in",
+                    i, cont_flavor->name, l_ipaks[l_paks_idx[i]]->name);
+            } else {
+                DebugMessage(M64MSG_INFO, "Game controller %u (%s) has nothing plugged in",
+                    i, cont_flavor->name);
+            }
+        }
+    }
+    for (i = GAME_CONTROLLERS_COUNT; i < PIF_CHANNELS_COUNT; ++i) {
+        joybus_devices[i] = &g_dev.cart;
+        ijoybus_devices[i] = &g_ijoybus_device_cart;
+    }
+
+
+    init_device(&g_dev,
+                g_mem_base,
+                emumode,
+                count_per_op,
+                no_compiled_jump,
+                randomize_interrupt,
+                &g_dev.ai, &g_iaudio_out_backend_plugin_compat,
+                si_dma_duration,
+                rdram_size,
+                joybus_devices, ijoybus_devices,
+                vi_clock_from_tv_standard(ROM_PARAMS.systemtype), vi_expected_refresh_rate_from_tv_standard(ROM_PARAMS.systemtype),
+                NULL, &g_iclock_ctime_plus_delta,
+                g_rom_size,
+                (ROM_SETTINGS.savetype != EEPROM_16KB) ? JDT_EEPROM_4K : JDT_EEPROM_16K,
+                &eep, &g_ifile_storage,
+                flashram_type,
+                &fla, &g_ifile_storage,
+                &sra, &g_ifile_storage,
+                NULL, dd_rtc_iclock,
+                dd_rom_size,
+                &dd_disk, dd_idisk);
 
     // Attach rom to plugins
     if (!gfx.romOpen())
     {
-        return M64ERR_PLUGIN_FAIL;
+        goto on_gfx_open_failure;
     }
     if (!audio.romOpen())
     {
-        gfx.romClosed(); return M64ERR_PLUGIN_FAIL;
+        goto on_audio_open_failure;
     }
     if (!input.romOpen())
     {
-        audio.romClosed(); gfx.romClosed(); return M64ERR_PLUGIN_FAIL;
+        goto on_input_open_failure;
     }
 
     /* set up the SDL key repeat and event filter to catch keyboard/joystick commands for the core */
@@ -928,69 +1577,6 @@ m64p_error main_run(void)
     // setup rendering callback from video plugin to the core, for screenshots and On-Screen-Display
     gfx.setRenderingCallback(video_plugin_render_callback);
 
-    /* connect external audio sink to AI component */
-    g_ai.user_data = &g_ai;
-    g_ai.set_audio_format = set_audio_format_via_audio_plugin;
-    g_ai.push_audio_samples = push_audio_samples_via_audio_plugin;
-
-    /* connect external time source to AF_RTC component */
-    g_si.pif.af_rtc.user_data = NULL;
-    g_si.pif.af_rtc.get_time = get_time_using_C_localtime;
-
-    /* connect external game controllers */
-    for(i = 0; i < GAME_CONTROLLERS_COUNT; ++i)
-    {
-        g_si.pif.controllers[i].user_data = &channels[i];
-        g_si.pif.controllers[i].is_connected = egcvip_is_connected;
-        g_si.pif.controllers[i].get_input = egcvip_get_input;
-    }
-
-    /* connect external rumblepaks */
-    for(i = 0; i < GAME_CONTROLLERS_COUNT; ++i)
-    {
-        g_si.pif.controllers[i].rumblepak.user_data = &channels[i];
-        g_si.pif.controllers[i].rumblepak.rumble = rvip_rumble;
-    }
-
-    /* open mpk file (if any) and connect it to mempaks */
-    open_mpk_file(&mpk, get_mempaks_path());
-    for(i = 0; i < GAME_CONTROLLERS_COUNT; ++i)
-    {
-        g_si.pif.controllers[i].mempak.user_data = &mpk;
-        g_si.pif.controllers[i].mempak.save = save_mpk_file;
-        g_si.pif.controllers[i].mempak.data = mpk_file_ptr(&mpk, i);
-    }
-
-    /* open eep file (if any) and connect it to eeprom */
-    open_eep_file(&eep, get_eeprom_path());
-    g_si.pif.eeprom.user_data = &eep;
-    g_si.pif.eeprom.save = save_eep_file;
-    g_si.pif.eeprom.data = eep_file_ptr(&eep);
-    if (ROM_SETTINGS.savetype != EEPROM_16KB)
-    {
-        /* 4kbits EEPROM */
-        g_si.pif.eeprom.size = 0x200;
-        g_si.pif.eeprom.id = 0x8000;
-    }
-    else
-    {
-        /* 16kbits EEPROM */
-        g_si.pif.eeprom.size = 0x800;
-        g_si.pif.eeprom.id = 0xc000;
-    }
-
-    /* open fla file (if any) and connect it to flashram */
-    open_fla_file(&fla, get_flashram_path());
-    g_pi.flashram.user_data = &fla;
-    g_pi.flashram.save = save_fla_file;
-    g_pi.flashram.data = fla_file_ptr(&fla);
-
-    /* open sra file (if any) and connect it to SRAM */
-    open_sra_file(&sra, get_sram_path());
-    g_pi.sram.user_data = &sra;
-    g_pi.sram.save = save_sra_file;
-    g_pi.sram.data = sra_file_ptr(&sra);
-
 #ifdef WITH_LIRC
     lircStart();
 #endif // WITH_LIRC
@@ -1006,10 +1592,9 @@ m64p_error main_run(void)
     g_EmulatorRunning = 1;
     StateChanged(M64CORE_EMU_STATE, M64EMU_RUNNING);
 
-    /* call r4300 CPU core and run the game */
-    r4300_reset_hard();
-    r4300_reset_soft();
-    r4300_execute();
+    poweron_device(&g_dev);
+    pif_bootrom_hle_execute(&g_dev.r4300);
+    run_device(&g_dev);
 
     /* now begin to shut down */
 #ifdef WITH_LIRC
@@ -1020,11 +1605,22 @@ m64p_error main_run(void)
     if (g_DebuggerActive)
         destroy_debugger();
 #endif
+    /* release gb_carts */
+    for(i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
+        if (!Controls[i].RawData && g_dev.gb_carts[i].read_gb_cart != NULL) {
+            release_gb_rom(&l_gb_carts_data[i]);
+            release_gb_ram(&l_gb_carts_data[i]);
+        }
+    }
 
-    close_sra_file(&sra);
-    close_fla_file(&fla);
-    close_eep_file(&eep);
-    close_mpk_file(&mpk);
+    igbcam_backend->close(gbcam_backend);
+    igbcam_backend->release(gbcam_backend);
+
+    close_file_storage(&sra);
+    close_file_storage(&fla);
+    close_file_storage(&eep);
+    close_file_storage(&mpk);
+    close_file_storage(&dd_disk);
 
     if (ConfigGetParamBool(g_CoreConfig, "OnScreenDisplay"))
     {
@@ -1041,6 +1637,31 @@ m64p_error main_run(void)
     StateChanged(M64CORE_EMU_STATE, M64EMU_STOPPED);
 
     return M64ERR_SUCCESS;
+
+on_input_open_failure:
+    audio.romClosed();
+on_audio_open_failure:
+    gfx.romClosed();
+on_gfx_open_failure:
+    /* release gb_carts */
+    for(i = 0; i < GAME_CONTROLLERS_COUNT; ++i) {
+        if (!Controls[i].RawData && g_dev.gb_carts[i].read_gb_cart != NULL) {
+            release_gb_rom(&l_gb_carts_data[i]);
+            release_gb_ram(&l_gb_carts_data[i]);
+        }
+    }
+
+    igbcam_backend->close(gbcam_backend);
+    igbcam_backend->release(gbcam_backend);
+
+    /* release storage files */
+    close_file_storage(&sra);
+    close_file_storage(&fla);
+    close_file_storage(&eep);
+    close_file_storage(&mpk);
+    close_file_storage(&dd_disk);
+
+    return M64ERR_PLUGIN_FAIL;
 }
 
 void main_stop(void)
@@ -1066,16 +1687,18 @@ void main_stop(void)
         osd_delete_message(l_msgVol);
         l_msgVol = NULL;
     }
-    if (rompause)
+    if (g_rom_pause)
     {
-        rompause = 0;
+        g_rom_pause = 0;
         StateChanged(M64CORE_EMU_STATE, M64EMU_RUNNING);
     }
-    stop = 1;
+
+    stop_device(&g_dev);
+
 #ifdef DBG
     if(g_DebuggerActive)
     {
         debugger_step();
     }
-#endif        
+#endif
 }

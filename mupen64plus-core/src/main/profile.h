@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - profile.h                                               *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2014 Bobby Smiles                                       *
  *   Copyright (C) 2012 CasualJames                                        *
  *   Copyright (C) 2002 Hacktarux                                          *
@@ -34,14 +34,8 @@ enum timed_section
     NUM_TIMED_SECTIONS
 };
 
-#ifdef PROFILE
-  void timed_section_start(enum timed_section section);
-  void timed_section_end(enum timed_section section);
-  void timed_sections_refresh(void);
-#else
-  #define timed_section_start(a)
-  #define timed_section_end(a)
-  #define timed_sections_refresh()
-#endif
+void timed_section_start(enum timed_section section);
+void timed_section_end(enum timed_section section);
+void timed_sections_refresh(void);
 
 #endif

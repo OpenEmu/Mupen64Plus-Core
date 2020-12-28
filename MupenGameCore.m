@@ -43,9 +43,11 @@
 #import "main/savestates.h"
 #import "osal/dynamiclib.h"
 #import "main/version.h"
-#import "memory/memory.h"
+#import "device/memory/memory.h"
 #import "main/main.h"
-#import "r4300/r4300.h"
+//#import "r4300/r4300.h"
+#import "device/r4300/r4300_core.h"
+//#import "device/rdram/rdram.h"
 
 #import "plugin/plugin.h"
 
@@ -341,9 +343,9 @@ static void MupenSetAudioSpeed(int percent)
     // Disable dynarec (for debugging)
     m64p_handle section;
 //#ifdef DEBUG
-//    int ival = CORE_PURE_INTERPRETER;
+//    int ival = EMUMODE_PURE_INTERPRETER;
 //#else
-    int ival = CORE_DYNAREC;
+    int ival = EMUMODE_DYNAREC;
 //#endif
 
     ConfigOpenSection("Core", &section);
@@ -749,19 +751,19 @@ static void MupenSetAudioSpeed(int percent)
     }
     
     // Update address directly if code needs GS button pressed
-    if ((gsCode[0].address & 0xFF000000) == 0x88000000 || (gsCode[0].address & 0xFF000000) == 0xA8000000)
-    {
-        *(unsigned char *)((g_rdram + ((gsCode[0].address & 0xFFFFFF)^S8))) = (unsigned char)gsCode[0].value; // Update 8-bit address
-    }
-    else if ((gsCode[0].address & 0xFF000000) == 0x89000000 || (gsCode[0].address & 0xFF000000) == 0xA9000000)
-    {
-        *(unsigned short *)((g_rdram + ((gsCode[0].address & 0xFFFFFF)^S16))) = (unsigned short)gsCode[0].value; // Update 16-bit address
-    }
-    // Else add code as normal
-    else
-    {
-        enabled ? CoreAddCheat(code.UTF8String, gsCode, codeCounter+1) : CoreCheatEnabled(code.UTF8String, 0);
-    }
+//    if ((gsCode[0].address & 0xFF000000) == 0x88000000 || (gsCode[0].address & 0xFF000000) == 0xA8000000)
+//    {
+//        *(unsigned char *)((rdram->dram + ((gsCode[0].address & 0xFFFFFF)^S8))) = (unsigned char)gsCode[0].value; // Update 8-bit address
+//    }
+//    else if ((gsCode[0].address & 0xFF000000) == 0x89000000 || (gsCode[0].address & 0xFF000000) == 0xA9000000)
+//    {
+//        *(unsigned short *)((rdram->dram + ((gsCode[0].address & 0xFFFFFF)^S16))) = (unsigned short)gsCode[0].value; // Update 16-bit address
+//    }
+//    // Else add code as normal
+//    else
+//    {
+//        enabled ? CoreAddCheat(code.UTF8String, gsCode, codeCounter+1) : CoreCheatEnabled(code.UTF8String, 0);
+//    }
 
     free(gsCode);
 }

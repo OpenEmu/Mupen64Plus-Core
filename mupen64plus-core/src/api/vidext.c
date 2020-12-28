@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-core - api/vidext.c                                       *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2009 Richard Goedeken                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -28,6 +28,7 @@
 #include <string.h>
 
 #define M64P_CORE_PROTOTYPES 1
+#include "osal/preproc.h"
 #include "../osd/osd.h"
 #include "callbacks.h"
 #include "m64p_types.h"
@@ -35,6 +36,9 @@
 #include "vidext.h"
 
 #if SDL_VERSION_ATLEAST(2,0,0)
+    #ifndef USE_GLES
+    static int l_ForceCompatibilityContext = 1;
+    #endif
 #include "vidext_sdl2_compat.h"
 #endif
 
@@ -96,6 +100,10 @@ EXPORT m64p_error CALL VidExt_Init(void)
     /* call video extension override if necessary */
     if (l_VideoExtensionActive)
         return (*l_ExternalVideoFuncTable.VidExtFuncInit)();
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+    SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+#endif
 
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) == -1)
     {
@@ -364,7 +372,7 @@ EXPORT m64p_error CALL VidExt_ToggleFullScreen(void)
     return M64ERR_SYSTEM_FAIL;
 }
 
-EXPORT void * CALL VidExt_GL_GetProcAddress(const char* Proc)
+EXPORT m64p_function CALL VidExt_GL_GetProcAddress(const char* Proc)
 {
     /* call video extension override if necessary */
     if (l_VideoExtensionActive)
@@ -373,7 +381,11 @@ EXPORT void * CALL VidExt_GL_GetProcAddress(const char* Proc)
     if (!SDL_WasInit(SDL_INIT_VIDEO))
         return NULL;
 
-    return SDL_GL_GetProcAddress(Proc);
+/* WARN: assume cast to m64p_function is supported by platform and disable warning accordingly */
+OSAL_WARNING_PUSH
+OSAL_NO_WARNING_FPTR_VOIDP_CAST
+    return (m64p_function)SDL_GL_GetProcAddress(Proc);
+OSAL_WARNING_POP
 }
 
 typedef struct {
@@ -389,9 +401,7 @@ static const GLAttrMapNode GLAttrMap[] = {
         { M64P_GL_GREEN_SIZE,   SDL_GL_GREEN_SIZE },
         { M64P_GL_BLUE_SIZE,    SDL_GL_BLUE_SIZE },
         { M64P_GL_ALPHA_SIZE,   SDL_GL_ALPHA_SIZE },
-#if SDL_VERSION_ATLEAST(1,3,0)
-        { M64P_GL_SWAP_CONTROL, SDL_RENDERER_PRESENTVSYNC },
-#else
+#if !SDL_VERSION_ATLEAST(1,3,0)
         { M64P_GL_SWAP_CONTROL, SDL_GL_SWAP_CONTROL },
 #endif
         { M64P_GL_MULTISAMPLEBUFFERS, SDL_GL_MULTISAMPLEBUFFERS },
@@ -415,6 +425,15 @@ EXPORT m64p_error CALL VidExt_GL_SetAttribute(m64p_GLattr Attr, int Value)
     if (!SDL_WasInit(SDL_INIT_VIDEO))
         return M64ERR_NOT_INIT;
 
+#if SDL_VERSION_ATLEAST(1,3,0)
+    if (Attr == M64P_GL_SWAP_CONTROL)
+    {
+        if (SDL_GL_SetSwapInterval(Value) != 0)
+            return M64ERR_SYSTEM_FAIL;
+        return M64ERR_SUCCESS;
+    }
+#endif
+
     /* translate the GL context type mask if necessary */
 #if SDL_VERSION_ATLEAST(2,0,0)
     if (Attr == M64P_GL_CONTEXT_PROFILE_MASK)
@@ -423,6 +442,9 @@ EXPORT m64p_error CALL VidExt_GL_SetAttribute(m64p_GLattr Attr, int Value)
         {
             case M64P_GL_CONTEXT_PROFILE_CORE:
                 Value = SDL_GL_CONTEXT_PROFILE_CORE;
+#ifndef USE_GLES
+                l_ForceCompatibilityContext = 0;
+#endif
                 break;
             case M64P_GL_CONTEXT_PROFILE_COMPATIBILITY:
                 Value = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
@@ -459,6 +481,14 @@ EXPORT m64p_error CALL VidExt_GL_GetAttribute(m64p_GLattr Attr, int *pValue)
 
     if (!SDL_WasInit(SDL_INIT_VIDEO))
         return M64ERR_NOT_INIT;
+
+#if SDL_VERSION_ATLEAST(1,3,0)
+    if (Attr == M64P_GL_SWAP_CONTROL)
+    {
+        *pValue = SDL_GL_GetSwapInterval();
+        return M64ERR_SUCCESS;
+    }
+#endif
 
     for (i = 0; i < mapSize; i++)
     {

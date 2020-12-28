@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-core - api/callbacks.c                                    *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2009 Richard Goedeken                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -54,14 +54,14 @@ m64p_error SetStateCallback(ptr_StateCallback pFunc, void *Context)
 
 void DebugMessage(int level, const char *message, ...)
 {
-  char msgbuf[256];
+  char msgbuf[512];
   va_list args;
 
   if (pDebugFunc == NULL)
       return;
 
   va_start(args, message);
-  vsprintf(msgbuf, message, args);
+  vsnprintf(msgbuf, 512, message, args);
 
   (*pDebugFunc)(DebugContext, level, msgbuf);
 

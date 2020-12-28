@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-core - osal/dynamiclib.h                                  *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2009 Richard Goedeken                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -24,7 +24,7 @@
 
 #include "api/m64p_types.h"
 
-void *     osal_dynlib_getproc(m64p_dynlib_handle LibHandle, const char *pccProcedureName);
+m64p_function osal_dynlib_getproc(m64p_dynlib_handle LibHandle, const char *pccProcedureName);
 
 #endif /* #define OSAL_DYNAMICLIB_H */
 

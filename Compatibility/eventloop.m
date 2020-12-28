@@ -25,7 +25,6 @@
  */
 
 #include "osd.h"
-#include "screenshot.h"
 
 int event_set_core_defaults(void)
 {

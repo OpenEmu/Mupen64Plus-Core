@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-core - api/config.c                                       *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2009 Richard Goedeken                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -8,7 +8,7 @@
  *   the Free Software Foundation; either version 2 of the License, or     *
  *   (at your option) any later version.                                   *
  *                                                                         *
- *   This program is distributed in the hope that it will be useful,       * 
+ *   This program is distributed in the hope that it will be useful,       *
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
  *   GNU General Public License for more details.                          *
@@ -18,7 +18,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-                       
+
 /* This file contains the Core config functions which will be exported
  * outside of the core library.
  */
@@ -70,7 +70,6 @@ typedef config_section *config_list;
 
 /* local variables */
 static int         l_ConfigInit = 0;
-static int         l_SaveConfigOnExit = 0;
 static char       *l_DataDirOverride = NULL;
 static char       *l_ConfigDirOverride = NULL;
 static config_list l_ConfigListActive = NULL;
@@ -307,7 +306,7 @@ static config_section * section_deepcopy(config_section *orig_section)
             case M64TYPE_BOOL:
                 new_var->val.integer = orig_var->val.integer;
                 break;
-                
+
             case M64TYPE_FLOAT:
                 new_var->val.number = orig_var->val.number;
                 break;
@@ -474,7 +473,6 @@ m64p_error ConfigInit(const char *ConfigDirOverride, const char *DataDirOverride
     {
         DebugMessage(M64MSG_INFO, "Couldn't open configuration file '%s'.  Using defaults.", filepath);
         free(filepath);
-        l_SaveConfigOnExit = 1; /* auto-save the config file so that the defaults will be saved to disk */
         return M64ERR_SUCCESS;
     }
     free(filepath);
@@ -554,12 +552,17 @@ m64p_error ConfigInit(const char *ConfigDirOverride, const char *DataDirOverride
                 }
                 else if (is_numeric(l.value))
                 {
-                    int val_int = (int) strtol(l.value, NULL, 10);
-                    float val_float = (float) strtod(l.value, NULL);
-                    if ((val_float - val_int) != 0.0)
+                    /* preserve values as floats if they are written in the config as floats */
+                    if (strchr(l.value, '.'))
+                    {
+                        float val_float = (float) strtod(l.value, NULL);
                         ConfigSetDefaultFloat((m64p_handle) current_section, l.name, val_float, lastcomment);
+                    }
                     else
+                    {
+                        int val_int = (int) strtol(l.value, NULL, 10);
                         ConfigSetDefaultInt((m64p_handle) current_section, l.name, val_int, lastcomment);
+                    }
                 }
                 else
                 {
@@ -585,10 +588,6 @@ m64p_error ConfigInit(const char *ConfigDirOverride, const char *DataDirOverride
 
 m64p_error ConfigShutdown(void)
 {
-    /* first, save the file if necessary */
-    if (l_SaveConfigOnExit)
-        ConfigSaveFile();
-
     /* reset the initialized flag */
     if (!l_ConfigInit)
         return M64ERR_NOT_INIT;
@@ -1149,18 +1148,15 @@ EXPORT m64p_error CALL ConfigGetParameter(m64p_handle ConfigSectionHandle, const
     switch(ParamType)
     {
         case M64TYPE_INT:
-            if (MaxSize < sizeof(int)) return M64ERR_INPUT_INVALID;
-            if (var->type != M64TYPE_INT && var->type != M64TYPE_FLOAT) return M64ERR_WRONG_TYPE;
+            if (MaxSize < (int)sizeof(int)) return M64ERR_INPUT_INVALID;
             *((int *) ParamValue) = ConfigGetParamInt(ConfigSectionHandle, ParamName);
             break;
         case M64TYPE_FLOAT:
-            if (MaxSize < sizeof(float)) return M64ERR_INPUT_INVALID;
-            if (var->type != M64TYPE_INT && var->type != M64TYPE_FLOAT) return M64ERR_WRONG_TYPE;
+            if (MaxSize < (int)sizeof(float)) return M64ERR_INPUT_INVALID;
             *((float *) ParamValue) = ConfigGetParamFloat(ConfigSectionHandle, ParamName);
             break;
         case M64TYPE_BOOL:
-            if (MaxSize < sizeof(int)) return M64ERR_INPUT_INVALID;
-            if (var->type != M64TYPE_BOOL && var->type != M64TYPE_INT) return M64ERR_WRONG_TYPE;
+            if (MaxSize < (int)sizeof(int)) return M64ERR_INPUT_INVALID;
             *((int *) ParamValue) = ConfigGetParamBool(ConfigSectionHandle, ParamName);
             break;
         case M64TYPE_STRING:
@@ -1431,7 +1427,7 @@ EXPORT float CALL ConfigGetParamFloat(m64p_handle ConfigSectionHandle, const cha
         return 0.0;
     }
 
-    /* translate the actual variable type to an int */
+    /* translate the actual variable type to a float */
     switch(var->type)
     {
         case M64TYPE_INT:
@@ -1475,7 +1471,7 @@ EXPORT int CALL ConfigGetParamBool(m64p_handle ConfigSectionHandle, const char *
         return 0;
     }
 
-    /* translate the actual variable type to an int */
+    /* translate the actual variable type to an int (0 or 1) */
     switch(var->type)
     {
         case M64TYPE_INT:
@@ -1520,7 +1516,7 @@ EXPORT const char * CALL ConfigGetParamString(m64p_handle ConfigSectionHandle, c
         return "";
     }
 
-    /* translate the actual variable type to an int */
+    /* translate the actual variable type to a string */
     switch(var->type)
     {
         case M64TYPE_INT:

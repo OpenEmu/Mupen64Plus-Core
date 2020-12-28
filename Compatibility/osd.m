@@ -25,7 +25,6 @@
  */
 
 #include "osd.h"
-#include "screenshot.h"
 
 #pragma mark osd stubs
 

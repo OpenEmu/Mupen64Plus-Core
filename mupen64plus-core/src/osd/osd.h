@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - osd.h                                                   *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2008 Nmn, Ebenblues                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -84,10 +84,6 @@ typedef struct {
 
 enum { R, G, B }; // for referencing color array
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef M64P_OSD
 
 void osd_init(int width, int height);
@@ -134,10 +130,6 @@ static osal_inline void osd_message_set_user_managed(osd_message_t *msg)
 {
 }
 
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif // __OSD_H__

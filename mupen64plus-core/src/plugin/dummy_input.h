@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - dummy_input.h                                           *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2009 Richard Goedeken                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -37,6 +37,7 @@ extern int  dummyinput_RomOpen(void);
 extern void dummyinput_RomClosed(void);
 extern void dummyinput_SDL_KeyDown(int keymod, int keysym);
 extern void dummyinput_SDL_KeyUp(int keymod, int keysym);
+extern void dummyinput_RenderCallback(void);
 
 #endif /* DUMMY_INPUT_H */
 

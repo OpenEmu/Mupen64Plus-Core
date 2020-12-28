@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - rom.h                                                   *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2008 Tillin9                                            *
  *   Copyright (C) 2002 Hacktarux                                          *
  *                                                                         *
@@ -23,14 +23,14 @@
 #ifndef __ROM_H__
 #define __ROM_H__
 
+#include <md5.h>
 #include <stdint.h>
 
 #include "api/m64p_types.h"
-#include "md5.h"
 
 #define BIT(bitnr) (1ULL << (bitnr))
 #ifdef __GNUC__
-#define isset_bitmask(x, bitmask) ({ typeof(bitmask) _bitmask = (bitmask); \
+#define isset_bitmask(x, bitmask) __extension__ ({ __typeof__(bitmask) _bitmask = (bitmask); \
                                      (_bitmask & (x)) == _bitmask; })
 #else
 #define isset_bitmask(x, bitmask) ((bitmask & (x)) == bitmask)
@@ -41,19 +41,16 @@
 m64p_error open_rom(const unsigned char* romimage, unsigned int size);
 m64p_error close_rom(void);
 
-extern unsigned char* g_rom;
 extern int g_rom_size;
-
-extern unsigned char isGoldeneyeRom;
 
 typedef struct _rom_params
 {
    char *cheats;
    m64p_system_type systemtype;
-   int vilimit;
-   int aidacrate;
    char headername[21];  /* ROM Name as in the header, removing trailing whitespace */
    unsigned char countperop;
+   int disableextramem;
+   unsigned int sidmaduration;
 } rom_params;
 
 extern m64p_rom_header   ROM_HEADER;
@@ -125,20 +122,28 @@ typedef struct
    unsigned char players; /* Local players 0-4, 2/3/4 way Netplay indicated by 5/6/7. */
    unsigned char rumble; /* 0 - No, 1 - Yes boolean for rumble support. */
    unsigned char countperop;
+   unsigned char disableextramem;
+   unsigned char transferpak; /* 0 - No, 1 - Yes boolean for transferpak support. */
+   unsigned char mempak; /* 0 - No, 1 - Yes boolean for mempak support. */
+   unsigned char biopak; /* 0 - No, 1 - Yes boolean for biopak support. */
+   unsigned int sidmaduration;
    uint32_t set_flags;
 } romdatabase_entry;
 
-enum romdatabase_entry_set_flags {
-    ROMDATABASE_ENTRY_NONE = 0,
-    ROMDATABASE_ENTRY_GOODNAME = BIT(0),
-    ROMDATABASE_ENTRY_CRC = BIT(1),
-    ROMDATABASE_ENTRY_STATUS = BIT(2),
-    ROMDATABASE_ENTRY_SAVETYPE = BIT(3),
-    ROMDATABASE_ENTRY_PLAYERS = BIT(4),
-    ROMDATABASE_ENTRY_RUMBLE = BIT(5),
-    ROMDATABASE_ENTRY_COUNTEROP = BIT(6),
-    ROMDATABASE_ENTRY_CHEATS = BIT(7)
-};
+#define ROMDATABASE_ENTRY_NONE          0ULL
+#define ROMDATABASE_ENTRY_GOODNAME      BIT(0)
+#define ROMDATABASE_ENTRY_CRC           BIT(1)
+#define ROMDATABASE_ENTRY_STATUS        BIT(2)
+#define ROMDATABASE_ENTRY_SAVETYPE      BIT(3)
+#define ROMDATABASE_ENTRY_PLAYERS       BIT(4)
+#define ROMDATABASE_ENTRY_RUMBLE        BIT(5)
+#define ROMDATABASE_ENTRY_COUNTEROP     BIT(6)
+#define ROMDATABASE_ENTRY_CHEATS        BIT(7)
+#define ROMDATABASE_ENTRY_EXTRAMEM      BIT(8)
+#define ROMDATABASE_ENTRY_TRANSFERPAK   BIT(9)
+#define ROMDATABASE_ENTRY_MEMPAK        BIT(10)
+#define ROMDATABASE_ENTRY_BIOPAK        BIT(11)
+#define ROMDATABASE_ENTRY_SIDMADURATION BIT(12)
 
 typedef struct _romdatabase_search
 {

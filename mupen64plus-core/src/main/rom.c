@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - rom.c                                                   *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2008 Tillin9                                            *
  *   Copyright (C) 2002 Hacktarux                                          *
  *                                                                         *
@@ -35,37 +35,35 @@
 #include "api/config.h"
 #include "api/m64p_config.h"
 #include "api/m64p_types.h"
+#include "device/device.h"
 #include "main.h"
 #include "md5.h"
-#include "memory/memory.h"
 #include "osal/preproc.h"
 #include "osd/osd.h"
-#include "r4300/r4300.h"
 #include "rom.h"
 #include "util.h"
 
-#define DEFAULT 16
-
 #define CHUNKSIZE 1024*128 /* Read files 128KB at a time. */
+
+/* Number of cpu cycles per instruction */
+enum { DEFAULT_COUNT_PER_OP = 2 };
+/* by default, extra mem is enabled */
+enum { DEFAULT_DISABLE_EXTRA_MEM = 0 };
+/* Default SI DMA duration */
+enum { DEFAULT_SI_DMA_DURATION = 0x900 };
 
 static romdatabase_entry* ini_search_by_md5(md5_byte_t* md5);
 
 static _romdatabase g_romdatabase;
 
-/* Global loaded rom memory space. */
-unsigned char* g_rom = NULL;
 /* Global loaded rom size. */
 int g_rom_size = 0;
-
-unsigned char isGoldeneyeRom = 0;
 
 m64p_rom_header   ROM_HEADER;
 rom_params        ROM_PARAMS;
 m64p_rom_settings ROM_SETTINGS;
 
 static m64p_system_type rom_country_code_to_system_type(uint16_t country_code);
-static int rom_system_type_to_ai_dac_rate(m64p_system_type system_type);
-static int rom_system_type_to_vi_limit(m64p_system_type system_type);
 
 static const uint8_t Z64_SIGNATURE[4] = { 0x80, 0x37, 0x12, 0x40 };
 static const uint8_t V64_SIGNATURE[4] = { 0x37, 0x80, 0x40, 0x12 };
@@ -141,11 +139,6 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
     int i;
 
     /* check input requirements */
-    if (g_rom != NULL)
-    {
-        DebugMessage(M64MSG_ERROR, "open_rom(): previous ROM image was not freed");
-        return M64ERR_INTERNAL;
-    }
     if (romimage == NULL || !is_valid_rom(romimage))
     {
         DebugMessage(M64MSG_ERROR, "open_rom(): not a valid ROM image");
@@ -153,19 +146,17 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
     }
 
     /* Clear Byte-swapped flag, since ROM is now deleted. */
-    g_MemHasBeenBSwapped = 0;
+    g_RomWordsLittleEndian = 0;
     /* allocate new buffer for ROM and copy into this buffer */
     g_rom_size = size;
-    g_rom = (unsigned char *) malloc(size);
-    if (g_rom == NULL)
-        return M64ERR_NO_MEMORY;
-    swap_copy_rom(g_rom, romimage, size, &imagetype);
+    swap_copy_rom((uint8_t*)mem_base_u32(g_mem_base, MM_CART_ROM), romimage, size, &imagetype);
+    /* ROM is now in N64 native (big endian) byte order */
 
-    memcpy(&ROM_HEADER, g_rom, sizeof(m64p_rom_header));
+    memcpy(&ROM_HEADER, (uint8_t*)mem_base_u32(g_mem_base, MM_CART_ROM), sizeof(m64p_rom_header));
 
     /* Calculate MD5 hash  */
     md5_init(&state);
-    md5_append(&state, (const md5_byte_t*)g_rom, g_rom_size);
+    md5_append(&state, (const md5_byte_t*)((uint8_t*)mem_base_u32(g_mem_base, MM_CART_ROM)), g_rom_size);
     md5_finish(&state, digest);
     for ( i = 0; i < 16; ++i )
         sprintf(buffer+i*2, "%02X", digest[i]);
@@ -174,9 +165,9 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
 
     /* add some useful properties to ROM_PARAMS */
     ROM_PARAMS.systemtype = rom_country_code_to_system_type(ROM_HEADER.Country_code);
-    ROM_PARAMS.vilimit = rom_system_type_to_vi_limit(ROM_PARAMS.systemtype);
-    ROM_PARAMS.aidacrate = rom_system_type_to_ai_dac_rate(ROM_PARAMS.systemtype);
-    ROM_PARAMS.countperop = COUNT_PER_OP_DEFAULT;
+    ROM_PARAMS.countperop = DEFAULT_COUNT_PER_OP;
+    ROM_PARAMS.disableextramem = DEFAULT_DISABLE_EXTRA_MEM;
+    ROM_PARAMS.sidmaduration = DEFAULT_SI_DMA_DURATION;
     ROM_PARAMS.cheats = NULL;
 
     memcpy(ROM_PARAMS.headername, ROM_HEADER.Name, 20);
@@ -185,7 +176,7 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
 
     /* Look up this ROM in the .ini file and fill in goodname, etc */
     if ((entry=ini_search_by_md5(digest)) != NULL ||
-        (entry=ini_search_by_crc(sl(ROM_HEADER.CRC1),sl(ROM_HEADER.CRC2))) != NULL)
+        (entry=ini_search_by_crc(tohl(ROM_HEADER.CRC1),tohl(ROM_HEADER.CRC2))) != NULL)
     {
         strncpy(ROM_SETTINGS.goodname, entry->goodname, 255);
         ROM_SETTINGS.goodname[255] = '\0';
@@ -193,7 +184,12 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.status = entry->status;
         ROM_SETTINGS.players = entry->players;
         ROM_SETTINGS.rumble = entry->rumble;
+        ROM_SETTINGS.transferpak = entry->transferpak;
+        ROM_SETTINGS.mempak = entry->mempak;
+        ROM_SETTINGS.biopak = entry->biopak;
         ROM_PARAMS.countperop = entry->countperop;
+        ROM_PARAMS.disableextramem = entry->disableextramem;
+        ROM_PARAMS.sidmaduration = entry->sidmaduration;
         ROM_PARAMS.cheats = entry->cheats;
     }
     else
@@ -202,9 +198,14 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         strcat(ROM_SETTINGS.goodname, " (unknown rom)");
         ROM_SETTINGS.savetype = NONE;
         ROM_SETTINGS.status = 0;
-        ROM_SETTINGS.players = 0;
-        ROM_SETTINGS.rumble = 0;
-        ROM_PARAMS.countperop = COUNT_PER_OP_DEFAULT;
+        ROM_SETTINGS.players = 4;
+        ROM_SETTINGS.rumble = 1;
+        ROM_SETTINGS.transferpak = 0;
+        ROM_SETTINGS.mempak = 1;
+        ROM_SETTINGS.biopak = 0;
+        ROM_PARAMS.countperop = DEFAULT_COUNT_PER_OP;
+        ROM_PARAMS.disableextramem = DEFAULT_DISABLE_EXTRA_MEM;
+        ROM_PARAMS.sidmaduration = DEFAULT_SI_DMA_DURATION;
         ROM_PARAMS.cheats = NULL;
     }
 
@@ -213,39 +214,28 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
     DebugMessage(M64MSG_INFO, "Name: %s", ROM_HEADER.Name);
     imagestring(imagetype, buffer);
     DebugMessage(M64MSG_INFO, "MD5: %s", ROM_SETTINGS.MD5);
-    DebugMessage(M64MSG_INFO, "CRC: %" PRIX32 " %" PRIX32, sl(ROM_HEADER.CRC1), sl(ROM_HEADER.CRC2));
+    DebugMessage(M64MSG_INFO, "CRC: %08" PRIX32 " %08" PRIX32, tohl(ROM_HEADER.CRC1), tohl(ROM_HEADER.CRC2));
     DebugMessage(M64MSG_INFO, "Imagetype: %s", buffer);
     DebugMessage(M64MSG_INFO, "Rom size: %d bytes (or %d Mb or %d Megabits)", g_rom_size, g_rom_size/1024/1024, g_rom_size/1024/1024*8);
-    DebugMessage(M64MSG_VERBOSE, "ClockRate = %" PRIX32, sl(ROM_HEADER.ClockRate));
-    DebugMessage(M64MSG_INFO, "Version: %" PRIX32, sl(ROM_HEADER.Release));
-    if(sl(ROM_HEADER.Manufacturer_ID) == 'N')
+    DebugMessage(M64MSG_VERBOSE, "ClockRate = %" PRIX32, tohl(ROM_HEADER.ClockRate));
+    DebugMessage(M64MSG_INFO, "Version: %" PRIX32, tohl(ROM_HEADER.Release));
+    if(tohl(ROM_HEADER.Manufacturer_ID) == 'N')
         DebugMessage(M64MSG_INFO, "Manufacturer: Nintendo");
     else
-        DebugMessage(M64MSG_INFO, "Manufacturer: %" PRIX32, sl(ROM_HEADER.Manufacturer_ID));
+        DebugMessage(M64MSG_INFO, "Manufacturer: %" PRIX32, tohl(ROM_HEADER.Manufacturer_ID));
     DebugMessage(M64MSG_VERBOSE, "Cartridge_ID: %" PRIX16, ROM_HEADER.Cartridge_ID);
     countrycodestring(ROM_HEADER.Country_code, buffer);
     DebugMessage(M64MSG_INFO, "Country: %s", buffer);
-    DebugMessage(M64MSG_VERBOSE, "PC = %" PRIX32, sl(ROM_HEADER.PC));
+    DebugMessage(M64MSG_VERBOSE, "PC = %" PRIX32, tohl(ROM_HEADER.PC));
     DebugMessage(M64MSG_VERBOSE, "Save type: %d", ROM_SETTINGS.savetype);
-
-    //Prepare Hack for GOLDENEYE
-    isGoldeneyeRom = 0;
-    if(strcmp(ROM_PARAMS.headername, "GOLDENEYE") == 0)
-       isGoldeneyeRom = 1;
 
     return M64ERR_SUCCESS;
 }
 
 m64p_error close_rom(void)
 {
-    if (g_rom == NULL)
-        return M64ERR_INVALID_STATE;
-
-    free(g_rom);
-    g_rom = NULL;
-
     /* Clear Byte-swapped flag, since ROM is now deleted. */
-    g_MemHasBeenBSwapped = 0;
+    g_RomWordsLittleEndian = 0;
     DebugMessage(M64MSG_STATUS, "Rom closed.");
 
     return M64ERR_SUCCESS;
@@ -277,35 +267,6 @@ static m64p_system_type rom_country_code_to_system_type(uint16_t country_code)
         case 0x4a:
         default: // Fallback for unknown codes
             return SYSTEM_NTSC;
-    }
-}
-
-// Get the VI (vertical interrupt) limit associated to a ROM system type.
-static int rom_system_type_to_vi_limit(m64p_system_type system_type)
-{
-    switch (system_type)
-    {
-        case SYSTEM_PAL:
-        case SYSTEM_MPAL:
-            return 50;
-
-        case SYSTEM_NTSC:
-        default:
-            return 60;
-    }
-}
-
-static int rom_system_type_to_ai_dac_rate(m64p_system_type system_type)
-{
-    switch (system_type)
-    {
-        case SYSTEM_PAL:
-            return 49656530;
-        case SYSTEM_MPAL:
-            return 48628316;
-        case SYSTEM_NTSC:
-        default:
-            return 48681812;
     }
 }
 
@@ -383,6 +344,36 @@ static size_t romdatabase_resolve_round(void)
             entry->entry.set_flags |= ROMDATABASE_ENTRY_CHEATS;
         }
 
+        if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_EXTRAMEM) &&
+            isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_EXTRAMEM)) {
+            entry->entry.disableextramem = ref->disableextramem;
+            entry->entry.set_flags |= ROMDATABASE_ENTRY_EXTRAMEM;
+        }
+
+        if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_TRANSFERPAK) &&
+            isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_TRANSFERPAK)) {
+            entry->entry.transferpak = ref->transferpak;
+            entry->entry.set_flags |= ROMDATABASE_ENTRY_TRANSFERPAK;
+        }
+
+        if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_MEMPAK) &&
+            isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_MEMPAK)) {
+            entry->entry.mempak = ref->mempak;
+            entry->entry.set_flags |= ROMDATABASE_ENTRY_MEMPAK;
+        }
+
+        if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_BIOPAK) &&
+            isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_BIOPAK)) {
+            entry->entry.biopak = ref->biopak;
+            entry->entry.set_flags |= ROMDATABASE_ENTRY_BIOPAK;
+        }
+
+        if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_SIDMADURATION) &&
+            isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_SIDMADURATION)) {
+            entry->entry.sidmaduration = ref->sidmaduration;
+            entry->entry.set_flags |= ROMDATABASE_ENTRY_SIDMADURATION;
+        }
+
         free(entry->entry.refmd5);
         entry->entry.refmd5 = NULL;
     }
@@ -457,9 +448,11 @@ void romdatabase_open(void)
                 continue;
             }
 
-            *next_search = (romdatabase_search*)malloc(sizeof(romdatabase_search));
+            *next_search = (romdatabase_search*) malloc(sizeof(romdatabase_search));
             search = *next_search;
             next_search = &search->next_entry;
+
+            memset(search, 0, sizeof(romdatabase_search));
 
             search->entry.goodname = NULL;
             memcpy(search->entry.md5, md5, 16);
@@ -467,11 +460,16 @@ void romdatabase_open(void)
             search->entry.crc1 = 0;
             search->entry.crc2 = 0;
             search->entry.status = 0; /* Set default to 0 stars. */
-            search->entry.savetype = DEFAULT;
-            search->entry.players = DEFAULT;
-            search->entry.rumble = DEFAULT; 
-            search->entry.countperop = COUNT_PER_OP_DEFAULT;
+            search->entry.savetype = 0;
+            search->entry.players = 4;
+            search->entry.rumble = 1;
+            search->entry.countperop = DEFAULT_COUNT_PER_OP;
+            search->entry.disableextramem = DEFAULT_DISABLE_EXTRA_MEM;
             search->entry.cheats = NULL;
+            search->entry.transferpak = 0;
+            search->entry.mempak = 1;
+            search->entry.biopak = 0;
+            search->entry.sidmaduration = DEFAULT_SI_DMA_DURATION;
             search->entry.set_flags = ROMDATABASE_ENTRY_NONE;
 
             search->next_entry = NULL;
@@ -588,6 +586,11 @@ void romdatabase_open(void)
                     DebugMessage(M64MSG_WARNING, "ROM Database: Invalid CountPerOp on line %i", lineno);
                 }
             }
+            else if (!strcmp(l.name, "DisableExtraMem"))
+            {
+                search->entry.disableextramem = atoi(l.value);
+                search->entry.set_flags |= ROMDATABASE_ENTRY_EXTRAMEM;
+            }
             else if(!strncmp(l.name, "Cheat", 5))
             {
                 size_t len1 = 0, len2 = 0;
@@ -617,6 +620,51 @@ void romdatabase_open(void)
                 }
 
                 search->entry.set_flags |= ROMDATABASE_ENTRY_CHEATS;
+            }
+            else if(!strcmp(l.name, "Transferpak"))
+            {
+                if(!strcmp(l.value, "Yes")) {
+                    search->entry.transferpak = 1;
+                    search->entry.set_flags |= ROMDATABASE_ENTRY_TRANSFERPAK;
+                } else if(!strcmp(l.value, "No")) {
+                    search->entry.transferpak = 0;
+                    search->entry.set_flags |= ROMDATABASE_ENTRY_TRANSFERPAK;
+                } else {
+                    DebugMessage(M64MSG_WARNING, "ROM Database: Invalid transferpak string on line %i", lineno);
+                }
+            }
+            else if(!strcmp(l.name, "Mempak"))
+            {
+                if(!strcmp(l.value, "Yes")) {
+                    search->entry.mempak = 1;
+                    search->entry.set_flags |= ROMDATABASE_ENTRY_MEMPAK;
+                } else if(!strcmp(l.value, "No")) {
+                    search->entry.mempak = 0;
+                    search->entry.set_flags |= ROMDATABASE_ENTRY_MEMPAK;
+                } else {
+                    DebugMessage(M64MSG_WARNING, "ROM Database: Invalid mempak string on line %i", lineno);
+                }
+            }
+            else if(!strcmp(l.name, "Biopak"))
+            {
+                if(!strcmp(l.value, "Yes")) {
+                    search->entry.biopak = 1;
+                    search->entry.set_flags |= ROMDATABASE_ENTRY_BIOPAK;
+                } else if(!strcmp(l.value, "No")) {
+                    search->entry.biopak = 0;
+                    search->entry.set_flags |= ROMDATABASE_ENTRY_BIOPAK;
+                } else {
+                    DebugMessage(M64MSG_WARNING, "ROM Database: Invalid biopak string on line %i", lineno);
+                }
+            }
+            else if(!strcmp(l.name, "SiDmaDuration"))
+            {
+                if (string_to_int(l.value, &value) && value >= 0 && value <= 0x10000) {
+                    search->entry.sidmaduration = value;
+                    search->entry.set_flags |= ROMDATABASE_ENTRY_SIDMADURATION;
+                } else {
+                    DebugMessage(M64MSG_WARNING, "ROM Database: Invalid SiDmaDuration on line %i", lineno);
+                }
             }
             else
             {

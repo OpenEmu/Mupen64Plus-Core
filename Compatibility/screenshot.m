@@ -25,7 +25,7 @@
  */
 
 #include "osd.h"
-#include "screenshot.h"
+#include "../mupen64plus-core/src/main/screenshot.h"
 
 void ScreenshotRomOpen(void)
 {

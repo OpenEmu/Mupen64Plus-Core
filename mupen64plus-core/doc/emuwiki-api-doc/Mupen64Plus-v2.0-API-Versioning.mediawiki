@@ -94,6 +94,8 @@ This is the most complicated interface, because it involves 3 components: the vi
 * '''FRONTEND_API_VERSION''' version 2.1.1:
 ** Core command M64CMD_CORE_STATE_SET will now accept M64CORE_VIDEO_SIZE parameter
 *** will call the video plugin function ResizeVideoOutput()
+* '''FRONTEND_API_VERSION''' version 2.1.2:
+** added "M64CMD_SET_MEDIA_LOADER" command to allow frontend to specify several media files (such as GB cartridge ROM and RAM files).
 * '''CONFIG_API_VERSION''' version 2.1.0:
 ** add new function "ConfigSaveSection()" to save only a single config section to disk
 * '''CONFIG_API_VERSION''' version 2.2.0:
@@ -101,6 +103,11 @@ This is the most complicated interface, because it involves 3 components: the vi
 ** add new function "ConfigRevertChanges()" to revert changes previously made to one section of the configuration file, so that it will match with the configuration at the last time that it was loaded from or saved to disk.
 * '''CONFIG_API_VERSION''' version 2.3.0:
 ** add new function "ConfigSetParameterHelp()" sets the value of one of the emulator's configuration parameters.
+* '''CONFIG_API_VERSION''' version 2.3.1:
+** add new functions "ConfigExternalOpen()" "ConfigExternalClose()" "ConfigExternalGetParameter()" that allows plugins to leverage the core INI parser to read config files.
+* '''DEBUG_API_VERSION''' version 2.0.1:
+** add new function "DebugBreakpointTriggeredBy()" which allows a front-end application to determine which memory address and action (read, write, execute) caused a breakpoint to fire.
+** add new function "DebugVirtualToPhysical()" which allows a front-end application to find the physical address which corresponds to a given virtual address.
 * '''VIDEO_API_VERSION''' version 2.1.0:
 ** video render callback function now takes a boolean (int) parameter, which specifies whether the video frame has been re-drawn since the last time the render callback was called. This allows us to take screenshots without the On-Screen-Display text
 * '''VIDEO_API_VERSION''' version 2.2.0:
@@ -108,5 +115,8 @@ This is the most complicated interface, because it involves 3 components: the vi
 * '''VIDEXT_API_VERSION''' version 3.0.0:
 ** add VidExt_ResizeWindow() function in video extension.  This function is called by the video plugin to notify the window manager (SDL if no video extension is registered by the front-end) that the OpenGL render window size should change.
 ** add m64p_video_flags parameter to the VidExt_SetVideoMode() function.  Currently the flags are only used to notify the window manager that resizing is supported by the video plugin, and it should create a resizable window if possible.  This may be extended in the future to support other features.
+* '''VIDEXT_API_VERSION''' version 3.1.0:
+** add VidExt_GL_GetDefaultFramebuffer() function in video extension. This function should be called to get the name of the default FBO.
 * '''INPUT_API_VERSION''' version 2.0.1:
 ** add (optional) RenderCallback function to input plugin. This function is called by the core after rendering on screen text (OSD) and before the graphics plugin swaps the buffers. The purpose of this function is to enable the input plugin to draw on screen content, for example buttons in a touch input plugin. If this function is not present the core will ignore it and on screen rendering by the input plugin will be disabled.
+
