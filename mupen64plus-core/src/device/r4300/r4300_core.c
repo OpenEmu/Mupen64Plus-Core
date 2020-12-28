@@ -41,7 +41,7 @@
 #include <time.h>
 
 void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controller* mi, struct rdram* rdram, const struct interrupt_handler* interrupt_handlers,
-    unsigned int emumode, unsigned int count_per_op, int no_compiled_jump, int randomize_interrupt)
+    unsigned int emumode, unsigned int count_per_op, int no_compiled_jump, int randomize_interrupt, uint32_t start_address)
 {
     struct new_dynarec_hot_state* new_dynarec_hot_state =
 #ifdef NEW_DYNAREC
@@ -62,7 +62,8 @@ void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controll
     r4300->mi = mi;
     r4300->rdram = rdram;
     r4300->randomize_interrupt = randomize_interrupt;
-    srand(time(NULL));
+    r4300->start_address = start_address;
+    srand((unsigned int) time(NULL));
 }
 
 void poweron_r4300(struct r4300_core* r4300)
@@ -121,6 +122,13 @@ void poweron_r4300(struct r4300_core* r4300)
 
 void run_r4300(struct r4300_core* r4300)
 {
+#ifdef OSAL_SSE
+    //Save FTZ/DAZ mode
+    unsigned int daz = _MM_GET_DENORMALS_ZERO_MODE();
+    unsigned int ftz = _MM_GET_FLUSH_ZERO_MODE();
+    _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_OFF);
+#endif
+
     *r4300_stop(r4300) = 0;
     g_rom_pause = 0;
 
@@ -175,7 +183,7 @@ void run_r4300(struct r4300_core* r4300)
         r4300->cached_interp.recompile_block = cached_interp_recompile_block;
 
         init_blocks(&r4300->cached_interp);
-        cached_interpreter_jump_to(r4300, UINT32_C(0xa4000040));
+        cached_interpreter_jump_to(r4300, r4300->start_address);
 
         /* Prevent segfault on failed cached_interpreter_jump_to */
         if (!r4300->cached_interp.actual->block) {
@@ -195,6 +203,11 @@ void run_r4300(struct r4300_core* r4300)
 #if defined(COUNT_INSTR)
     if (r4300->emumode == EMUMODE_DYNAREC)
         instr_counters_print();
+#endif
+#ifdef OSAL_SSE
+    //Restore FTZ/DAZ mode
+    _MM_SET_DENORMALS_ZERO_MODE(daz);
+    _MM_SET_FLUSH_ZERO_MODE(ftz);
 #endif
 }
 
@@ -380,8 +393,8 @@ int r4300_write_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64
     address &= UINT32_C(0x1ffffffc);
 
     const struct mem_handler* handler = mem_get_handler(r4300->mem, address);
-    mem_write32(handler, address + 0, value >> 32, mask >> 32);
-    mem_write32(handler, address + 4, value      , mask      );
+    mem_write32(handler, address + 0, value >> 32,      mask >> 32);
+    mem_write32(handler, address + 4, (uint32_t) value, (uint32_t) mask      );
 
     return 1;
 }

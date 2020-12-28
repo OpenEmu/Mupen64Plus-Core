@@ -34,6 +34,7 @@
 #include "m64p_config.h"
 #include "m64p_types.h"
 #include "main/util.h"
+#include "main/netplay.h"
 #include "osal/files.h"
 #include "osal/preproc.h"
 
@@ -1242,10 +1243,14 @@ EXPORT m64p_error CALL ConfigSetDefaultInt(m64p_handle ConfigSectionHandle, cons
     if (section->magic != SECTION_MAGIC)
         return M64ERR_INPUT_INVALID;
 
-    /* if this parameter already exists, then just return successfully */
+    /* if this parameter already exists, add help text if missing, then return successfully */
     var = find_section_var(section, ParamName);
     if (var != NULL)
+    {
+        if (ParamHelp != NULL && var->comment == NULL)
+            var->comment = strdup(ParamHelp);
         return M64ERR_SUCCESS;
+    }
 
     /* otherwise create a new config_var object and add it to this section */
     var = config_var_create(ParamName, ParamHelp);
@@ -1273,10 +1278,14 @@ EXPORT m64p_error CALL ConfigSetDefaultFloat(m64p_handle ConfigSectionHandle, co
     if (section->magic != SECTION_MAGIC)
         return M64ERR_INPUT_INVALID;
 
-    /* if this parameter already exists, then just return successfully */
+    /* if this parameter already exists, add help text if missing, then return successfully */
     var = find_section_var(section, ParamName);
     if (var != NULL)
+    {
+        if (ParamHelp != NULL && var->comment == NULL)
+            var->comment = strdup(ParamHelp);
         return M64ERR_SUCCESS;
+    }
 
     /* otherwise create a new config_var object and add it to this section */
     var = config_var_create(ParamName, ParamHelp);
@@ -1304,10 +1313,14 @@ EXPORT m64p_error CALL ConfigSetDefaultBool(m64p_handle ConfigSectionHandle, con
     if (section->magic != SECTION_MAGIC)
         return M64ERR_INPUT_INVALID;
 
-    /* if this parameter already exists, then just return successfully */
+    /* if this parameter already exists, add help text if missing, then return successfully */
     var = find_section_var(section, ParamName);
     if (var != NULL)
+    {
+        if (ParamHelp != NULL && var->comment == NULL)
+            var->comment = strdup(ParamHelp);
         return M64ERR_SUCCESS;
+    }
 
     /* otherwise create a new config_var object and add it to this section */
     var = config_var_create(ParamName, ParamHelp);
@@ -1335,10 +1348,14 @@ EXPORT m64p_error CALL ConfigSetDefaultString(m64p_handle ConfigSectionHandle, c
     if (section->magic != SECTION_MAGIC)
         return M64ERR_INPUT_INVALID;
 
-    /* if this parameter already exists, then just return successfully */
+    /* if this parameter already exists, add help text if missing, then return successfully */
     var = find_section_var(section, ParamName);
     if (var != NULL)
+    {
+        if (ParamHelp != NULL && var->comment == NULL)
+            var->comment = strdup(ParamHelp);
         return M64ERR_SUCCESS;
+    }
 
     /* otherwise create a new config_var object and add it to this section */
     var = config_var_create(ParamName, ParamHelp);
@@ -1579,3 +1596,12 @@ EXPORT const char * CALL ConfigGetUserCachePath(void)
   return osal_get_user_cachepath();
 }
 
+EXPORT m64p_error CALL ConfigSendNetplayConfig(char* data, int size)
+{
+    return netplay_send_config(data, size);
+}
+
+EXPORT m64p_error CALL ConfigReceiveNetplayConfig(char* data, int size)
+{
+    return netplay_receive_config(data, size);
+}

@@ -37,13 +37,15 @@
 
   /* string functions */
   #define osal_insensitive_strcmp(x, y) _stricmp(x, y)
-  #define snprintf _snprintf
   #define strdup _strdup
 
   /* for isnan() */
   #include <float.h>
 
-  #define isnan _isnan
+#if defined(_M_X64) || (_M_IX86_FP > 0)
+  #include <immintrin.h>
+  #define OSAL_SSE
+#endif
 
 #else  /* Not WIN32 */
   /* for strcasecmp */
@@ -60,6 +62,11 @@
 
   /* string functions */
   #define osal_insensitive_strcmp(x, y) strcasecmp(x, y)
+
+#ifdef __SSE__
+  #include <immintrin.h>
+  #define OSAL_SSE
+#endif
 
 #endif
 

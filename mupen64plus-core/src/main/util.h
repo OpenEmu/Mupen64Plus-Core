@@ -1,6 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus - util.h                                                  *
  *   Mupen64Plus homepage: https://mupen64plus.org/                        *
+ *   Copyright (C) 2020 Richard42                                          *
  *   Copyright (C) 2012 CasualJames                                        *
  *   Copyright (C) 2002 Hacktarux                                          *
  *                                                                         *
@@ -29,6 +30,12 @@
 
 #include "osal/preproc.h"
 
+#if defined(__GNUC__)
+#define ATTR_FMT(fmtpos, attrpos) __attribute__ ((format (printf, fmtpos, attrpos)))
+#else
+#define ATTR_FMT(fmtpos, attrpos)
+#endif
+
 /**********************
      File utilities
  **********************/
@@ -51,8 +58,14 @@ file_status_t read_from_file(const char *filename, void *data, size_t size);
 /** write_to_file
  *    opens a file and writes the specified number of bytes.
  *    returns zero on success, nonzero on failure
- */ 
+ */
 file_status_t write_to_file(const char *filename, const void *data, size_t size);
+
+/** write_chunk_to_file
+ *    opens a file, seek to offset and writes the specified number of bytes.
+ *    returns zero on success, nonzero on failure
+ */
+file_status_t write_chunk_to_file(const char *filename, const void *data, size_t size, size_t offset);
 
 /** load_file
  *    load the file content into a newly allocated buffer.
@@ -178,7 +191,7 @@ int parse_hex(const char *str, unsigned char *output, size_t output_size);
 
 /* Formats an string, using the same syntax as printf.
  * Returns the result in a malloc'd string. */
-char* formatstr(const char* fmt, ...);
+char* formatstr(const char* fmt, ...) ATTR_FMT(1, 2);
 
 typedef enum _ini_line_type
 {
@@ -210,6 +223,10 @@ typedef struct _ini_line
  * (so their lifetime is associated to that of 'lineptr').
  */
 ini_line ini_parse_line(char **lineptr);
+
+/* Convert text in Shift-JIS (code page 932) to UTF-8
+ */
+void ShiftJis2UTF8(const unsigned char *pccInput, unsigned char *pucOutput, int outputLength);
 
 #endif // __UTIL_H__
 

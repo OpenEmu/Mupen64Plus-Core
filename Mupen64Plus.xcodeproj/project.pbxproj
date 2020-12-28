@@ -276,7 +276,6 @@
 		878419692599583C002ED39D /* dummy_video.c in Sources */ = {isa = PBXBuildFile; fileRef = 3D208D6911824C2200BEAA42 /* dummy_video.c */; };
 		8784197325995844002ED39D /* plugin.c in Sources */ = {isa = PBXBuildFile; fileRef = 3D208D6B11824C2200BEAA42 /* plugin.c */; };
 		8784198F25995A93002ED39D /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841980259959FD002ED39D /* md5.c */; };
-		8784199925995A9A002ED39D /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = 8784198E259959FD002ED39D /* xxhash.c */; };
 		878419A325995AFB002ED39D /* dynamiclib_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 3D208D5511824C2200BEAA42 /* dynamiclib_unix.c */; };
 		878419AD25995AFF002ED39D /* files_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 3D208D5811824C2200BEAA42 /* files_unix.c */; };
 		878419B725995BAD002ED39D /* recomp.c in Sources */ = {isa = PBXBuildFile; fileRef = 8784173B25994FEF002ED39D /* recomp.c */; };
@@ -289,6 +288,7 @@
 		87841A4F25996A8A002ED39D /* frontend.c in Sources */ = {isa = PBXBuildFile; fileRef = 8784164C25993CA2002ED39D /* frontend.c */; };
 		87841A6B259982D8002ED39D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 3D208D3411824C2200BEAA42 /* main.c */; };
 		87841A892599978D002ED39D /* dyna_start.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 87841A882599978D002ED39D /* dyna_start.o */; };
+		87841A9E2599A9E4002ED39D /* disk.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841A9D2599A9C5002ED39D /* disk.c */; };
 		87F02C061F759983002463A7 /* gl_core_3_3.c in Sources */ = {isa = PBXBuildFile; fileRef = 87F02C001F759971002463A7 /* gl_core_3_3.c */; };
 		87F02C071F759987002463A7 /* gl_screen.c in Sources */ = {isa = PBXBuildFile; fileRef = 87F02C021F759971002463A7 /* gl_screen.c */; };
 		87F02C091F759A24002463A7 /* msg.c in Sources */ = {isa = PBXBuildFile; fileRef = 87F02C081F759A24002463A7 /* msg.c */; };
@@ -453,8 +453,6 @@
 		3D208CDA11824C2200BEAA42 /* lgpl-license */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "lgpl-license"; sourceTree = "<group>"; };
 		3D208CDB11824C2200BEAA42 /* INSTALL */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = INSTALL; sourceTree = "<group>"; };
 		3D208CDC11824C2200BEAA42 /* LICENSES */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSES; sourceTree = "<group>"; };
-		3D208CDF11824C2200BEAA42 /* mupen64plus-core.vcproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = "mupen64plus-core.vcproj"; sourceTree = "<group>"; };
-		3D208CE111824C2200BEAA42 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		3D208CE211824C2200BEAA42 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		3D208D0C11824C2200BEAA42 /* api_export.ver */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = api_export.ver; sourceTree = "<group>"; };
 		3D208D0D11824C2200BEAA42 /* callbacks.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = callbacks.c; sourceTree = "<group>"; };
@@ -1097,8 +1095,9 @@
 		8784198A259959FD002ED39D /* unzip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
 		8784198B259959FD002ED39D /* ioapi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ioapi.h; sourceTree = "<group>"; };
 		8784198D259959FD002ED39D /* xxhash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
-		8784198E259959FD002ED39D /* xxhash.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xxhash.c; sourceTree = "<group>"; };
 		87841A882599978D002ED39D /* dyna_start.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = dyna_start.o; sourceTree = "<group>"; };
+		87841A9C2599A9C5002ED39D /* disk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = disk.h; sourceTree = "<group>"; };
+		87841A9D2599A9C5002ED39D /* disk.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = disk.c; sourceTree = "<group>"; };
 		87CD08841B30BA8C00021C64 /* dbg_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dbg_debugger.c; sourceTree = "<group>"; };
 		87CD08851B30BA8C00021C64 /* dbg_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dbg_debugger.h; sourceTree = "<group>"; };
 		87CD09111B30D9D700021C64 /* Home.mediawiki */ = {isa = PBXFileReference; lastKnownFileType = text; path = Home.mediawiki; sourceTree = "<group>"; };
@@ -1675,7 +1674,6 @@
 				3D208CCB11824C2200BEAA42 /* doc */,
 				3D208CDB11824C2200BEAA42 /* INSTALL */,
 				3D208CDC11824C2200BEAA42 /* LICENSES */,
-				3D208CDD11824C2200BEAA42 /* projects */,
 				3D208CE211824C2200BEAA42 /* README */,
 				3D208D0A11824C2200BEAA42 /* src */,
 				8784197D259959FD002ED39D /* subprojects */,
@@ -1721,31 +1719,6 @@
 				87CD091D1B30D9D700021C64 /* Mupen64Plus-v2.0-Plugin-API.mediawiki */,
 			);
 			path = "emuwiki-api-doc";
-			sourceTree = "<group>";
-		};
-		3D208CDD11824C2200BEAA42 /* projects */ = {
-			isa = PBXGroup;
-			children = (
-				3D208CDE11824C2200BEAA42 /* msvc8 */,
-				3D208CE011824C2200BEAA42 /* unix */,
-			);
-			path = projects;
-			sourceTree = "<group>";
-		};
-		3D208CDE11824C2200BEAA42 /* msvc8 */ = {
-			isa = PBXGroup;
-			children = (
-				3D208CDF11824C2200BEAA42 /* mupen64plus-core.vcproj */,
-			);
-			path = msvc8;
-			sourceTree = "<group>";
-		};
-		3D208CE011824C2200BEAA42 /* unix */ = {
-			isa = PBXGroup;
-			children = (
-				3D208CE111824C2200BEAA42 /* Makefile */,
-			);
-			path = unix;
 			sourceTree = "<group>";
 		};
 		3D208D0A11824C2200BEAA42 /* src */ = {
@@ -2941,6 +2914,8 @@
 			children = (
 				8784177825994FEF002ED39D /* dd_controller.c */,
 				8784177725994FEF002ED39D /* dd_controller.h */,
+				87841A9D2599A9C5002ED39D /* disk.c */,
+				87841A9C2599A9C5002ED39D /* disk.h */,
 			);
 			path = dd;
 			sourceTree = "<group>";
@@ -3036,7 +3011,6 @@
 			isa = PBXGroup;
 			children = (
 				8784198D259959FD002ED39D /* xxhash.h */,
-				8784198E259959FD002ED39D /* xxhash.c */,
 			);
 			path = xxhash;
 			sourceTree = "<group>";
@@ -4156,6 +4130,7 @@
 				878417ED2599523E002ED39D /* rumblepak.c in Sources */,
 				878417F725995242002ED39D /* transferpak.c in Sources */,
 				878418012599525D002ED39D /* dd_controller.c in Sources */,
+				87841A9E2599A9E4002ED39D /* disk.c in Sources */,
 				8784180B25995271002ED39D /* device.c in Sources */,
 				878418152599527F002ED39D /* gb_cart.c in Sources */,
 				8784181F25995282002ED39D /* m64282fp.c in Sources */,
@@ -4198,7 +4173,6 @@
 				87841A1625995F4A002ED39D /* ioapi.c in Sources */,
 				87841A2025995F4E002ED39D /* unzip.c in Sources */,
 				87841A2A25995F52002ED39D /* zip.c in Sources */,
-				8784199925995A9A002ED39D /* xxhash.c in Sources */,
 				878419A325995AFB002ED39D /* dynamiclib_unix.c in Sources */,
 				878419AD25995AFF002ED39D /* files_unix.c in Sources */,
 				878419B725995BAD002ED39D /* recomp.c in Sources */,
