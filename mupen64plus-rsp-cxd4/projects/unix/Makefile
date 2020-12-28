@@ -118,7 +118,7 @@ endif
 # base CFLAGS, LDLIBS, and LDFLAGS
 OPTFLAGS ?= -O3 -flto
 WARNFLAGS ?= -Wall
-CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -fvisibility=hidden -I../../
+CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -fvisibility=hidden -I$(SRCDIR)
 CPPFLAGS += -DM64P_PLUGIN_API
 LDFLAGS += $(SHARED)
 

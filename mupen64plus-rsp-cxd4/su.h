@@ -155,7 +155,6 @@ extern u32 SR[];
 int stage;
 #endif
 
-extern int temp_PC;
 #ifdef WAIT_FOR_CPU_HOST
 extern short MFC0_count[];
 /* Keep one C0 MF status read count for each scalar register. */
@@ -268,7 +267,7 @@ extern void set_PC(unsigned int address);
 #define SP_STATUS_SIG6          (0x00000001ul << 13)
 #define SP_STATUS_SIG7          (0x00000001ul << 14)
 
-enum {
+typedef enum {
     RCP_SP_MEM_ADDR_REG,
     RCP_SP_DRAM_ADDR_REG,
     RCP_SP_RD_LEN_REG,

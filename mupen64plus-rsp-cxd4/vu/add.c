@@ -13,6 +13,8 @@
 * If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.             *
 \******************************************************************************/
 
+#include <string.h>
+
 #include "add.h"
 
 #ifdef ARCH_MIN_SSE2
@@ -161,7 +163,8 @@ INLINE static void do_abs(pi16 VD, pi16 VS, pi16 VT)
         neg[i]  = (VS[i] <  0x0000);
     for (i = 0; i < N; i++)
         pos[i]  = (VS[i] >  0x0000);
-    vector_wipe(nez);
+    //vector_wipe(nez);
+    memset(&nez, 0, sizeof(nez));
 
     for (i = 0; i < N; i++)
         nez[i] -= neg[i];
