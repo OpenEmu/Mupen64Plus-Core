@@ -10,13 +10,10 @@ def system(cmd, default):
         return default
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        sys.exit(1)
-
     branch = system("git rev-parse --abbrev-ref HEAD", "master")
-    hash = system("git log -1 --format=%H", "0" * 40)
+    hash = system("git show -s --format=%h", "0" * 40)
+    date = system("git show -s --format=%ci", "")[:10]
     tag = system("git describe --dirty --always --tags", "")
-    date = system("git show -s --format=%ci", "")
 
     # remove hash from git describe output
     tag = tag.split("-")
@@ -32,8 +29,9 @@ if __name__ == "__main__":
     }
 
     base_path = os.path.dirname(sys.argv[0])
-    in_path = sys.argv[1]
-    out_path = sys.argv[2]
+    core_path = os.path.join(base_path, "src", "core")
+    in_path = os.path.join(core_path, "version.h.in")
+    out_path = os.path.join(core_path, "version.h")
 
     with open(in_path, "r") as f:
         version_str = f.read()
