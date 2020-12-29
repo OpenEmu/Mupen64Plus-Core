@@ -103,7 +103,6 @@
 		3E82BC4D1F507B940081AF7B /* RSP_LoadMatrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */; };
 		3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC551F507C380081AF7B /* ColorBufferReader.cpp */; };
 		8723F7001F74A36E003E572A /* CRC_OPT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */; };
-		8723F7041F74A3B1003E572A /* xxhash.c in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7021F74A3A3003E572A /* xxhash.c */; };
 		8723F7341F74A4D7003E572A /* F3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7061F74A49E003E572A /* F3D.cpp */; };
 		8723F7351F74A4D7003E572A /* F3DAM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7081F74A49E003E572A /* F3DAM.cpp */; };
 		8723F7361F74A4D7003E572A /* F3DBETA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F70A1F74A49E003E572A /* F3DBETA.cpp */; };
@@ -149,7 +148,6 @@
 		875505261E74C7BF002222F3 /* FrameBufferInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503EE1E74C7BE002222F3 /* FrameBufferInfo.cpp */; };
 		875505271E74C7BF002222F3 /* GBI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503F11E74C7BE002222F3 /* GBI.cpp */; };
 		875505281E74C7BF002222F3 /* gDP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503F31E74C7BE002222F3 /* gDP.cpp */; };
-		875505291E74C7BF002222F3 /* GLideN64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503F61E74C7BE002222F3 /* GLideN64.cpp */; };
 		8755054A1E74C7BF002222F3 /* CombinerProgram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875504581E74C7BE002222F3 /* CombinerProgram.cpp */; };
 		8755054B1E74C7BF002222F3 /* Context.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8755045A1E74C7BF002222F3 /* Context.cpp */; };
 		8755054C1E74C7BF002222F3 /* ObjectHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8755045E1E74C7BF002222F3 /* ObjectHandle.cpp */; };
@@ -177,7 +175,6 @@
 		875505651E74C7BF002222F3 /* opengl_Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875504951E74C7BF002222F3 /* opengl_Utils.cpp */; };
 		875505671E74C7BF002222F3 /* GraphicsDrawer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8755049D1E74C7BF002222F3 /* GraphicsDrawer.cpp */; };
 		875505681E74C7BF002222F3 /* gSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8755049F1E74C7BF002222F3 /* gSP.cpp */; };
-		8755056A1E74C7BF002222F3 /* Keys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875504B41E74C7BF002222F3 /* Keys.cpp */; };
 		8755056E1E74C7BF002222F3 /* Log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875504BC1E74C7BF002222F3 /* Log.cpp */; };
 		875505701E74C7BF002222F3 /* CommonAPIImpl_mupenplus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875504C11E74C7BF002222F3 /* CommonAPIImpl_mupenplus.cpp */; };
 		875505711E74C7BF002222F3 /* Config_mupenplus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875504C21E74C7BF002222F3 /* Config_mupenplus.cpp */; };
@@ -304,6 +301,14 @@
 		87841B02259A6DD2002ED39D /* gfx_m64p.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841AD1259A6DD2002ED39D /* gfx_m64p.c */; };
 		87841B08259A6DD2002ED39D /* gl_core_3_3.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841AE7259A6DD2002ED39D /* gl_core_3_3.c */; };
 		87841B09259A6DD2002ED39D /* vdac.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841AE8259A6DD2002ED39D /* vdac.c */; };
+		87841B60259AF7D5002ED39D /* opengl_Command.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87841B5F259AF759002ED39D /* opengl_Command.cpp */; };
+		87841B6A259AF7DA002ED39D /* opengl_ObjectPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87841B56259AF759002ED39D /* opengl_ObjectPool.cpp */; };
+		87841B74259AF7F3002ED39D /* opengl_WrappedFunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87841B53259AF759002ED39D /* opengl_WrappedFunctions.cpp */; };
+		87841B7E259AF7FD002ED39D /* opengl_Wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87841B5C259AF759002ED39D /* opengl_Wrapper.cpp */; };
+		87841B88259AF800002ED39D /* RingBufferPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87841B54259AF759002ED39D /* RingBufferPool.cpp */; };
+		87841B94259AF874002ED39D /* BlueNoiseTexture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87841B93259AF868002ED39D /* BlueNoiseTexture.cpp */; };
+		87841BA2259AF95C002ED39D /* osal_keys_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841B9E259AF92B002ED39D /* osal_keys_unix.c */; };
+		87841BAD259B0AD6002ED39D /* GLideN64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87841BAC259B0AB9002ED39D /* GLideN64.cpp */; };
 		87F3EF981FA439A4007CF75E /* DisplayLoadProgress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87F3EF971FA439A3007CF75E /* DisplayLoadProgress.cpp */; };
 		87FB3C05214DCEDD00A221BE /* TextDrawerStub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87FB3C04214DCEDC00A221BE /* TextDrawerStub.cpp */; };
 		87FB3C11214DD0C400A221BE /* ZSortBOSS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87FB3C10214DD0C400A221BE /* ZSortBOSS.cpp */; };
@@ -569,7 +574,6 @@
 		3E82BC6A1F507CD60081AF7B /* osal_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_files.h; sourceTree = "<group>"; };
 		3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FrameBuffer.cpp; path = OpenGL/FrameBuffer.cpp; sourceTree = "<group>"; };
 		8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CRC_OPT.cpp; sourceTree = "<group>"; };
-		8723F7021F74A3A3003E572A /* xxhash.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xxhash.c; sourceTree = "<group>"; };
 		8723F7031F74A3A3003E572A /* xxhash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
 		8723F7061F74A49E003E572A /* F3D.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = F3D.cpp; sourceTree = "<group>"; };
 		8723F7071F74A49E003E572A /* F3D.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = F3D.h; sourceTree = "<group>"; };
@@ -837,12 +841,9 @@
 		875504B11E74C7BF002222F3 /* m64p_vidext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = m64p_vidext.h; sourceTree = "<group>"; };
 		875504B21E74C7BF002222F3 /* vidext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vidext.h; sourceTree = "<group>"; };
 		875504B31E74C7BF002222F3 /* vidext_sdl2_compat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vidext_sdl2_compat.h; sourceTree = "<group>"; };
-		875504B41E74C7BF002222F3 /* Keys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Keys.cpp; sourceTree = "<group>"; };
-		875504B51E74C7BF002222F3 /* Keys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Keys.h; sourceTree = "<group>"; };
 		875504BC1E74C7BF002222F3 /* Log.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Log.cpp; sourceTree = "<group>"; };
 		875504BD1E74C7BF002222F3 /* Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Log.h; sourceTree = "<group>"; };
 		875504BE1E74C7BF002222F3 /* Log_android.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Log_android.cpp; sourceTree = "<group>"; };
-		875504BF1E74C7BF002222F3 /* mupen64plus-video-gliden64.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "mupen64plus-video-gliden64.mk"; sourceTree = "<group>"; };
 		875504C11E74C7BF002222F3 /* CommonAPIImpl_mupenplus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommonAPIImpl_mupenplus.cpp; sourceTree = "<group>"; };
 		875504C21E74C7BF002222F3 /* Config_mupenplus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Config_mupenplus.cpp; sourceTree = "<group>"; };
 		875504C31E74C7BF002222F3 /* GLideN64_mupenplus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLideN64_mupenplus.h; sourceTree = "<group>"; };
@@ -854,7 +855,6 @@
 		875504C91E74C7BF002222F3 /* NoiseTexture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NoiseTexture.cpp; sourceTree = "<group>"; };
 		875504CA1E74C7BF002222F3 /* NoiseTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoiseTexture.h; sourceTree = "<group>"; };
 		875504CC1E74C7BF002222F3 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
-		875504CD1E74C7BF002222F3 /* mupen64plus-video-osal.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "mupen64plus-video-osal.mk"; sourceTree = "<group>"; };
 		875504CE1E74C7BF002222F3 /* osal_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_files.h; sourceTree = "<group>"; };
 		875504CF1E74C7BF002222F3 /* osal_files_unix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = osal_files_unix.c; sourceTree = "<group>"; };
 		875504D01E74C7BF002222F3 /* osal_files_win32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = osal_files_win32.c; sourceTree = "<group>"; };
@@ -1115,6 +1115,26 @@
 		87841AE8259A6DD2002ED39D /* vdac.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vdac.c; sourceTree = "<group>"; };
 		87841AE9259A6DD2002ED39D /* screen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = screen.h; sourceTree = "<group>"; };
 		87841AEA259A6DD2002ED39D /* gl_proc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gl_proc.h; sourceTree = "<group>"; };
+		87841B53259AF759002ED39D /* opengl_WrappedFunctions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_WrappedFunctions.cpp; sourceTree = "<group>"; };
+		87841B54259AF759002ED39D /* RingBufferPool.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RingBufferPool.cpp; sourceTree = "<group>"; };
+		87841B55259AF759002ED39D /* readerwriterqueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = readerwriterqueue.h; sourceTree = "<group>"; };
+		87841B56259AF759002ED39D /* opengl_ObjectPool.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_ObjectPool.cpp; sourceTree = "<group>"; };
+		87841B57259AF759002ED39D /* RingBufferPool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RingBufferPool.h; sourceTree = "<group>"; };
+		87841B58259AF759002ED39D /* opengl_Command.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = opengl_Command.h; sourceTree = "<group>"; };
+		87841B59259AF759002ED39D /* atomicops.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = atomicops.h; sourceTree = "<group>"; };
+		87841B5A259AF759002ED39D /* opengl_ObjectPool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = opengl_ObjectPool.h; sourceTree = "<group>"; };
+		87841B5B259AF759002ED39D /* opengl_Wrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = opengl_Wrapper.h; sourceTree = "<group>"; };
+		87841B5C259AF759002ED39D /* opengl_Wrapper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_Wrapper.cpp; sourceTree = "<group>"; };
+		87841B5D259AF759002ED39D /* opengl_WrappedFunctions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = opengl_WrappedFunctions.h; sourceTree = "<group>"; };
+		87841B5E259AF759002ED39D /* BlockingQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BlockingQueue.h; sourceTree = "<group>"; };
+		87841B5F259AF759002ED39D /* opengl_Command.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = opengl_Command.cpp; sourceTree = "<group>"; };
+		87841B92259AF868002ED39D /* BlueNoiseTexture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BlueNoiseTexture.h; sourceTree = "<group>"; };
+		87841B93259AF868002ED39D /* BlueNoiseTexture.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BlueNoiseTexture.cpp; sourceTree = "<group>"; };
+		87841B9E259AF92B002ED39D /* osal_keys_unix.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = osal_keys_unix.c; sourceTree = "<group>"; };
+		87841B9F259AF92B002ED39D /* osal_keys_linux.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = osal_keys_linux.c; sourceTree = "<group>"; };
+		87841BA0259AF92B002ED39D /* osal_keys_win.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = osal_keys_win.c; sourceTree = "<group>"; };
+		87841BA1259AF92B002ED39D /* osal_keys.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = osal_keys.h; sourceTree = "<group>"; };
+		87841BAC259B0AB9002ED39D /* GLideN64.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GLideN64.cpp; sourceTree = "<group>"; };
 		87CD08841B30BA8C00021C64 /* dbg_debugger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dbg_debugger.c; sourceTree = "<group>"; };
 		87CD08851B30BA8C00021C64 /* dbg_debugger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dbg_debugger.h; sourceTree = "<group>"; };
 		87CD09111B30D9D700021C64 /* Home.mediawiki */ = {isa = PBXFileReference; lastKnownFileType = text; path = Home.mediawiki; sourceTree = "<group>"; };
@@ -1883,6 +1903,7 @@
 		3E82BC6B1F507D290081AF7B /* OpenGL */ = {
 			isa = PBXGroup;
 			children = (
+				87841BAC259B0AB9002ED39D /* GLideN64.cpp */,
 				3E5C54391F52698500323A31 /* Revision.h */,
 				3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */,
 			);
@@ -1892,7 +1913,6 @@
 		8723F7011F74A3A3003E572A /* xxHash */ = {
 			isa = PBXGroup;
 			children = (
-				8723F7021F74A3A3003E572A /* xxhash.c */,
 				8723F7031F74A3A3003E572A /* xxhash.h */,
 			);
 			path = xxHash;
@@ -2104,12 +2124,9 @@
 				8755049F1E74C7BF002222F3 /* gSP.cpp */,
 				875504A01E74C7BF002222F3 /* gSP.h */,
 				875504A21E74C7BF002222F3 /* inc */,
-				875504B41E74C7BF002222F3 /* Keys.cpp */,
-				875504B51E74C7BF002222F3 /* Keys.h */,
 				875504BC1E74C7BF002222F3 /* Log.cpp */,
 				875504BD1E74C7BF002222F3 /* Log.h */,
 				875504BE1E74C7BF002222F3 /* Log_android.cpp */,
-				875504BF1E74C7BF002222F3 /* mupen64plus-video-gliden64.mk */,
 				875504C01E74C7BF002222F3 /* mupenplus */,
 				875504C61E74C7BF002222F3 /* MupenPlusPluginAPI.cpp */,
 				875504C71E74C7BF002222F3 /* N64.cpp */,
@@ -2161,6 +2178,8 @@
 		875503B31E74C7BE002222F3 /* BufferCopy */ = {
 			isa = PBXGroup;
 			children = (
+				87841B93259AF868002ED39D /* BlueNoiseTexture.cpp */,
+				87841B92259AF868002ED39D /* BlueNoiseTexture.h */,
 				3E82BC511F507C190081AF7B /* ColorBufferToRDRAMStub.h */,
 				3E82BC521F507C190081AF7B /* RDRAMtoColorBuffer.h */,
 				875503B41E74C7BE002222F3 /* ColorBufferToRDRAM.cpp */,
@@ -2381,6 +2400,7 @@
 				875504941E74C7BF002222F3 /* opengl_UnbufferedDrawer.h */,
 				875504951E74C7BF002222F3 /* opengl_Utils.cpp */,
 				875504961E74C7BF002222F3 /* opengl_Utils.h */,
+				87841B52259AF759002ED39D /* ThreadedOpenGl */,
 			);
 			path = OpenGLContext;
 			sourceTree = "<group>";
@@ -2474,12 +2494,15 @@
 		875504CB1E74C7BF002222F3 /* osal */ = {
 			isa = PBXGroup;
 			children = (
-				3E82BC6A1F507CD60081AF7B /* osal_files.h */,
 				875504CC1E74C7BF002222F3 /* CMakeLists.txt */,
-				875504CD1E74C7BF002222F3 /* mupen64plus-video-osal.mk */,
-				875504CE1E74C7BF002222F3 /* osal_files.h */,
 				875504CF1E74C7BF002222F3 /* osal_files_unix.c */,
 				875504D01E74C7BF002222F3 /* osal_files_win32.c */,
+				3E82BC6A1F507CD60081AF7B /* osal_files.h */,
+				87841B9F259AF92B002ED39D /* osal_keys_linux.c */,
+				87841B9E259AF92B002ED39D /* osal_keys_unix.c */,
+				87841BA0259AF92B002ED39D /* osal_keys_win.c */,
+				87841BA1259AF92B002ED39D /* osal_keys.h */,
+				875504CE1E74C7BF002222F3 /* osal_files.h */,
 			);
 			path = osal;
 			sourceTree = "<group>";
@@ -3070,6 +3093,26 @@
 				87841AEA259A6DD2002ED39D /* gl_proc.h */,
 			);
 			path = output;
+			sourceTree = "<group>";
+		};
+		87841B52259AF759002ED39D /* ThreadedOpenGl */ = {
+			isa = PBXGroup;
+			children = (
+				87841B59259AF759002ED39D /* atomicops.h */,
+				87841B5E259AF759002ED39D /* BlockingQueue.h */,
+				87841B5F259AF759002ED39D /* opengl_Command.cpp */,
+				87841B58259AF759002ED39D /* opengl_Command.h */,
+				87841B56259AF759002ED39D /* opengl_ObjectPool.cpp */,
+				87841B5A259AF759002ED39D /* opengl_ObjectPool.h */,
+				87841B53259AF759002ED39D /* opengl_WrappedFunctions.cpp */,
+				87841B5D259AF759002ED39D /* opengl_WrappedFunctions.h */,
+				87841B5C259AF759002ED39D /* opengl_Wrapper.cpp */,
+				87841B5B259AF759002ED39D /* opengl_Wrapper.h */,
+				87841B55259AF759002ED39D /* readerwriterqueue.h */,
+				87841B54259AF759002ED39D /* RingBufferPool.cpp */,
+				87841B57259AF759002ED39D /* RingBufferPool.h */,
+			);
+			path = ThreadedOpenGl;
 			sourceTree = "<group>";
 		};
 		94B5C86818CABB2C0088DA62 /* s2tc */ = {
@@ -4015,6 +4058,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				875505761E74C7BF002222F3 /* osal_files_unix.c in Sources */,
+				87841BA2259AF95C002ED39D /* osal_keys_unix.c in Sources */,
 				875505091E74C7BF002222F3 /* 3DMath.cpp in Sources */,
 				8755050E1E74C7BF002222F3 /* Combiner.cpp in Sources */,
 				8755050F1E74C7BF002222F3 /* CombinerKey.cpp in Sources */,
@@ -4029,10 +4073,9 @@
 				875505271E74C7BF002222F3 /* GBI.cpp in Sources */,
 				87FB3C1A214DF41700A221BE /* FrameBuffer.cpp in Sources */,
 				875505281E74C7BF002222F3 /* gDP.cpp in Sources */,
-				875505291E74C7BF002222F3 /* GLideN64.cpp in Sources */,
+				87841BAD259B0AD6002ED39D /* GLideN64.cpp in Sources */,
 				875505671E74C7BF002222F3 /* GraphicsDrawer.cpp in Sources */,
 				875505681E74C7BF002222F3 /* gSP.cpp in Sources */,
-				8755056A1E74C7BF002222F3 /* Keys.cpp in Sources */,
 				8755056E1E74C7BF002222F3 /* Log.cpp in Sources */,
 				875505741E74C7BF002222F3 /* N64.cpp in Sources */,
 				875505751E74C7BF002222F3 /* NoiseTexture.cpp in Sources */,
@@ -4047,6 +4090,7 @@
 				875505831E74C7BF002222F3 /* Textures.cpp in Sources */,
 				875505861E74C7BF002222F3 /* VI.cpp in Sources */,
 				8755058C1E74C7BF002222F3 /* ZlutTexture.cpp in Sources */,
+				87841B94259AF874002ED39D /* BlueNoiseTexture.cpp in Sources */,
 				8755050B1E74C7BF002222F3 /* ColorBufferToRDRAM.cpp in Sources */,
 				8755050C1E74C7BF002222F3 /* DepthBufferToRDRAM.cpp in Sources */,
 				8755050D1E74C7BF002222F3 /* RDRAMtoColorBuffer.cpp in Sources */,
@@ -4058,6 +4102,11 @@
 				8755054A1E74C7BF002222F3 /* CombinerProgram.cpp in Sources */,
 				8755054C1E74C7BF002222F3 /* ObjectHandle.cpp in Sources */,
 				8755054D1E74C7BF002222F3 /* GLFunctions.cpp in Sources */,
+				87841B60259AF7D5002ED39D /* opengl_Command.cpp in Sources */,
+				87841B6A259AF7DA002ED39D /* opengl_ObjectPool.cpp in Sources */,
+				87841B74259AF7F3002ED39D /* opengl_WrappedFunctions.cpp in Sources */,
+				87841B7E259AF7FD002ED39D /* opengl_Wrapper.cpp in Sources */,
+				87841B88259AF800002ED39D /* RingBufferPool.cpp in Sources */,
 				3E82BC481F507B940081AF7B /* DebugDump.cpp in Sources */,
 				875505581E74C7BF002222F3 /* opengl_Attributes.cpp in Sources */,
 				87FB3C05214DCEDD00A221BE /* TextDrawerStub.cpp in Sources */,
@@ -4092,7 +4141,6 @@
 				3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */,
 				EE2BBC46225AD5380007BF6F /* iob.cpp in Sources */,
 				875505571E74C7BF002222F3 /* mupen64plus_DisplayWindow.cpp in Sources */,
-				8723F7041F74A3B1003E572A /* xxhash.c in Sources */,
 				8723F7341F74A4D7003E572A /* F3D.cpp in Sources */,
 				8723F7351F74A4D7003E572A /* F3DAM.cpp in Sources */,
 				8723F7361F74A4D7003E572A /* F3DBETA.cpp in Sources */,
