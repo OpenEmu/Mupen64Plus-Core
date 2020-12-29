@@ -31,7 +31,7 @@ using namespace std;
 using namespace graphics;
 
 FrameBuffer::FrameBuffer()
-	: m_copyFBO(ObjectHandle::defaultFramebuffer)
+	: m_copyFBO(ObjectHandle::null)
 {
 	m_pTexture = textureCache().addFrameBufferTexture(config.video.multisampling != 0 ?
 		textureTarget::TEXTURE_2D_MULTISAMPLE : textureTarget::TEXTURE_2D);
