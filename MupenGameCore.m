@@ -48,6 +48,7 @@
 //#import "r4300/r4300.h"
 #import "device/r4300/r4300_core.h"
 //#import "device/rdram/rdram.h"
+#import "device/rcp/vi/vi_controller.h"
 
 #import "plugin/plugin.h"
 
@@ -66,7 +67,6 @@ NSString *MupenControlNames[] = {
     int8_t _yAxis[4];
     NSUInteger _frameCounter;
     double _sampleRate;
-    BOOL _isNTSC;
     BOOL _initializing;
 
     m64p_emu_state _emulatorState;
@@ -128,8 +128,6 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
         _videoBitDepth = 32; // ignored
         
         _sampleRate = 33600;
-        
-        _isNTSC = YES;
 
         _callbackQueue = dispatch_queue_create("org.openemu.MupenGameCore.CallbackHandlerQueue", DISPATCH_QUEUE_SERIAL);
         _callbackHandlers = [NSMutableDictionary dictionary];
@@ -273,38 +271,10 @@ static void MupenAudioLenChanged()
     [[current ringBufferAtIndex:0] write:ptr maxLength:LenReg];
 }
 
-static void SetIsNTSC()
-{
-    GET_CURRENT_OR_RETURN();
-
-    extern m64p_rom_header ROM_HEADER;
-    switch (ROM_HEADER.Country_code&0xFF)
-    {
-        case 0x44:
-        case 0x46:
-        case 0x49:
-        case 0x50:
-        case 0x53:
-        case 0x55:
-        case 0x58:
-        case 0x59:
-            current->_isNTSC = NO;
-            break;
-        case 0x37:
-        case 0x41:
-        case 0x45:
-        case 0x4a:
-            current->_isNTSC = YES;
-            break;
-    }
-}
-
 static int MupenOpenAudio(AUDIO_INFO info)
 {
     AudioInfo = info;
-    
-    SetIsNTSC();
-    
+
     return M64ERR_SUCCESS;
 }
 
@@ -480,15 +450,14 @@ static void MupenSetAudioSpeed(int percent)
 
 - (NSTimeInterval)frameInterval
 {
-    // Mupen uses 60 but it's probably wrong
-    return _isNTSC ? 60 : 50;
+    return vi_expected_refresh_rate_from_tv_standard(ROM_PARAMS.systemtype);
 }
 
 #pragma mark - Video
 
 - (OEIntSize)aspectSize
 {
-    return OEIntSizeMake(_isNTSC ? _videoWidth * (120.0 / 119.0) : _videoWidth, _videoHeight);
+    return OEIntSizeMake(ROM_PARAMS.systemtype == SYSTEM_NTSC ? _videoWidth * (120.0 / 119.0) : _videoWidth, _videoHeight);
 }
 
 - (OEIntSize)bufferSize
