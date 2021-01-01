@@ -375,13 +375,6 @@ static void MupenSetAudioSpeed(int percent)
         m64p_handle configGfx;
         ConfigOpenSection("Video-GLideN64", &configGfx);
 
-        // Workaround for https://github.com/gonetz/GLideN64/issues/1142
-        // Note: CorrectTexrectCoords is also an option, as per https://github.com/gonetz/GLideN64/issues/1209
-        if(strstr(ROMname, "MARIOKART64") != 0) {
-            int enableNativeResTexrects = 1;
-            ConfigSetParameter(configGfx, "EnableNativeResTexrects", M64TYPE_BOOL, &enableNativeResTexrects);
-        }
-
         // Workaround for https://github.com/gonetz/GLideN64/issues/1568
         if(strstr(ROMname, "DR.MARIO 64") != 0) {
             int enableCopyAuxToRDRAM = 1;
