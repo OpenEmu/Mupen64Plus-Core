@@ -3395,9 +3395,17 @@
 				);
 				OTHER_CFLAGS = (
 					"-DIN_OPENEMU",
-					"-DPIC",
-					"-DDYNAREC",
 					"-DM64P_PARALLEL",
+					"-DDYNAREC",
+					"-DNDEBUG",
+					"-DNOCRYPT",
+					"-DNOUNCRYPT",
+					"-fno-strict-aliasing",
+					"-fvisibility=hidden",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility-inlines-hidden",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.openemu.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = Mupen64Plus;
@@ -3437,9 +3445,17 @@
 				);
 				OTHER_CFLAGS = (
 					"-DIN_OPENEMU",
-					"-DPIC",
-					"-DDYNAREC",
 					"-DM64P_PARALLEL",
+					"-DDYNAREC",
+					"-DNDEBUG",
+					"-DNOCRYPT",
+					"-DNOUNCRYPT",
+					"-fno-strict-aliasing",
+					"-fvisibility=hidden",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-fvisibility-inlines-hidden",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.openemu.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = Mupen64Plus;
@@ -3482,16 +3498,6 @@
 				HEADER_SEARCH_PATHS = "";
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				OTHER_CFLAGS = (
-					"-fno-strict-aliasing",
-					"-fvisibility=hidden",
-					"-DGCC",
-					"-D__unix__",
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
-					"-fvisibility-inlines-hidden",
-				);
 				SDKROOT = macosx;
 				VALID_ARCHS = x86_64;
 			};
@@ -3529,16 +3535,6 @@
 				HEADER_SEARCH_PATHS = "";
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
-				OTHER_CFLAGS = (
-					"-fno-strict-aliasing",
-					"-fvisibility=hidden",
-					"-DGCC",
-					"-D__unix__",
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
-					"-fvisibility-inlines-hidden",
-				);
 				SDKROOT = macosx;
 				VALID_ARCHS = x86_64;
 			};
@@ -3652,11 +3648,10 @@
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_CFLAGS = (
-					"-DNOHQ=On",
-					"-DMUPENPLUSAPI=On",
+					"-DMUPENPLUSAPI",
 					"-DOS_MAC_OS_X",
 					"-DTXFILTER_LIB",
-					"-DCRC_OPT=On",
+					"-DNDEBUG",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRIVATE_HEADERS_FOLDER_PATH = "";
@@ -3701,11 +3696,10 @@
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_CFLAGS = (
-					"-DNOHQ=On",
-					"-DMUPENPLUSAPI=On",
+					"-DMUPENPLUSAPI",
 					"-DOS_MAC_OS_X",
 					"-DTXFILTER_LIB",
-					"-DCRC_OPT=On",
+					"-DNDEBUG",
 				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRIVATE_HEADERS_FOLDER_PATH = "";
@@ -3748,7 +3742,10 @@
 					"$(PROJECT_DIR)/angrylion-rdp-plus/src",
 				);
 				MACH_O_TYPE = mh_bundle;
-				OTHER_CFLAGS = "-DMUPENPLUSAPI=On";
+				OTHER_CFLAGS = (
+					"-DMUPENPLUSAPI=On",
+					"-DNDEBUG",
+				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3789,7 +3786,10 @@
 					"$(PROJECT_DIR)/angrylion-rdp-plus/src",
 				);
 				MACH_O_TYPE = mh_bundle;
-				OTHER_CFLAGS = "-DMUPENPLUSAPI=On";
+				OTHER_CFLAGS = (
+					"-DMUPENPLUSAPI=On",
+					"-DNDEBUG",
+				);
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3848,22 +3848,13 @@
 				LD_DYLIB_INSTALL_NAME = "";
 				MACH_O_TYPE = mh_bundle;
 				OTHER_CFLAGS = (
-					"-ffast-math",
-					"-fno-strict-aliasing",
 					"-fvisibility=hidden",
-					"-DGCC",
-					"-pthread",
-					"-mmmx",
 					"-msse2",
+					"-mstackrealign",
 					"-fPIC",
-					"-D__unix__",
 					"-DM64P_PLUGIN_API",
 					"-DARCH_MIN_SSE2",
-					"-DHLEVIDEO",
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
-					"-fvisibility-inlines-hidden",
+					"-DNDEBUG",
 				);
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "mupen64plus-rsp-cxd4";
@@ -3889,22 +3880,13 @@
 				LD_DYLIB_INSTALL_NAME = "";
 				MACH_O_TYPE = mh_bundle;
 				OTHER_CFLAGS = (
-					"-ffast-math",
-					"-fno-strict-aliasing",
 					"-fvisibility=hidden",
-					"-DGCC",
-					"-pthread",
-					"-mmmx",
 					"-msse2",
+					"-mstackrealign",
 					"-fPIC",
-					"-D__unix__",
 					"-DM64P_PLUGIN_API",
 					"-DARCH_MIN_SSE2",
-					"-DHLEVIDEO",
-				);
-				OTHER_CPLUSPLUSFLAGS = (
-					"$(OTHER_CFLAGS)",
-					"-fvisibility-inlines-hidden",
+					"-DNDEBUG",
 				);
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "mupen64plus-rsp-cxd4";

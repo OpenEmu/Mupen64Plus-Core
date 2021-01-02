@@ -338,15 +338,13 @@ static void MupenSetAudioSpeed(int percent)
         NSString *rspPath = [coreBundle.builtInPlugInsPath stringByAppendingPathComponent:pluginName];
 
         rsp_handle = dlopen(rspPath.fileSystemRepresentation, RTLD_NOW);
-        ptr_PluginStartup rsp_start = osal_dynlib_getproc(rsp_handle, "PluginStartup");
+        ptr_PluginStartup rsp_start = (ptr_PluginStartup) osal_dynlib_getproc(rsp_handle, "PluginStartup");
         rsp_start(core_handle, (__bridge void *)self, MupenDebugCallback);
         
         CoreAttachPlugin(pluginType, rsp_handle);
     };
 
     // Load Video
-    //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-rice.so");
-    //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-glide64mk2.so");
     LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-GLideN64.so");
     //LoadPlugin(M64PLUGIN_GFX, @"mupen64plus-video-angrylion-rdp-plus.so");
 
