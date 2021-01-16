@@ -4435,7 +4435,6 @@
 					"-fvisibility-inlines-hidden",
 				);
 				SDKROOT = macosx;
-				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
 		};
@@ -4482,7 +4481,6 @@
 					"-fvisibility-inlines-hidden",
 				);
 				SDKROOT = macosx;
-				VALID_ARCHS = x86_64;
 			};
 			name = Release;
 		};
@@ -4963,6 +4961,7 @@
 				DYLIB_COMPATIBILITY_VERSION = "";
 				DYLIB_CURRENT_VERSION = "";
 				EXECUTABLE_EXTENSION = so;
+				GCC_FAST_MATH = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -4974,18 +4973,20 @@
 				LD_DYLIB_INSTALL_NAME = "";
 				MACH_O_TYPE = mh_bundle;
 				OTHER_CFLAGS = (
-					"-ffast-math",
 					"-fno-strict-aliasing",
-					"-fvisibility=hidden",
 					"-DGCC",
 					"-pthread",
-					"-mmmx",
-					"-msse2",
 					"-fPIC",
 					"-D__unix__",
 					"-DM64P_PLUGIN_API",
-					"-DARCH_MIN_SSE2",
 					"-DHLEVIDEO",
+				);
+				"OTHER_CFLAGS[arch=arm64]" = "$(inherited)";
+				"OTHER_CFLAGS[arch=x86_64]" = (
+					"-mmmx",
+					"-msse2",
+					"-DARCH_MIN_SSE2",
+					"$(inherited)",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -5008,6 +5009,7 @@
 				DYLIB_COMPATIBILITY_VERSION = "";
 				DYLIB_CURRENT_VERSION = "";
 				EXECUTABLE_EXTENSION = so;
+				GCC_FAST_MATH = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/mupen64plus-core/src/api\"";
@@ -5015,18 +5017,20 @@
 				LD_DYLIB_INSTALL_NAME = "";
 				MACH_O_TYPE = mh_bundle;
 				OTHER_CFLAGS = (
-					"-ffast-math",
 					"-fno-strict-aliasing",
-					"-fvisibility=hidden",
 					"-DGCC",
 					"-pthread",
-					"-mmmx",
-					"-msse2",
 					"-fPIC",
 					"-D__unix__",
 					"-DM64P_PLUGIN_API",
-					"-DARCH_MIN_SSE2",
 					"-DHLEVIDEO",
+				);
+				"OTHER_CFLAGS[arch=arm64]" = "$(inherited)";
+				"OTHER_CFLAGS[arch=x86_64]" = (
+					"-mmmx",
+					"-msse2",
+					"-DARCH_MIN_SSE2",
+					"$(inherited)",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
