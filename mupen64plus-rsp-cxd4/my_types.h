@@ -498,7 +498,7 @@ typedef struct {
 } MIPS_type_J;
 #endif
 
-#if defined(__arm__) && (defined(__GNUC__) || defined(__clang__))
+#if (defined(__arm__) || defined(__aarch64__)) && (defined(__GNUC__) || defined(__clang__))
 #define COMPILER_FENCE()     __asm__ __volatile__("":::"memory")
 #else
 #define COMPILER_FENCE()

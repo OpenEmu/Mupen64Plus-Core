@@ -499,6 +499,7 @@
 		3E82BC691F507CBA0081AF7B /* vidext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vidext.h; sourceTree = "<group>"; };
 		3E82BC6A1F507CD60081AF7B /* osal_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_files.h; sourceTree = "<group>"; };
 		3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FrameBuffer.cpp; path = OpenGL/FrameBuffer.cpp; sourceTree = "<group>"; };
+		55E0604525B377BC00521CB0 /* SSE2NEON.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SSE2NEON.h; sourceTree = "<group>"; usesTabs = 0; };
 		8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CRC_OPT.cpp; sourceTree = "<group>"; };
 		8723F7031F74A3A3003E572A /* xxhash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
 		8723F7061F74A49E003E572A /* F3D.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = F3D.cpp; sourceTree = "<group>"; };
@@ -1526,6 +1527,14 @@
 				3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */,
 			);
 			name = OpenGL;
+			sourceTree = "<group>";
+		};
+		55E0604425B377BC00521CB0 /* sse2neon */ = {
+			isa = PBXGroup;
+			children = (
+				55E0604525B377BC00521CB0 /* SSE2NEON.h */,
+			);
+			path = sse2neon;
 			sourceTree = "<group>";
 		};
 		8723F7011F74A3A3003E572A /* xxHash */ = {
@@ -2746,6 +2755,7 @@
 				94E1B90718D0F6A9003ACCFF /* projects */,
 				94E1B90A18D0F6A9003ACCFF /* README.md */,
 				94E1B90C18D0F6A9003ACCFF /* rsp.h */,
+				55E0604425B377BC00521CB0 /* sse2neon */,
 				948711A11A6B581E008CDA87 /* su.c */,
 				94E1B90E18D0F6A9003ACCFF /* su.h */,
 				94E1B90F18D0F6A9003ACCFF /* vu */,
@@ -3855,7 +3865,10 @@
 					"-DNDEBUG",
 					"-DHLEVIDEO",
 				);
-				"OTHER_CFLAGS[arch=arm64]" = "$(inherited)";
+				"OTHER_CFLAGS[arch=arm64]" = (
+					"-DUSE_SSE2NEON",
+					"$(inherited)",
+				);
 				"OTHER_CFLAGS[arch=x86_64]" = (
 					"-mmmx",
 					"-msse2",
@@ -3899,7 +3912,10 @@
 					"-DM64P_PLUGIN_API",
 					"-DHLEVIDEO",
 				);
-				"OTHER_CFLAGS[arch=arm64]" = "$(inherited)";
+				"OTHER_CFLAGS[arch=arm64]" = (
+					"-DUSE_SSE2NEON",
+					"$(inherited)",
+				);
 				"OTHER_CFLAGS[arch=x86_64]" = (
 					"-mmmx",
 					"-msse2",
