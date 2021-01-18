@@ -26,6 +26,7 @@
 #include "api/callbacks.h"
 #include "backends/api/storage_backend.h"
 #include "main/util.h"
+#include <stdlib.h>
 
 static uint8_t* storage_disk_data(const void* storage)
 {
