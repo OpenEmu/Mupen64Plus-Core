@@ -55,6 +55,8 @@
 		3E82BC491F507B940081AF7B /* Debugger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC3F1F507B930081AF7B /* Debugger.cpp */; };
 		3E82BC4D1F507B940081AF7B /* RSP_LoadMatrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */; };
 		3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC551F507C380081AF7B /* ColorBufferReader.cpp */; };
+		551FEDF525B6232500B9030D /* new_dynarec.c in Sources */ = {isa = PBXBuildFile; fileRef = 8784175025994FEF002ED39D /* new_dynarec.c */; };
+		551FEEB025B64D9000B9030D /* linkage.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 551FEEAF25B64D9000B9030D /* linkage.o */; };
 		8723F7001F74A36E003E572A /* CRC_OPT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */; };
 		8723F7341F74A4D7003E572A /* F3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7061F74A49E003E572A /* F3D.cpp */; };
 		8723F7351F74A4D7003E572A /* F3DAM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7081F74A49E003E572A /* F3DAM.cpp */; };
@@ -217,16 +219,11 @@
 		8784198F25995A93002ED39D /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841980259959FD002ED39D /* md5.c */; };
 		878419A325995AFB002ED39D /* dynamiclib_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 3D208D5511824C2200BEAA42 /* dynamiclib_unix.c */; };
 		878419AD25995AFF002ED39D /* files_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 3D208D5811824C2200BEAA42 /* files_unix.c */; };
-		878419B725995BAD002ED39D /* recomp.c in Sources */ = {isa = PBXBuildFile; fileRef = 8784173B25994FEF002ED39D /* recomp.c */; };
-		878419C125995BB8002ED39D /* assemble.c in Sources */ = {isa = PBXBuildFile; fileRef = 8784176A25994FEF002ED39D /* assemble.c */; };
-		878419D525995BD1002ED39D /* dynarec.c in Sources */ = {isa = PBXBuildFile; fileRef = 8784176C25994FEF002ED39D /* dynarec.c */; };
-		878419DF25995BD8002ED39D /* regcache.c in Sources */ = {isa = PBXBuildFile; fileRef = 8784176D25994FEF002ED39D /* regcache.c */; };
 		87841A1625995F4A002ED39D /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841987259959FD002ED39D /* ioapi.c */; };
 		87841A2025995F4E002ED39D /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841985259959FD002ED39D /* unzip.c */; };
 		87841A2A25995F52002ED39D /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841986259959FD002ED39D /* zip.c */; };
 		87841A4F25996A8A002ED39D /* frontend.c in Sources */ = {isa = PBXBuildFile; fileRef = 8784164C25993CA2002ED39D /* frontend.c */; };
 		87841A6B259982D8002ED39D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 3D208D3411824C2200BEAA42 /* main.c */; };
-		87841A892599978D002ED39D /* dyna_start.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 87841A882599978D002ED39D /* dyna_start.o */; };
 		87841A9E2599A9E4002ED39D /* disk.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841A9D2599A9C5002ED39D /* disk.c */; };
 		87841AEB259A6DD2002ED39D /* n64video.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841AB0259A6DD2002ED39D /* n64video.c */; };
 		87841AEC259A6DD2002ED39D /* fetch.c in Sources */ = {isa = PBXBuildFile; fileRef = 87841AB3259A6DD2002ED39D /* fetch.c */; };
@@ -499,6 +496,7 @@
 		3E82BC691F507CBA0081AF7B /* vidext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vidext.h; sourceTree = "<group>"; };
 		3E82BC6A1F507CD60081AF7B /* osal_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_files.h; sourceTree = "<group>"; };
 		3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FrameBuffer.cpp; path = OpenGL/FrameBuffer.cpp; sourceTree = "<group>"; };
+		551FEEAF25B64D9000B9030D /* linkage.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = linkage.o; sourceTree = "<group>"; };
 		55E0604525B377BC00521CB0 /* SSE2NEON.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SSE2NEON.h; sourceTree = "<group>"; usesTabs = 0; };
 		8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CRC_OPT.cpp; sourceTree = "<group>"; };
 		8723F7031F74A3A3003E572A /* xxhash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
@@ -895,7 +893,7 @@
 		8784173325994FEF002ED39D /* cp1.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cp1.h; sourceTree = "<group>"; };
 		8784173425994FEF002ED39D /* r4300_core.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r4300_core.c; sourceTree = "<group>"; };
 		8784173525994FEF002ED39D /* tlb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = tlb.h; sourceTree = "<group>"; };
-		8784173625994FEF002ED39D /* mips_instructions.def */ = {isa = PBXFileReference; lastKnownFileType = text; path = mips_instructions.def; sourceTree = "<group>"; };
+		8784173625994FEF002ED39D /* mips_instructions.def */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; path = mips_instructions.def; sourceTree = "<group>"; };
 		8784173725994FEF002ED39D /* cp0.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cp0.c; sourceTree = "<group>"; };
 		8784173825994FEF002ED39D /* recomp_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = recomp_types.h; sourceTree = "<group>"; };
 		8784173925994FEF002ED39D /* idec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = idec.h; sourceTree = "<group>"; };
@@ -915,7 +913,7 @@
 		8784174825994FEF002ED39D /* regcache.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = regcache.c; sourceTree = "<group>"; };
 		8784174925994FEF002ED39D /* interpret.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = interpret.h; sourceTree = "<group>"; };
 		8784174B25994FEF002ED39D /* new_dynarec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = new_dynarec.h; sourceTree = "<group>"; };
-		8784174D25994FEF002ED39D /* linkage_x64.asm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm.asm; path = linkage_x64.asm; sourceTree = "<group>"; };
+		8784174D25994FEF002ED39D /* linkage_x64.asm */ = {isa = PBXFileReference; explicitFileType = sourcecode.nasm; path = linkage_x64.asm; sourceTree = "<group>"; };
 		8784174E25994FEF002ED39D /* assem_x64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = assem_x64.h; sourceTree = "<group>"; };
 		8784174F25994FEF002ED39D /* assem_x64.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = assem_x64.c; sourceTree = "<group>"; };
 		8784175025994FEF002ED39D /* new_dynarec.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = new_dynarec.c; sourceTree = "<group>"; };
@@ -988,7 +986,6 @@
 		8784198A259959FD002ED39D /* unzip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
 		8784198B259959FD002ED39D /* ioapi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ioapi.h; sourceTree = "<group>"; };
 		8784198D259959FD002ED39D /* xxhash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
-		87841A882599978D002ED39D /* dyna_start.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = dyna_start.o; sourceTree = "<group>"; };
 		87841A9C2599A9C5002ED39D /* disk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = disk.h; sourceTree = "<group>"; };
 		87841A9D2599A9C5002ED39D /* disk.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = disk.c; sourceTree = "<group>"; };
 		87841AB0259A6DD2002ED39D /* n64video.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = n64video.c; sourceTree = "<group>"; };
@@ -1196,7 +1193,7 @@
 			files = (
 				8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */,
 				3D208E981182550400BEAA42 /* OpenGL.framework in Frameworks */,
-				87841A892599978D002ED39D /* dyna_start.o in Frameworks */,
+				551FEEB025B64D9000B9030D /* linkage.o in Frameworks */,
 				C6D120F71711312600E868A8 /* OpenEmuBase.framework in Frameworks */,
 				3D208E9E1182551500BEAA42 /* libz.dylib in Frameworks */,
 			);
@@ -2406,6 +2403,7 @@
 			children = (
 				8784175625994FEF002ED39D /* arm */,
 				8784175C25994FEF002ED39D /* arm64 */,
+				551FEEAF25B64D9000B9030D /* linkage.o */,
 				8784175025994FEF002ED39D /* new_dynarec.c */,
 				8784174B25994FEF002ED39D /* new_dynarec.h */,
 				8784175525994FEF002ED39D /* recomp_dbg.c */,
@@ -2464,7 +2462,6 @@
 				8784176A25994FEF002ED39D /* assemble.c */,
 				8784176725994FEF002ED39D /* assemble.h */,
 				8784176925994FEF002ED39D /* dyna_start.asm */,
-				87841A882599978D002ED39D /* dyna_start.o */,
 				8784176C25994FEF002ED39D /* dynarec.c */,
 				8784176E25994FEF002ED39D /* interpret.h */,
 				8784176D25994FEF002ED39D /* regcache.c */,
@@ -3241,6 +3238,7 @@
 				878416F825994FC7002ED39D /* file_storage.c in Sources */,
 				8784179325995103002ED39D /* af_rtc.c in Sources */,
 				8784179D25995108002ED39D /* cart_rom.c in Sources */,
+				551FEDF525B6232500B9030D /* new_dynarec.c in Sources */,
 				878417A72599510D002ED39D /* cart.c in Sources */,
 				878417B125995111002ED39D /* eeprom.c in Sources */,
 				878417B225995115002ED39D /* flashram.c in Sources */,
@@ -3296,10 +3294,6 @@
 				87841A2A25995F52002ED39D /* zip.c in Sources */,
 				878419A325995AFB002ED39D /* dynamiclib_unix.c in Sources */,
 				878419AD25995AFF002ED39D /* files_unix.c in Sources */,
-				878419B725995BAD002ED39D /* recomp.c in Sources */,
-				878419C125995BB8002ED39D /* assemble.c in Sources */,
-				878419D525995BD1002ED39D /* dynarec.c in Sources */,
-				878419DF25995BD8002ED39D /* regcache.c in Sources */,
 				3D208F821182B00300BEAA42 /* MupenGameCore.m in Sources */,
 				3D8B35D812260F9D00C4C844 /* main.m in Sources */,
 				3D00F06D1183E4AA002995A1 /* eventloop.m in Sources */,
@@ -3388,6 +3382,14 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
+					"$(inherited)",
+					"NEW_DYNAREC=NEW_DYNAREC_ARM64",
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=x86_64]" = (
+					"$(inherited)",
+					"NEW_DYNAREC=NEW_DYNAREC_X64",
+				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/mupen64plus-core/src\"",
 					"\"$(SRCROOT)/Compatibility/SDL\"",
@@ -3420,7 +3422,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "org.openemu.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = Mupen64Plus;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = x86_64;
 				WARNING_CFLAGS = "-Wall";
 				WRAPPER_EXTENSION = oecoreplugin;
 			};
@@ -3438,6 +3439,14 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREFIX_HEADER = Mupen64Plus_Prefix.pch;
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
+					"$(inherited)",
+					"NEW_DYNAREC=NEW_DYNAREC_ARM64",
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=x86_64]" = (
+					"$(inherited)",
+					"NEW_DYNAREC=NEW_DYNAREC_X64",
+				);
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/mupen64plus-core/src\"",
 					"\"$(SRCROOT)/Compatibility/SDL\"",
@@ -3470,7 +3479,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "org.openemu.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = Mupen64Plus;
 				SKIP_INSTALL = YES;
-				VALID_ARCHS = x86_64;
 				WARNING_CFLAGS = "-Wall";
 				WRAPPER_EXTENSION = oecoreplugin;
 			};
