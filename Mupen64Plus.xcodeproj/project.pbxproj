@@ -3385,6 +3385,7 @@
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
 					"$(inherited)",
 					"NEW_DYNAREC=NEW_DYNAREC_ARM64",
+					NO_ASM,
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=x86_64]" = (
 					"$(inherited)",
@@ -3442,6 +3443,7 @@
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
 					"$(inherited)",
 					"NEW_DYNAREC=NEW_DYNAREC_ARM64",
+					NO_ASM,
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=x86_64]" = (
 					"$(inherited)",
