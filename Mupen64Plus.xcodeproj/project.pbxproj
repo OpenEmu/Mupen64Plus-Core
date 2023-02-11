@@ -1151,9 +1151,9 @@
 		EE2BBC36225AD5040007BF6F /* libhardware.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libhardware.h; sourceTree = "<group>"; };
 		EE2BBC37225AD5040007BF6F /* gralloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gralloc.h; sourceTree = "<group>"; };
 		EE2BBC38225AD5040007BF6F /* GraphicBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicBuffer.cpp; sourceTree = "<group>"; };
-		EE2BBC44225AD5370007BF6F /* MemoryStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MemoryStatus.h; path = ../../../Mupen64plus/GLideN64/src/MemoryStatus.h; sourceTree = "<group>"; };
-		EE2BBC45225AD5370007BF6F /* iob.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = iob.cpp; path = ../../../Mupen64plus/GLideN64/src/iob.cpp; sourceTree = "<group>"; };
-		EE2BBC47225AD6510007BF6F /* MemoryStatus_mupenplus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MemoryStatus_mupenplus.cpp; path = ../../../../Mupen64plus/GLideN64/src/mupenplus/MemoryStatus_mupenplus.cpp; sourceTree = "<group>"; };
+		EE2BBC44225AD5370007BF6F /* MemoryStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryStatus.h; sourceTree = "<group>"; };
+		EE2BBC45225AD5370007BF6F /* iob.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = iob.cpp; sourceTree = "<group>"; };
+		EE2BBC47225AD6510007BF6F /* MemoryStatus_mupenplus.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryStatus_mupenplus.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2867,8 +2867,7 @@
 			children = (
 				EE2BBC33225AD5040007BF6F /* PrivateApi */,
 			);
-			name = GraphicBuffer;
-			path = ../../../../../Mupen64plus/GLideN64/src/Graphics/OpenGLContext/GraphicBuffer;
+			path = GraphicBuffer;
 			sourceTree = "<group>";
 		};
 		EE2BBC33225AD5040007BF6F /* PrivateApi */ = {
