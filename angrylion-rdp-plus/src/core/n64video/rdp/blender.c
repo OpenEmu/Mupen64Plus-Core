@@ -135,6 +135,33 @@ static STRICTINLINE void blender_equation_cycle0(struct rdp_state* wstate, int* 
     }
 }
 
+static STRICTINLINE void blender_equation_cycle0_gval(struct rdp_state* wstate, int* g)
+{
+    int blend1a, blend2a;
+    int blg, sum;
+    blend1a = *wstate->blender1b_a[0] >> 3;
+    blend2a = *wstate->blender2b_a[0] >> 3;
+
+    int mulb;
+    if (wstate->blender2b_a[0] == &wstate->memory_color.a)
+    {
+        blend1a = (blend1a >> wstate->blshifta) & 0x3C;
+        blend2a = (blend2a >> wstate->blshiftb) | 3;
+    }
+
+    mulb = blend2a + 1;
+
+    blg = (*wstate->blender1a_g[0]) * blend1a + (*wstate->blender2a_g[0]) * mulb;
+
+    if (!wstate->other_modes.force_blend)
+    {
+        sum = ((blend1a & ~3) + (blend2a & ~3) + 4) << 9;
+        *g = bldiv_hwaccurate_table[sum | ((blg >> 2) & 0x7ff)];
+    }
+    else
+        *g = (blg >> 5) & 0xff;
+}
+
 static STRICTINLINE void blender_equation_cycle0_2(struct rdp_state* wstate, int* r, int* g, int* b)
 {
     int blend1a, blend2a;
@@ -151,6 +178,22 @@ static STRICTINLINE void blender_equation_cycle0_2(struct rdp_state* wstate, int
     *r = (((*wstate->blender1a_r[0]) * blend1a + (*wstate->blender2a_r[0]) * blend2a) >> 5) & 0xff;
     *g = (((*wstate->blender1a_g[0]) * blend1a + (*wstate->blender2a_g[0]) * blend2a) >> 5) & 0xff;
     *b = (((*wstate->blender1a_b[0]) * blend1a + (*wstate->blender2a_b[0]) * blend2a) >> 5) & 0xff;
+}
+
+static STRICTINLINE void blender_equation_cycle0_2_gval(struct rdp_state* wstate, int* g)
+{
+    int blend1a, blend2a;
+    blend1a = *wstate->blender1b_a[0] >> 3;
+    blend2a = *wstate->blender2b_a[0] >> 3;
+
+    if (wstate->blender2b_a[0] == &wstate->memory_color.a)
+    {
+        blend1a = (blend1a >> wstate->pastblshifta) & 0x3C;
+        blend2a = (blend2a >> wstate->pastblshiftb) | 3;
+    }
+
+    blend2a += 1;
+    *g = (((*wstate->blender1a_g[0]) * blend1a + (*wstate->blender2a_g[0]) * blend2a) >> 5) & 0xff;
 }
 
 static STRICTINLINE void blender_equation_cycle1(struct rdp_state* wstate, int* r, int* g, int* b)
@@ -185,6 +228,32 @@ static STRICTINLINE void blender_equation_cycle1(struct rdp_state* wstate, int* 
         *g = (blg >> 5) & 0xff;
         *b = (blb >> 5) & 0xff;
     }
+}
+
+static STRICTINLINE void blender_equation_cycle1_gval(struct rdp_state* wstate, int* g)
+{
+    int blend1a, blend2a;
+    int blg, sum;
+    blend1a = *wstate->blender1b_a[1] >> 3;
+    blend2a = *wstate->blender2b_a[1] >> 3;
+
+    int mulb;
+    if (wstate->blender2b_a[1] == &wstate->memory_color.a)
+    {
+        blend1a = (blend1a >> wstate->blshifta) & 0x3C;
+        blend2a = (blend2a >> wstate->blshiftb) | 3;
+    }
+
+    mulb = blend2a + 1;
+    blg = (*wstate->blender1a_g[1]) * blend1a + (*wstate->blender2a_g[1]) * mulb;
+
+    if (!wstate->other_modes.force_blend)
+    {
+        sum = ((blend1a & ~3) + (blend2a & ~3) + 4) << 9;
+        *g = bldiv_hwaccurate_table[sum | ((blg >> 2) & 0x7ff)];
+    }
+    else
+        *g = (blg >> 5) & 0xff;
 }
 
 static STRICTINLINE int blender_1cycle(struct rdp_state* wstate, uint32_t* fr, uint32_t* fg, uint32_t* fb, int dith, uint32_t blend_en, uint32_t prewrap, uint32_t curpixel_cvg, uint32_t curpixel_cvbit)
@@ -261,9 +330,32 @@ static STRICTINLINE int blender_2cycle_cycle0(struct rdp_state* wstate, uint32_t
         wstate->blended_pixel_color.b = b;
     }
 
-    wstate->memory_color = wstate->pre_memory_color;
-
     return wen;
+}
+
+
+static STRICTINLINE void blender_2cycle_cycle0_gval(struct rdp_state* wstate, uint32_t curpixel)
+{
+    int g, fbsel;
+    uint32_t fb;
+
+    fbsel = wstate->fb_size;
+
+    if (wstate->fb_size == PIXEL_SIZE_8BIT)
+    {
+        fb = wstate->fb_address + curpixel;
+        if (!(fb & 1))
+            fbsel--;
+    }
+
+    if (fbsel & 1)
+    {
+        wstate->inv_pixel_color.a = (~(*wstate->blender1b_a[0])) & 0xff;
+
+        blender_equation_cycle0_2_gval(wstate, &g);
+
+        wstate->blended_pixel_color.g = g;
+    }
 }
 
 

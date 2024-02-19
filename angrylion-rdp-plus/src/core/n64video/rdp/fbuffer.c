@@ -1,9 +1,13 @@
 #ifdef N64VIDEO_C
 
-static void fbwrite_4(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg);
-static void fbwrite_8(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg);
-static void fbwrite_16(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg);
-static void fbwrite_32(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg);
+static void fbwrite_4(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg, int flip, int* delayedhbwidx);
+static void fbwrite_8(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg, int flip, int* delayedhbwidx);
+static void fbwrite_16(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg, int flip, int* delayedhbwidx);
+static void fbwrite_32(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg, int flip, int* delayedhbwidx);
+static void fbfill_4(struct rdp_state* wstate, uint32_t curpixel, int flip, int* delayedhbwidx);
+static void fbfill_8(struct rdp_state* wstate, uint32_t curpixel, int flip, int* delayedhbwidx);
+static void fbfill_16(struct rdp_state* wstate, uint32_t curpixel, int flip, int* delayedhbwidx);
+static void fbfill_32(struct rdp_state* wstate, uint32_t curpixel, int flip, int* delayedhbwidx);
 static void fbread_4(struct rdp_state* wstate, uint32_t num, uint32_t* curpixel_memcvg);
 static void fbread_8(struct rdp_state* wstate, uint32_t num, uint32_t* curpixel_memcvg);
 static void fbread_16(struct rdp_state* wstate, uint32_t num, uint32_t* curpixel_memcvg);
@@ -23,12 +27,17 @@ static void (*fbread2_func[4])(struct rdp_state*,uint32_t, uint32_t*) =
     fbread2_4, fbread2_8, fbread2_16, fbread2_32
 };
 
-static void (*fbwrite_func[4])(struct rdp_state*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) =
+static void (*fbwrite_func[4])(struct rdp_state*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, int, int*) =
 {
     fbwrite_4, fbwrite_8, fbwrite_16, fbwrite_32
 };
 
-static void fbwrite_4(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg)
+static void (*fbfill_func[4])(struct rdp_state*, uint32_t, int, int*) =
+{
+    fbfill_4, fbfill_8, fbfill_16, fbfill_32
+};
+
+static void fbwrite_4(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg, int flip, int* delayedhbwidx)
 {
     UNUSED(r);
     UNUSED(g);
@@ -36,12 +45,14 @@ static void fbwrite_4(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, u
     UNUSED(blend_en);
     UNUSED(curpixel_cvg);
     UNUSED(curpixel_memcvg);
+    UNUSED(flip);
+    UNUSED(delayedhbwidx);
 
     uint32_t fb = wstate->fb_address + curpixel;
     RWRITEADDR8(fb, 0);
 }
 
-static void fbwrite_8(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg)
+static void fbwrite_8(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg, int flip, int* delayedhbwidx)
 {
     UNUSED(b);
     UNUSED(blend_en);
@@ -49,11 +60,14 @@ static void fbwrite_8(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, u
     UNUSED(curpixel_memcvg);
 
     uint32_t fb = wstate->fb_address + curpixel;
-    PAIRWRITE8(fb, (fb & 1) ? (g & 0xff) : (r & 0xff));
+    rdram_write_pair8(fb, (fb & 1) ? (g & 0xff) : (r & 0xff), flip, delayedhbwidx);
 }
 
-static void fbwrite_16(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg)
+static void fbwrite_16(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg, int flip, int* delayedhbwidx)
 {
+    UNUSED(flip);
+    UNUSED(delayedhbwidx);
+
 #undef CVG_DRAW
 #ifdef CVG_DRAW
     int covdraw = (curpixel_cvg - 1) << 5;
@@ -81,11 +95,15 @@ static void fbwrite_16(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, 
 
     rval = finalcolor|(uint16_t)(finalcvg >> 2);
     hval = finalcvg & 3;
-    PAIRWRITE16(fb, rval, hval);
+
+    rdram_write_pair16(fb, rval, hval, 1);
 }
 
-static void fbwrite_32(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg)
+static void fbwrite_32(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, uint32_t g, uint32_t b, uint32_t blend_en, uint32_t curpixel_cvg, uint32_t curpixel_memcvg, int flip, int* delayedhbwidx)
 {
+    UNUSED(flip);
+    UNUSED(delayedhbwidx);
+
     uint32_t fb = (wstate->fb_address >> 2) + curpixel;
 
     int32_t finalcolor;
@@ -94,26 +112,31 @@ static void fbwrite_32(struct rdp_state* wstate, uint32_t curpixel, uint32_t r, 
     finalcolor = (r << 24) | (g << 16) | (b << 8);
     finalcolor |= (finalcvg << 5);
 
-    PAIRWRITE32(fb, finalcolor, (g & 1) ? 3 : 0, 0);
+    rdram_write_pair32(fb, finalcolor, (g & 1) ? 3 : 0, 0);
 }
 
-static void fbfill_4(struct rdp_state* wstate, uint32_t curpixel)
+static void fbfill_4(struct rdp_state* wstate, uint32_t curpixel, int flip, int* delayedhbwidx)
 {
     UNUSED(wstate);
     UNUSED(curpixel);
+    UNUSED(flip);
+    UNUSED(delayedhbwidx);
 
     rdp_pipeline_crashed = 1;
 }
 
-static void fbfill_8(struct rdp_state* wstate, uint32_t curpixel)
+static void fbfill_8(struct rdp_state* wstate, uint32_t curpixel, int flip, int* delayedhbwidx)
 {
     uint32_t fb = wstate->fb_address + curpixel;
     uint8_t val = (wstate->fill_color >> ((fb & 3) ^ 3) << 3) & 0xff;
-    PAIRWRITE8(fb, val);
+    rdram_write_pair8(fb, val, flip, delayedhbwidx);
 }
 
-static void fbfill_16(struct rdp_state* wstate, uint32_t curpixel)
+static void fbfill_16(struct rdp_state* wstate, uint32_t curpixel, int flip, int* delayedhbwidx)
 {
+    UNUSED(flip);
+    UNUSED(delayedhbwidx);
+
     uint16_t val;
     uint8_t hval;
     uint32_t fb = (wstate->fb_address >> 1) + curpixel;
@@ -122,13 +145,16 @@ static void fbfill_16(struct rdp_state* wstate, uint32_t curpixel)
     else
         val = (wstate->fill_color >> 16) & 0xffff;
     hval = ((val & 1) << 1) | (val & 1);
-    PAIRWRITE16(fb, val, hval);
+    rdram_write_pair16(fb, val, hval, 1);
 }
 
-static void fbfill_32(struct rdp_state* wstate, uint32_t curpixel)
+static void fbfill_32(struct rdp_state* wstate, uint32_t curpixel, int flip, int* delayedhbwidx)
 {
+    UNUSED(flip);
+    UNUSED(delayedhbwidx);
+
     uint32_t fb = (wstate->fb_address >> 2) + curpixel;
-    PAIRWRITE32(fb, wstate->fill_color, (wstate->fill_color & 0x10000) ? 3 : 0, (wstate->fill_color & 0x1) ? 3 : 0);
+    rdram_write_pair32(fb, wstate->fill_color, (wstate->fill_color & 0x10000) ? 3 : 0, (wstate->fill_color & 0x1) ? 3 : 0);
 }
 
 static void fbread_4(struct rdp_state* wstate, uint32_t curpixel, uint32_t* curpixel_memcvg)
@@ -301,6 +327,7 @@ void rdp_set_color_image(struct rdp_state* wstate, const uint32_t* args)
     wstate->fbread1_ptr = fbread_func[wstate->fb_size];
     wstate->fbread2_ptr = fbread2_func[wstate->fb_size];
     wstate->fbwrite_ptr = fbwrite_func[wstate->fb_size];
+    wstate->fbfill_ptr = fbfill_func[wstate->fb_size];
 }
 
 void rdp_set_fill_color(struct rdp_state* wstate, const uint32_t* args)
@@ -319,6 +346,7 @@ static void fb_init(struct rdp_state* wstate)
     wstate->fbread1_ptr = fbread_func[wstate->fb_size];
     wstate->fbread2_ptr = fbread2_func[wstate->fb_size];
     wstate->fbwrite_ptr = fbwrite_func[wstate->fb_size];
+    wstate->fbfill_ptr = fbfill_func[wstate->fb_size];
 }
 
 #endif // N64VIDEO_C

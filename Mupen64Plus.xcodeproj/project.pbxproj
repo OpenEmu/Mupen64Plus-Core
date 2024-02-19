@@ -509,6 +509,7 @@
 		5520DABD2B82F78700A80727 /* re2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = re2.c; sourceTree = "<group>"; };
 		5520DABF2B82F88A00A80727 /* osal_dynamiclib_unix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = osal_dynamiclib_unix.c; sourceTree = "<group>"; };
 		5520DAC12B82F8BB00A80727 /* osal_dynamiclib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = osal_dynamiclib.h; sourceTree = "<group>"; };
+		5520DAC22B83318000A80727 /* version.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };
 		555FD44F2B82C99A00E42351 /* is_viewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = is_viewer.h; sourceTree = "<group>"; };
 		555FD4502B82C99A00E42351 /* is_viewer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = is_viewer.c; sourceTree = "<group>"; };
 		555FD4522B82C9CB00E42351 /* cp2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cp2.h; sourceTree = "<group>"; };
@@ -2668,6 +2669,7 @@
 				87841AB0259A6DD2002ED39D /* n64video.c */,
 				87841AB1259A6DD2002ED39D /* n64video */,
 				87841AC7259A6DD2002ED39D /* parallel.cpp */,
+				5520DAC22B83318000A80727 /* version.h */,
 				87841AC8259A6DD2002ED39D /* version.h.in */,
 				87841AC9259A6DD2002ED39D /* n64video.h */,
 				87841ACA259A6DD2002ED39D /* msg.h */,

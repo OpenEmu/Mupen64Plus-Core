@@ -25,23 +25,35 @@ You can also build without, but then you have to copy `version.h.in` to `version
 
 The glLoadGen files (`gl_core_3_3` and `wgl_ext`) were generated using the following parameters:
 
-    lua LoadGen.lua core_3_3 -style=pointer_c -spec=gl -version=3.3 -profile=core
-    lua LoadGen.lua ext -style=pointer_c -spec=wgl -ext WGL_EXT_swap_control -ext ARB_create_context -ext ARB_create_context_profile
+```bash
+lua LoadGen.lua core_3_3 -style=pointer_c -spec=gl -version=3.3 -profile=core
+lua LoadGen.lua ext -style=pointer_c -spec=wgl -ext WGL_EXT_swap_control -ext ARB_create_context -ext ARB_create_context_profile
+```
 
 #### CMake
 
 Install dependencies:
 
-    apt install cmake freeglut3-dev
+```bash
+apt install cmake freeglut3-dev
+```
 
 Building:
 
-    mkdir build
-    cd build
-    cmake ..
-    make
+```bash
+mkdir build
+cd build
+cmake ..
+make
+```
 
 To create an OpenGL ES 3 build, add ``-DGLES=ON`` to the cmake arguments.
+
+Installing:
+
+```bash
+sudo make install
+```
 
 ### Credits
 * Angrylion, Ville Linde, MooglyGuy and others involved for creating an awesome N64 RDP reference software.

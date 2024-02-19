@@ -10,8 +10,9 @@
 
 void msg_error(const char * err, ...)
 {
-    if (debug_callback == NULL)
+    if (debug_callback == NULL) {
         return;
+    }
 
     va_list arg;
     va_start(arg, err);
@@ -26,8 +27,9 @@ void msg_error(const char * err, ...)
 
 void msg_warning(const char* err, ...)
 {
-    if (debug_callback == NULL)
+    if (debug_callback == NULL) {
         return;
+    }
 
     va_list arg;
     va_start(arg, err);
@@ -41,15 +43,16 @@ void msg_warning(const char* err, ...)
 
 void msg_debug(const char* err, ...)
 {
-    if (debug_callback == NULL)
+    if (debug_callback == NULL) {
         return;
+    }
 
     va_list arg;
     va_start(arg, err);
     char buf[MSG_BUFFER_LEN];
     vsprintf(buf, err, arg);
 
-    (*debug_callback)(debug_call_context, M64MSG_VERBOSE, buf);
+    (*debug_callback)(debug_call_context, M64MSG_INFO, buf);
 
     va_end(arg);
 }

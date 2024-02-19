@@ -192,7 +192,8 @@ static STRICTINLINE void z_store(uint32_t zcurpixel, uint32_t z, int dzpixenc)
 {
     uint16_t zval = z_com_table[z & 0x3ffff]|(uint16_t)(dzpixenc >> 2);
     uint8_t hval = dzpixenc & 3;
-    PAIRWRITE16(zcurpixel, zval, hval);
+
+    rdram_write_pair16(zcurpixel, zval, hval, 0);
 }
 
 static STRICTINLINE uint32_t dz_decompress(uint32_t dz_compressed)

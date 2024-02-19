@@ -64,6 +64,26 @@ static STRICTINLINE void rgb_dither(int rgb_dither_sel, int* r, int* g, int* b, 
     *b = *b + (ditherdiff & replacesign);
 }
 
+static STRICTINLINE void rgb_dither_gval(int rgb_dither_sel, int* g, int dith)
+{
+    int32_t newg = *g;
+    int32_t gcomp;
+
+    if (newg > 247)
+        newg = 255;
+    else
+        newg = (newg & 0xf8) + 8;
+
+    if (rgb_dither_sel != 2)
+        gcomp = dith;
+    else
+        gcomp = (dith >> 3) & 7;
+
+    int32_t replacesign = (gcomp - (*g & 7)) >> 31;
+    int32_t ditherdiff = newg - *g;
+    *g = *g + (ditherdiff & replacesign);
+}
+
 static STRICTINLINE void get_dither_noise(struct rdp_state* wstate, int x, int y, int* cdith, int* adith)
 {
     if (!wstate->other_modes.f.getditherlevel)

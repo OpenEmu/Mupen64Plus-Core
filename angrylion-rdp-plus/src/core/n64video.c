@@ -87,7 +87,7 @@ static struct n64video_config config;
 
 static struct
 {
-    bool fillmbitcrashes, vbusclock, nolerp;
+    bool fillmbitcrashes, vbusclock;
 } onetimewarnings;
 
 static int rdp_pipeline_crashed = 0;
@@ -159,6 +159,7 @@ void n64video_config_init(struct n64video_config* conf)
     // config defaults that aren't false or 0
     conf->parallel = true;
     conf->vi.vsync = true;
+    conf->vi.interp = VI_INTERP_HYBRID;
 }
 
 static void n64video_init_parallel(uint32_t worker_id)
@@ -167,9 +168,7 @@ static void n64video_init_parallel(uint32_t worker_id)
 
     wstate->stride = parallel_num_workers();
     wstate->offset = worker_id;
-    wstate->rseed = 3 + worker_id * 13;
-
-    rdp_init(wstate);
+    wstate->rseed = wstate->vi_rseed = 3 + worker_id * 13;
 }
 
 void n64video_init(struct n64video_config* _config)
@@ -186,6 +185,10 @@ void n64video_init(struct n64video_config* _config)
         combiner_init_lut();
         tex_init_lut();
         z_init_lut();
+
+        for (uint32_t i = 1; i < PARALLEL_MAX_WORKERS; i++) {
+            rdp_init(&state[i]);
+        }
 
         static_init = true;
     }
@@ -211,8 +214,8 @@ void n64video_init(struct n64video_config* _config)
     memset(&onetimewarnings, 0, sizeof(onetimewarnings));
 
     if (config.parallel) {
-        // init worker system
-        parallel_init(config.num_workers);
+        // init worker system, use busy looping
+        parallel_init(config.num_workers, config.busyloop);
 
         // sync states from main worker
         for (uint32_t i = 1; i < parallel_num_workers(); i++) {
@@ -226,7 +229,6 @@ void n64video_init(struct n64video_config* _config)
         wstate->stride = 1;
         wstate->offset = 0;
         wstate->rseed = 3;
-        rdp_init(wstate);
     }
 }
 

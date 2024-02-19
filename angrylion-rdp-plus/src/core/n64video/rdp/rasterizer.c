@@ -186,6 +186,165 @@ static STRICTINLINE void z_correct(struct rdp_state* wstate, int offx, int offy,
     }
 }
 
+
+void rejected_hbwrite_1cycle(struct rdp_state* wstate, int cdith, uint32_t blend_en, uint32_t prewrap, uint32_t curpixel, uint32_t curpixel_cvg, uint32_t curpixel_memcvg, int flip, int* delayedhbwidx)
+{
+    int g, dontblend;
+    int gval = 0;
+    uint32_t fb = 0;
+    int32_t hval = 0;
+    int fbsel = wstate->fb_size;
+
+    if (wstate->fb_size == PIXEL_SIZE_8BIT)
+    {
+        fb = wstate->fb_address + curpixel;
+        if (!(fb & 1))
+            fbsel--;
+    }
+
+    if (fbsel & 1)
+    {
+        if (!wstate->other_modes.color_on_cvg || prewrap)
+        {
+            dontblend = (wstate->other_modes.f.partialreject_1cycle && wstate->pixel_color.a >= 0xff);
+            if (!blend_en || dontblend)
+                g = *wstate->blender1a_g[0];
+            else
+            {
+                wstate->inv_pixel_color.a =  (~(*wstate->blender1b_a[0])) & 0xff;
+
+                blender_equation_cycle0_gval(wstate, &g);
+            }
+        }
+        else
+            g = *wstate->blender2a_g[0];
+
+        if (wstate->other_modes.rgb_dither_sel != 3)
+            rgb_dither_gval(wstate->other_modes.rgb_dither_sel, &g, cdith);
+
+        gval = (g & 1) ? 3 : 0;
+    }
+
+    switch (fbsel)
+    {
+    case PIXEL_SIZE_4BIT:
+        break;
+    case PIXEL_SIZE_8BIT:
+        if (flip && *delayedhbwidx >= 0)
+        {
+            if ((uint32_t)*delayedhbwidx < fb)
+            {
+                if (rdram_valid_idx8((uint32_t)*delayedhbwidx))
+                {
+                    int oldhbidx = *delayedhbwidx >> 1;
+                    rdram_hidden[oldhbidx] &= ~2;
+                    rdram_hidden[oldhbidx] |= rdram_hidden_old[oldhbidx & 7] & 2;
+                }
+            }
+            else if (rdram_valid_idx8(fb))
+            {
+                rdram_hidden[fb >> 1] &= ~2;
+                rdram_hidden[fb >> 1] |= gval & 2;
+            }
+
+            *delayedhbwidx = -1;
+        }
+
+        rdram_hidden_old[(fb >> 1) & 7] = gval & 0xff;
+        break;
+    case PIXEL_SIZE_16BIT:
+        fb = (wstate->fb_address >> 1) + curpixel;
+        if (wstate->fb_format == FORMAT_RGBA)
+            hval = finalize_spanalpha(wstate->other_modes.cvg_dest, blend_en, curpixel_cvg, curpixel_memcvg) & 3;
+        rdram_hidden_old[fb & 7] = hval & 0xff;
+        break;
+    case PIXEL_SIZE_32BIT:
+        fb = (wstate->fb_address >> 2) + curpixel;
+        rdram_hidden_old[(fb << 1) & 7] = gval & 0xff;
+        rdram_hidden_old[((fb << 1) + 1) & 7] = 0;
+        break;
+    }
+}
+
+void rejected_hbwrite_2cycle(struct rdp_state* wstate, int cdith, uint32_t blend_en, uint32_t prewrap, uint32_t curpixel, uint32_t curpixel_cvg, uint32_t curpixel_memcvg, int flip, int* delayedhbwidx)
+{
+    int g, dontblend;
+    int gval = 0;
+    uint32_t fb = 0;
+    int32_t hval = 0;
+    int fbsel = wstate->fb_size;
+
+    if (wstate->fb_size == PIXEL_SIZE_8BIT)
+    {
+        fb = wstate->fb_address + curpixel;
+        if (!(fb & 1))
+            fbsel--;
+    }
+
+    if (fbsel & 1)
+    {
+        if (!wstate->other_modes.color_on_cvg || prewrap)
+        {
+            dontblend = (wstate->other_modes.f.partialreject_2cycle && wstate->pixel_color.a >= 0xff);
+            if (!blend_en || dontblend)
+                g = *wstate->blender1a_g[1];
+            else
+            {
+                wstate->inv_pixel_color.a =  (~(*wstate->blender1b_a[1])) & 0xff;
+
+                blender_equation_cycle1_gval(wstate, &g);
+            }
+        }
+        else
+            g = *wstate->blender2a_g[1];
+
+        if (wstate->other_modes.rgb_dither_sel != 3)
+            rgb_dither_gval(wstate->other_modes.rgb_dither_sel, &g, cdith);
+
+        gval = (g & 1) ? 3 : 0;
+    }
+
+    switch (fbsel)
+    {
+    case PIXEL_SIZE_4BIT:
+        break;
+    case PIXEL_SIZE_8BIT:
+        if (flip && *delayedhbwidx >= 0)
+        {
+            if ((uint32_t)*delayedhbwidx < fb)
+            {
+                if (rdram_valid_idx8((uint32_t)*delayedhbwidx))
+                {
+                    int oldhbidx = *delayedhbwidx >> 1;
+                    rdram_hidden[oldhbidx] &= ~2;
+                    rdram_hidden[oldhbidx] |= rdram_hidden_old[oldhbidx & 7] & 2;
+                }
+            }
+            else if (rdram_valid_idx8(fb))
+            {
+                rdram_hidden[fb >> 1] &= ~2;
+                rdram_hidden[fb >> 1] |= gval & 2;
+            }
+
+            *delayedhbwidx = -1;
+        }
+
+        rdram_hidden_old[(fb >> 1) & 7] = gval & 0xff;
+        break;
+    case PIXEL_SIZE_16BIT:
+        fb = (wstate->fb_address >> 1) + curpixel;
+        if (wstate->fb_format == FORMAT_RGBA)
+            hval = finalize_spanalpha(wstate->other_modes.cvg_dest, blend_en, curpixel_cvg, curpixel_memcvg) & 3;
+        rdram_hidden_old[fb & 7] = hval & 0xff;
+        break;
+    case PIXEL_SIZE_32BIT:
+        fb = (wstate->fb_address >> 2) + curpixel;
+        rdram_hidden_old[(fb << 1) & 7] = gval & 0xff;
+        rdram_hidden_old[((fb << 1) + 1) & 7] = 0;
+        break;
+    }
+}
+
 static void render_spans_1cycle_complete(struct rdp_state* wstate, int start, int end, int tilenum, int flip)
 {
     int zb = wstate->zb_address >> 1;
@@ -232,12 +391,12 @@ static void render_spans_1cycle_complete(struct rdp_state* wstate, int start, in
         xinc = -1;
     }
 
-    uint16_t dzpix;
+    int dzpix;
     if (!wstate->other_modes.z_source_sel)
-        dzpix = (uint16_t)wstate->spans_dzpix;
+        dzpix = wstate->spans_dzpix;
     else
     {
-        dzpix = (uint16_t)wstate->primitive_delta_z;
+        dzpix = wstate->primitive_delta_z;
         dzinc = wstate->spans_cdz = wstate->spans_dzdy = 0;
     }
     int dzpixenc = dz_compress(dzpix);
@@ -250,7 +409,9 @@ static void render_spans_1cycle_complete(struct rdp_state* wstate, int start, in
     int32_t prelodfrac = 0;
     int curpixel = 0;
     int x, length, scdiff, lodlength;
-    uint32_t fir, fig, fib;
+    uint32_t fir = 0, fig = 0, fib = 0;
+    int delayedhbwidx = -1;
+    int wen;
 
     for (i = start; i <= end; i++)
     {
@@ -370,18 +531,20 @@ static void render_spans_1cycle_complete(struct rdp_state* wstate, int start, in
             combiner_1cycle(wstate, adith, &curpixel_cvg);
 
             wstate->fbread1_ptr(wstate, curpixel, &curpixel_memcvg);
-            if (z_compare(wstate, zbcur, sz, dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg))
+
+            wen = z_compare(wstate, zbcur, sz, (uint16_t)dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
+
+            if (wen)
+                wen = blender_1cycle(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap, curpixel_cvg, curpixel_cvbit);
+
+            if (wen)
             {
-                if (blender_1cycle(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap, curpixel_cvg, curpixel_cvbit))
-                {
-                    wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg);
-                    if (wstate->other_modes.z_update_en)
-                        z_store(zbcur, sz, dzpixenc);
-                }
+                wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
+                if (wstate->other_modes.z_update_en)
+                    z_store(zbcur, sz, dzpixenc);
             }
-
-
-
+            else if (i >= wstate->last_overwriting_scanline)
+                rejected_hbwrite_1cycle(wstate, cdith, blend_en, prewrap, curpixel, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
 
             r += drinc;
             g += dginc;
@@ -395,6 +558,9 @@ static void render_spans_1cycle_complete(struct rdp_state* wstate, int start, in
         }
         }
     }
+
+    if (delayedhbwidx >= 0 && flip && wstate->fb_size == PIXEL_SIZE_8BIT)
+        rdram_complete_delayed_hbwrites(delayedhbwidx);
 }
 
 
@@ -441,12 +607,12 @@ static void render_spans_1cycle_notexel1(struct rdp_state* wstate, int start, in
         xinc = -1;
     }
 
-    uint16_t dzpix;
+    int dzpix;
     if (!wstate->other_modes.z_source_sel)
-        dzpix = (uint16_t)wstate->spans_dzpix;
+        dzpix = wstate->spans_dzpix;
     else
     {
-        dzpix = (uint16_t)wstate->primitive_delta_z;
+        dzpix = wstate->primitive_delta_z;
         dzinc = wstate->spans_cdz = wstate->spans_dzdy = 0;
     }
     int dzpixenc = dz_compress(dzpix);
@@ -458,7 +624,9 @@ static void render_spans_1cycle_notexel1(struct rdp_state* wstate, int start, in
     int sss = 0, sst = 0;
     int curpixel = 0;
     int x, length, scdiff, lodlength;
-    uint32_t fir, fig, fib;
+    uint32_t fir = 0, fig = 0, fib = 0;
+    int delayedhbwidx = -1;
+    int wen;
 
     for (i = start; i <= end; i++)
     {
@@ -545,15 +713,20 @@ static void render_spans_1cycle_notexel1(struct rdp_state* wstate, int start, in
             combiner_1cycle(wstate, adith, &curpixel_cvg);
 
             wstate->fbread1_ptr(wstate, curpixel, &curpixel_memcvg);
-            if (z_compare(wstate, zbcur, sz, dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg))
+
+            wen = z_compare(wstate, zbcur, sz, (uint16_t)dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
+
+            if (wen)
+                wen = blender_1cycle(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap, curpixel_cvg, curpixel_cvbit);
+
+            if (wen)
             {
-                if (blender_1cycle(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap, curpixel_cvg, curpixel_cvbit))
-                {
-                    wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg);
-                    if (wstate->other_modes.z_update_en)
-                        z_store(zbcur, sz, dzpixenc);
-                }
+                wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
+                if (wstate->other_modes.z_update_en)
+                    z_store(zbcur, sz, dzpixenc);
             }
+            else if (i >= wstate->last_overwriting_scanline)
+                rejected_hbwrite_1cycle(wstate, cdith, blend_en, prewrap, curpixel, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
 
             s += dsinc;
             t += dtinc;
@@ -570,6 +743,9 @@ static void render_spans_1cycle_notexel1(struct rdp_state* wstate, int start, in
         }
         }
     }
+
+    if (delayedhbwidx >= 0 && flip && wstate->fb_size == PIXEL_SIZE_8BIT)
+        rdram_complete_delayed_hbwrites(delayedhbwidx);
 }
 
 
@@ -609,12 +785,12 @@ static void render_spans_1cycle_notex(struct rdp_state* wstate, int start, int e
         xinc = -1;
     }
 
-    uint16_t dzpix;
+    int dzpix;
     if (!wstate->other_modes.z_source_sel)
-        dzpix = (uint16_t)wstate->spans_dzpix;
+        dzpix = wstate->spans_dzpix;
     else
     {
-        dzpix = (uint16_t)wstate->primitive_delta_z;
+        dzpix = wstate->primitive_delta_z;
         dzinc = wstate->spans_cdz = wstate->spans_dzdy = 0;
     }
     int dzpixenc = dz_compress(dzpix);
@@ -625,7 +801,9 @@ static void render_spans_1cycle_notex(struct rdp_state* wstate, int start, int e
     int xstart, xend, xendsc;
     int curpixel = 0;
     int x, length, scdiff;
-    uint32_t fir, fig, fib;
+    uint32_t fir = 0, fig = 0, fib = 0;
+    int delayedhbwidx = -1;
+    int wen;
 
     for (i = start; i <= end; i++)
     {
@@ -687,15 +865,21 @@ static void render_spans_1cycle_notex(struct rdp_state* wstate, int start, int e
             combiner_1cycle(wstate, adith, &curpixel_cvg);
 
             wstate->fbread1_ptr(wstate, curpixel, &curpixel_memcvg);
-            if (z_compare(wstate, zbcur, sz, dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg))
+
+            wen = z_compare(wstate, zbcur, sz, (uint16_t)dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
+
+            if (wen)
+                wen = blender_1cycle(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap, curpixel_cvg, curpixel_cvbit);
+
+            if (wen)
             {
-                if (blender_1cycle(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap, curpixel_cvg, curpixel_cvbit))
-                {
-                    wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg);
-                    if (wstate->other_modes.z_update_en)
-                        z_store(zbcur, sz, dzpixenc);
-                }
+                wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
+                if (wstate->other_modes.z_update_en)
+                    z_store(zbcur, sz, dzpixenc);
             }
+            else if (i >= wstate->last_overwriting_scanline)
+                rejected_hbwrite_1cycle(wstate, cdith, blend_en, prewrap, curpixel, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
+
             r += drinc;
             g += dginc;
             b += dbinc;
@@ -708,6 +892,9 @@ static void render_spans_1cycle_notex(struct rdp_state* wstate, int start, int e
         }
         }
     }
+
+    if (delayedhbwidx >= 0 && flip && wstate->fb_size == PIXEL_SIZE_8BIT)
+        rdram_complete_delayed_hbwrites(delayedhbwidx);
 }
 
 static void render_spans_2cycle_complete(struct rdp_state* wstate, int start, int end, int tilenum, int flip)
@@ -718,8 +905,8 @@ static void render_spans_2cycle_complete(struct rdp_state* wstate, int start, in
     uint8_t offy = 0;
     int32_t prelodfrac;
     struct color nexttexel1_color;
-    uint32_t blend_en;
-    uint32_t prewrap;
+    uint32_t blend_en = 0;
+    uint32_t prewrap = 0;
     uint32_t curpixel_cvg = 0, curpixel_cvbit = 0, curpixel_memcvg = 0;
     uint32_t nextpixel_cvg;
     uint32_t acalpha;
@@ -760,12 +947,12 @@ static void render_spans_2cycle_complete(struct rdp_state* wstate, int start, in
         xinc = -1;
     }
 
-    uint16_t dzpix;
+    int dzpix;
     if (!wstate->other_modes.z_source_sel)
-        dzpix = (uint16_t)wstate->spans_dzpix;
+        dzpix = wstate->spans_dzpix;
     else
     {
-        dzpix = (uint16_t)wstate->primitive_delta_z;
+        dzpix = wstate->primitive_delta_z;
         dzinc = wstate->spans_cdz = wstate->spans_dzdy = 0;
     }
     int dzpixenc = dz_compress(dzpix);
@@ -777,10 +964,11 @@ static void render_spans_2cycle_complete(struct rdp_state* wstate, int start, in
     int xstart, xend, xendsc;
     int sss = 0, sst = 0;
     uint32_t curpixel = 0;
-    int wen;
+    int wen = 0;
 
     int x, length, scdiff, lodlength;
     uint32_t fir, fig, fib;
+    int delayedhbwidx = -1;
 
     for (i = start; i <= end; i++)
     {
@@ -909,18 +1097,15 @@ static void render_spans_2cycle_complete(struct rdp_state* wstate, int start, in
 
             wstate->fbread2_ptr(wstate, curpixel, &curpixel_memcvg);
 
-
-            wen = z_compare(wstate, zbcur, sz, dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
+            wen = z_compare(wstate, zbcur, sz, (uint16_t)dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
 
             if (wen)
-                wen &= blender_2cycle_cycle0(wstate, curpixel_cvg, curpixel_cvbit);
-            else
-                wstate->memory_color = wstate->pre_memory_color;
+                wen = blender_2cycle_cycle0(wstate, curpixel_cvg, curpixel_cvbit);
 
+            if (!wen && i >= wstate->last_overwriting_scanline)
+                blender_2cycle_cycle0_gval(wstate, curpixel);
 
-
-
-
+            wstate->memory_color = wstate->pre_memory_color;
 
             x += xinc;
 
@@ -949,20 +1134,17 @@ static void render_spans_2cycle_complete(struct rdp_state* wstate, int start, in
             combiner_2cycle_cycle0(wstate, adith, nextpixel_cvg, &acalpha);
 
             if (wen)
+                wen = alpha_compare(wstate, acalpha);
+
+            if (wen)
             {
-                wen &= alpha_compare(wstate, acalpha);
-
-
-
-
-                if (wen)
-                {
-                    blender_2cycle_cycle1(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap);
-                    wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg);
-                    if (wstate->other_modes.z_update_en)
-                        z_store(zbcur, sz, dzpixenc);
-                }
+                blender_2cycle_cycle1(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap);
+                wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
+                if (wstate->other_modes.z_update_en)
+                    z_store(zbcur, sz, dzpixenc);
             }
+            else if (i >= wstate->last_overwriting_scanline)
+                rejected_hbwrite_2cycle(wstate, cdith, blend_en, prewrap, curpixel, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
 
             if (wstate->other_modes.f.getditherlevel < 2)
                 get_dither_noise(wstate, x, i, &cdith, &adith);
@@ -981,6 +1163,9 @@ static void render_spans_2cycle_complete(struct rdp_state* wstate, int start, in
         }
         }
     }
+
+    if (delayedhbwidx >= 0 && flip && wstate->fb_size == PIXEL_SIZE_8BIT)
+        rdram_complete_delayed_hbwrites(delayedhbwidx);
 }
 
 
@@ -1030,12 +1215,12 @@ static void render_spans_2cycle_notexelnext(struct rdp_state* wstate, int start,
         xinc = -1;
     }
 
-    uint16_t dzpix;
+    int dzpix;
     if (!wstate->other_modes.z_source_sel)
-        dzpix = (uint16_t)wstate->spans_dzpix;
+        dzpix = wstate->spans_dzpix;
     else
     {
-        dzpix = (uint16_t)wstate->primitive_delta_z;
+        dzpix = wstate->primitive_delta_z;
         dzinc = wstate->spans_cdz = wstate->spans_dzdy = 0;
     }
     int dzpixenc = dz_compress(dzpix);
@@ -1051,6 +1236,7 @@ static void render_spans_2cycle_notexelnext(struct rdp_state* wstate, int start,
 
     int x, length, scdiff;
     uint32_t fir, fig, fib;
+    int delayedhbwidx = -1;
 
     for (i = start; i <= end; i++)
     {
@@ -1136,12 +1322,15 @@ static void render_spans_2cycle_notexelnext(struct rdp_state* wstate, int start,
 
             wstate->fbread2_ptr(wstate, curpixel, &curpixel_memcvg);
 
-            wen = z_compare(wstate, zbcur, sz, dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
+            wen = z_compare(wstate, zbcur, sz, (uint16_t)dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
 
             if (wen)
-                wen &= blender_2cycle_cycle0(wstate, curpixel_cvg, curpixel_cvbit);
-            else
-                wstate->memory_color = wstate->pre_memory_color;
+                wen = blender_2cycle_cycle0(wstate, curpixel_cvg, curpixel_cvbit);
+
+            if (!wen && i >= wstate->last_overwriting_scanline)
+                blender_2cycle_cycle0_gval(wstate, curpixel);
+
+            wstate->memory_color = wstate->pre_memory_color;
 
             x += xinc;
 
@@ -1175,17 +1364,18 @@ static void render_spans_2cycle_notexelnext(struct rdp_state* wstate, int start,
             combiner_2cycle_cycle0(wstate, adith, nextpixel_cvg, &acalpha);
 
             if (wen)
-            {
-                wen &= alpha_compare(wstate, acalpha);
+                wen = alpha_compare(wstate, acalpha);
 
-                if (wen)
-                {
-                    blender_2cycle_cycle1(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap);
-                    wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg);
-                    if (wstate->other_modes.z_update_en)
-                        z_store(zbcur, sz, dzpixenc);
-                }
+            if (wen)
+            {
+                blender_2cycle_cycle1(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap);
+                wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
+                if (wstate->other_modes.z_update_en)
+                    z_store(zbcur, sz, dzpixenc);
             }
+            else if (i >= wstate->last_overwriting_scanline)
+                rejected_hbwrite_2cycle(wstate, cdith, blend_en, prewrap, curpixel, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
+
 
             if (wstate->other_modes.f.getditherlevel < 2)
                 get_dither_noise(wstate, x, i, &cdith, &adith);
@@ -1199,6 +1389,9 @@ static void render_spans_2cycle_notexelnext(struct rdp_state* wstate, int start,
         }
         }
     }
+
+    if (delayedhbwidx >= 0 && flip && wstate->fb_size == PIXEL_SIZE_8BIT)
+        rdram_complete_delayed_hbwrites(delayedhbwidx);
 }
 
 
@@ -1246,12 +1439,12 @@ static void render_spans_2cycle_notexel1(struct rdp_state* wstate, int start, in
         xinc = -1;
     }
 
-    uint16_t dzpix;
+    int dzpix;
     if (!wstate->other_modes.z_source_sel)
-        dzpix = (uint16_t)wstate->spans_dzpix;
+        dzpix = wstate->spans_dzpix;
     else
     {
-        dzpix = (uint16_t)wstate->primitive_delta_z;
+        dzpix = wstate->primitive_delta_z;
         dzinc = wstate->spans_cdz = wstate->spans_dzdy = 0;
     }
     int dzpixenc = dz_compress(dzpix);
@@ -1267,6 +1460,7 @@ static void render_spans_2cycle_notexel1(struct rdp_state* wstate, int start, in
 
     int x, length, scdiff;
     uint32_t fir, fig, fib;
+    int delayedhbwidx = -1;
 
     for (i = start; i <= end; i++)
     {
@@ -1351,12 +1545,15 @@ static void render_spans_2cycle_notexel1(struct rdp_state* wstate, int start, in
 
             wstate->fbread2_ptr(wstate, curpixel, &curpixel_memcvg);
 
-            wen = z_compare(wstate, zbcur, sz, dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
+            wen = z_compare(wstate, zbcur, sz, (uint16_t)dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
 
             if (wen)
-                wen &= blender_2cycle_cycle0(wstate, curpixel_cvg, curpixel_cvbit);
-            else
-                wstate->memory_color = wstate->pre_memory_color;
+                wen = blender_2cycle_cycle0(wstate, curpixel_cvg, curpixel_cvbit);
+
+            if (!wen && i >= wstate->last_overwriting_scanline)
+                blender_2cycle_cycle0_gval(wstate, curpixel);
+
+            wstate->memory_color = wstate->pre_memory_color;
 
             x += xinc;
 
@@ -1389,17 +1586,17 @@ static void render_spans_2cycle_notexel1(struct rdp_state* wstate, int start, in
             combiner_2cycle_cycle0(wstate, adith, nextpixel_cvg, &acalpha);
 
             if (wen)
-            {
-                wen &= alpha_compare(wstate, acalpha);
+                wen = alpha_compare(wstate, acalpha);
 
-                if (wen)
-                {
-                    blender_2cycle_cycle1(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap);
-                    wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg);
-                    if (wstate->other_modes.z_update_en)
-                        z_store(zbcur, sz, dzpixenc);
-                }
+            if (wen)
+            {
+                blender_2cycle_cycle1(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap);
+                wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
+                if (wstate->other_modes.z_update_en)
+                    z_store(zbcur, sz, dzpixenc);
             }
+            else if (i >= wstate->last_overwriting_scanline)
+                rejected_hbwrite_2cycle(wstate, cdith, blend_en, prewrap, curpixel, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
 
             if (wstate->other_modes.f.getditherlevel < 2)
                 get_dither_noise(wstate, x, i, &cdith, &adith);
@@ -1413,6 +1610,9 @@ static void render_spans_2cycle_notexel1(struct rdp_state* wstate, int start, in
         }
         }
     }
+
+    if (delayedhbwidx >= 0 && flip && wstate->fb_size == PIXEL_SIZE_8BIT)
+        rdram_complete_delayed_hbwrites(delayedhbwidx);
 }
 
 
@@ -1453,12 +1653,12 @@ static void render_spans_2cycle_notex(struct rdp_state* wstate, int start, int e
         xinc = -1;
     }
 
-    uint16_t dzpix;
+    int dzpix;
     if (!wstate->other_modes.z_source_sel)
-        dzpix = (uint16_t)wstate->spans_dzpix;
+        dzpix = wstate->spans_dzpix;
     else
     {
-        dzpix = (uint16_t)wstate->primitive_delta_z;
+        dzpix = wstate->primitive_delta_z;
         dzinc = wstate->spans_cdz = wstate->spans_dzdy = 0;
     }
     int dzpixenc = dz_compress(dzpix);
@@ -1473,6 +1673,7 @@ static void render_spans_2cycle_notex(struct rdp_state* wstate, int start, int e
 
     int x, length, scdiff;
     uint32_t fir, fig, fib;
+    int delayedhbwidx = -1;
 
     for (i = start; i <= end; i++)
     {
@@ -1542,12 +1743,15 @@ static void render_spans_2cycle_notex(struct rdp_state* wstate, int start, int e
 
             wstate->fbread2_ptr(wstate, curpixel, &curpixel_memcvg);
 
-            wen = z_compare(wstate, zbcur, sz, dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
+            wen = z_compare(wstate, zbcur, sz, (uint16_t)dzpix, dzpixenc, &blend_en, &prewrap, &curpixel_cvg, curpixel_memcvg);
 
             if (wen)
-                wen &= blender_2cycle_cycle0(wstate, curpixel_cvg, curpixel_cvbit);
-            else
-                wstate->memory_color = wstate->pre_memory_color;
+                wen = blender_2cycle_cycle0(wstate, curpixel_cvg, curpixel_cvbit);
+
+            if (!wen && i >= wstate->last_overwriting_scanline)
+                blender_2cycle_cycle0_gval(wstate, curpixel);
+
+            wstate->memory_color = wstate->pre_memory_color;
 
             x += xinc;
 
@@ -1568,17 +1772,18 @@ static void render_spans_2cycle_notex(struct rdp_state* wstate, int start, int e
             combiner_2cycle_cycle0(wstate, adith, nextpixel_cvg, &acalpha);
 
             if (wen)
-            {
-                wen &= alpha_compare(wstate, acalpha);
+                wen = alpha_compare(wstate, acalpha);
 
-                if (wen)
-                {
-                    blender_2cycle_cycle1(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap);
-                    wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg);
-                    if (wstate->other_modes.z_update_en)
-                        z_store(zbcur, sz, dzpixenc);
-                }
+            if (wen)
+            {
+                blender_2cycle_cycle1(wstate, &fir, &fig, &fib, cdith, blend_en, prewrap);
+                wstate->fbwrite_ptr(wstate, curpixel, fir, fig, fib, blend_en, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
+                if (wstate->other_modes.z_update_en)
+                    z_store(zbcur, sz, dzpixenc);
             }
+            else if (i >= wstate->last_overwriting_scanline)
+                rejected_hbwrite_2cycle(wstate, cdith, blend_en, prewrap, curpixel, curpixel_cvg, curpixel_memcvg, flip, &delayedhbwidx);
+
 
             if (wstate->other_modes.f.getditherlevel < 2)
                 get_dither_noise(wstate, x, i, &cdith, &adith);
@@ -1592,6 +1797,9 @@ static void render_spans_2cycle_notex(struct rdp_state* wstate, int start, int e
         }
         }
     }
+
+    if (delayedhbwidx >= 0 && flip && wstate->fb_size == PIXEL_SIZE_8BIT)
+        rdram_complete_delayed_hbwrites(delayedhbwidx);
 }
 
 
@@ -1614,6 +1822,7 @@ static void render_spans_fill(struct rdp_state* wstate, int start, int end, int 
     int prevxstart;
     int curpixel = 0;
     int x, length;
+    int delayedhbwidx = -1;
 
     for (i = start; i <= end; i++)
     {
@@ -1645,23 +1854,7 @@ static void render_spans_fill(struct rdp_state* wstate, int start, int end, int 
 
             for (j = 0; j <= length; j++)
             {
-
-                switch(wstate->fb_size)
-                {
-                case 0:
-                    fbfill_4(wstate, curpixel);
-                    break;
-                case 1:
-                    fbfill_8(wstate, curpixel);
-                    break;
-                case 2:
-                    fbfill_16(wstate, curpixel);
-                    break;
-                case 3:
-                default:
-                    fbfill_32(wstate, curpixel);
-                    break;
-                }
+                wstate->fbfill_ptr(wstate, curpixel, flip, &delayedhbwidx);
 
                 x += xinc;
                 curpixel += xinc;
@@ -1678,6 +1871,9 @@ static void render_spans_fill(struct rdp_state* wstate, int start, int end, int 
             }
         }
     }
+
+    if (delayedhbwidx >= 0 && flip && wstate->fb_size == PIXEL_SIZE_8BIT)
+        rdram_complete_delayed_hbwrites(delayedhbwidx);
 }
 
 static void render_spans_copy(struct rdp_state* wstate, int start, int end, int tilenum, int flip)
@@ -1727,6 +1923,7 @@ static void render_spans_copy(struct rdp_state* wstate, int start, int end, int 
     int bytesperpixel = (wstate->fb_size == PIXEL_SIZE_4BIT) ? 1 : (1 << (wstate->fb_size - 1));
     uint32_t fbendptr = 0;
     int32_t threshold, currthreshold;
+    int delayedhbwidx = -1;
 
 #define PIXELS_TO_BYTES_SPECIAL4(pix, siz) ((siz) ? PIXELS_TO_BYTES(pix, siz) : (pix))
 
@@ -1818,9 +2015,8 @@ static void render_spans_copy(struct rdp_state* wstate, int start, int end, int 
             {
                 tempbyte = (uint8_t)((copyqword >> (k << 3)) & 0xff);
                 if (alphamask & (1 << k))
-                {
-                    PAIRWRITE8(tempdword, tempbyte);
-                }
+                    rdram_write_pair8(tempdword, tempbyte, flip, &delayedhbwidx);
+
                 k--;
                 tempdword += xinc;
                 copywmask--;
@@ -1833,6 +2029,9 @@ static void render_spans_copy(struct rdp_state* wstate, int start, int end, int 
         }
         }
     }
+
+    if (delayedhbwidx >= 0 && flip && wstate->fb_size == PIXEL_SIZE_8BIT)
+        rdram_complete_delayed_hbwrites(delayedhbwidx);
 }
 
 static void edgewalker_for_prims(struct rdp_state* wstate, int32_t* ewdata)
@@ -1855,6 +2054,14 @@ static void edgewalker_for_prims(struct rdp_state* wstate, int32_t* ewdata)
         wstate->other_modes.f.stalederivs = 0;
     }
 
+    if (wstate->fb_size == PIXEL_SIZE_8BIT)
+    {
+        rdram_hidden_old[0] &= ~2;
+        rdram_hidden_old[4] &= ~2;
+    }
+
+    int oldhb_diff = wstate->fb_size == PIXEL_SIZE_16BIT ? 7 : 3;
+    wstate->last_overwriting_scanline = -1;
 
     flip = (ewdata[0] & 0x800000) != 0;
     wstate->max_level = (ewdata[0] >> 19) & 7;
@@ -2188,8 +2395,14 @@ static void edgewalker_for_prims(struct rdp_state* wstate, int32_t* ewdata)
             {
                 wstate->span[j].lx = maxxmx;
                 wstate->span[j].rx = minxhx;
-                wstate->span[j].validline  = !allinval && !allover && !allunder && (!wstate->scfield || (wstate->scfield && !(wstate->sckeepodd ^ (j & 1)))) && (!wstate->stride || j % wstate->stride == wstate->offset);
+                wstate->span[j].validline  = !allinval && !allover && !allunder && (!wstate->scfield || (wstate->scfield && !(wstate->sckeepodd ^ (j & 1))));
 
+                if (wstate->span[j].validline && wstate->fb_size > PIXEL_SIZE_8BIT)
+                    if ((wstate->span[j].lx - wstate->span[j].rx) >= oldhb_diff)
+                        wstate->last_overwriting_scanline = j;
+
+                // skip line if not assigned to this worker
+                wstate->span[j].validline &= (!wstate->stride || j % wstate->stride == wstate->offset);
             }
 
 
@@ -2275,7 +2488,14 @@ static void edgewalker_for_prims(struct rdp_state* wstate, int32_t* ewdata)
             {
                 wstate->span[j].lx = minxmx;
                 wstate->span[j].rx = maxxhx;
-                wstate->span[j].validline  = !allinval && !allover && !allunder && (!wstate->scfield || (wstate->scfield && !(wstate->sckeepodd ^ (j & 1)))) && (!wstate->stride || j % wstate->stride == wstate->offset);
+                wstate->span[j].validline  = !allinval && !allover && !allunder && (!wstate->scfield || (wstate->scfield && !(wstate->sckeepodd ^ (j & 1))));
+
+                if (wstate->span[j].validline && wstate->fb_size > PIXEL_SIZE_8BIT)
+                    if ((wstate->span[j].rx - wstate->span[j].lx) >= oldhb_diff)
+                        wstate->last_overwriting_scanline = j;
+
+                // skip line if not assigned to this worker
+                wstate->span[j].validline &= (!wstate->stride || j % wstate->stride == wstate->offset);
             }
 
         }

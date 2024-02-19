@@ -27,6 +27,8 @@
 #define KEY_VI_HIDE_OVERSCAN "hide_overscan"
 #define KEY_VI_EXCLUSIVE "exclusive"
 #define KEY_VI_VSYNC "vsync"
+#define KEY_VI_INT_SCALING "integer_scaling"
+#define KEY_BUSYLOOP "busyloop"
 
 #define KEY_DP_COMPAT "compat"
 
@@ -49,6 +51,8 @@ static HWND dlg_check_vi_widescreen;
 static HWND dlg_check_vi_overscan;
 static HWND dlg_check_vi_exclusive;
 static HWND dlg_check_vi_vsync;
+static HWND dlg_check_vi_integer_scaling;
+static HWND dlg_check_vi_busyloop;
 static HWND dlg_combo_dp_compat;
 static HWND dlg_spin_workers;
 static HWND dlg_edit_workers;
@@ -97,8 +101,9 @@ INT_PTR CALLBACK config_dialog_proc(HWND hwnd, UINT iMessage, WPARAM wParam, LPA
             config_dialog_fill_combo(dlg_combo_vi_mode, vi_mode_strings, VI_MODE_NUM, config.vi.mode);
 
             char* vi_interp_strings[] = {
-                "Nearest-neighbor", // VI_INTERP_NEAREST
-                "Linear"            // VI_INTERP_LINEAR
+                "Blocky (nearest-neighbor)",    // VI_INTERP_NEAREST
+                "Blurry (bilinear)",            // VI_INTERP_LINEAR
+                "Soft (bilinear + NN)"          // VI_INTERP_HYBRID
             };
 
             dlg_combo_vi_interp = GetDlgItem(hwnd, IDC_COMBO_VI_INTERP);
@@ -118,6 +123,8 @@ INT_PTR CALLBACK config_dialog_proc(HWND hwnd, UINT iMessage, WPARAM wParam, LPA
             CONFIG_DLG_INIT_CHECKBOX(IDC_CHECK_VI_OVERSCAN, dlg_check_vi_overscan, config.vi.hide_overscan);
             CONFIG_DLG_INIT_CHECKBOX(IDC_CHECK_VI_EXCLUSIVE, dlg_check_vi_exclusive, config.vi.exclusive);
             CONFIG_DLG_INIT_CHECKBOX(IDC_CHECK_VI_VSYNC, dlg_check_vi_vsync, config.vi.vsync);
+            CONFIG_DLG_INIT_CHECKBOX(IDC_CHECK_VI_INTEGER_SCALING, dlg_check_vi_integer_scaling, config.vi.integer_scaling);
+            CONFIG_DLG_INIT_CHECKBOX(IDC_CHECK_BUSYLOOP, dlg_check_vi_busyloop, config.busyloop);
 
             dlg_edit_workers = GetDlgItem(hwnd, IDC_EDIT_WORKERS);
             SetDlgItemInt(hwnd, IDC_EDIT_WORKERS, config.num_workers, FALSE);
@@ -158,6 +165,8 @@ INT_PTR CALLBACK config_dialog_proc(HWND hwnd, UINT iMessage, WPARAM wParam, LPA
                     config.vi.hide_overscan = SendMessage(dlg_check_vi_overscan, BM_GETCHECK, 0, 0);
                     config.vi.exclusive = SendMessage(dlg_check_vi_exclusive, BM_GETCHECK, 0, 0);
                     config.vi.vsync = SendMessage(dlg_check_vi_vsync, BM_GETCHECK, 0, 0);
+                    config.vi.integer_scaling = SendMessage(dlg_check_vi_integer_scaling, BM_GETCHECK, 0, 0);
+                    config.busyloop = SendMessage(dlg_check_vi_busyloop, BM_GETCHECK, 0, 0);
                     config.dp.compat = SendMessage(dlg_combo_dp_compat, CB_GETCURSEL, 0, 0);
                     config.parallel = SendMessage(dlg_check_multithread, BM_GETCHECK, 0, 0);
                     config.num_workers = GetDlgItemInt(hwnd, IDC_EDIT_WORKERS, FALSE, FALSE);
@@ -202,6 +211,10 @@ static void config_handle(const char* key, const char* value, const char* sectio
             config.vi.exclusive = strtol(value, NULL, 0) != 0;
         } else if (!_strcmpi(key, KEY_VI_VSYNC)) {
             config.vi.vsync = strtol(value, NULL, 0) != 0;
+        } else if (!_strcmpi(key, KEY_VI_INT_SCALING)) {
+            config.vi.integer_scaling = strtol(value, NULL, 0) != 0;
+        } else if (!_strcmpi(key, KEY_BUSYLOOP)) {
+            config.busyloop = strtol(value, NULL, 0) != 0;
         }
     } else if (!_strcmpi(section, SECTION_DISPLAY_PROCESSOR)) {
         if (!_strcmpi(key, KEY_DP_COMPAT)) {
@@ -311,6 +324,8 @@ bool config_save(void)
     config_write_int32(fp, KEY_VI_HIDE_OVERSCAN, config.vi.hide_overscan);
     config_write_int32(fp, KEY_VI_EXCLUSIVE, config.vi.exclusive);
     config_write_int32(fp, KEY_VI_VSYNC, config.vi.vsync);
+    config_write_int32(fp, KEY_VI_INT_SCALING, config.vi.integer_scaling);
+    config_write_int32(fp, KEY_BUSYLOOP, config.busyloop);
     fputs("\n", fp);
 
     config_write_section(fp, SECTION_DISPLAY_PROCESSOR);

@@ -28,11 +28,13 @@
 #define KEY_SCREEN_HEIGHT "ScreenHeight"
 #define KEY_PARALLEL "Parallel"
 #define KEY_NUM_WORKERS "NumWorkers"
+#define KEY_BUSY_LOOP "BusyLoop"
 
 #define KEY_VI_MODE "ViMode"
 #define KEY_VI_INTERP "ViInterpolation"
 #define KEY_VI_WIDESCREEN "ViWidescreen"
 #define KEY_VI_HIDE_OVERSCAN "ViHideOverscan"
+#define KEY_VI_INTEGER_SCALING "ViIntegerScaling"
 
 #define KEY_DP_COMPAT "DpCompat"
 
@@ -73,8 +75,8 @@ void (*render_callback)(int);
 static m64p_handle configVideoGeneral = NULL;
 static m64p_handle configVideoAngrylionPlus = NULL;
 
-#define PLUGIN_VERSION              0x000100
-#define VIDEO_PLUGIN_API_VERSION    0x020200
+#define PLUGIN_VERSION              0x010600
+#define VIDEO_PLUGIN_API_VERSION    0x020500
 
 extern int32_t win_width;
 extern int32_t win_height;
@@ -101,7 +103,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigGetParamBool = (ptr_ConfigGetParamBool)DLSYM(CoreLibHandle, "ConfigGetParamBool");
 
     ConfigOpenSection("Video-General", &configVideoGeneral);
-    ConfigOpenSection("Video-Angrylion-Plus", &configVideoAngrylionPlus);
+    ConfigOpenSection("Video-AngrylionPlus", &configVideoAngrylionPlus);
 
     ConfigSetDefaultBool(configVideoGeneral, KEY_FULLSCREEN, 0, "Use fullscreen mode if True, or windowed mode if False");
     ConfigSetDefaultInt(configVideoGeneral, KEY_SCREEN_WIDTH, 640, "Width of output window or fullscreen width");
@@ -113,14 +115,16 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
 
     ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_PARALLEL, config.parallel, "Distribute rendering between multiple processors if True");
     ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_NUM_WORKERS, config.num_workers, "Rendering Workers (0=Use all logical processors)");
+    ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_BUSY_LOOP, config.busyloop, "Use a busyloop while waiting for work");
     ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_VI_MODE, config.vi.mode, "VI mode (0=Filtered, 1=Unfiltered, 2=Depth, 3=Coverage)");
-    ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_VI_INTERP, config.vi.interp, "Scaling interpolation type (0=NN, 1=Linear)");
+    ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_VI_INTERP, config.vi.interp, "Scaling interpolation type (0=Blocky (Nearest-neighbor), 1=Blurry (Bilinear), 2=Soft (Bilinear + Nearest-neighbor))");
     ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_VI_WIDESCREEN, config.vi.widescreen, "Use anamorphic 16:9 output mode if True");
     ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_VI_HIDE_OVERSCAN, config.vi.hide_overscan, "Hide overscan area in filteded mode if True");
+    ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_VI_INTEGER_SCALING, config.vi.integer_scaling, "Display upscaled pixels as groups of 1x1, 2x2, 3x3, etc. if True");
     ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_DP_COMPAT, config.dp.compat, "Compatibility mode (0=Fast 1=Moderate 2=Slow");
 
     ConfigSaveSection("Video-General");
-    ConfigSaveSection("Video-Angrylion-Plus");
+    ConfigSaveSection("Video-AngrylionPlus");
 
     plugin_initialized = true;
     return M64ERR_SUCCESS;
@@ -156,7 +160,7 @@ EXPORT m64p_error CALL PluginGetVersion(m64p_plugin_type *PluginType, int *Plugi
     }
 
     if (PluginNamePtr != NULL) {
-        *PluginNamePtr = CORE_NAME;
+        *PluginNamePtr = CORE_BASE_NAME;
     }
 
     if (Capabilities != NULL) {
@@ -200,10 +204,12 @@ EXPORT int CALL RomOpen (void)
 
     config.parallel = ConfigGetParamBool(configVideoAngrylionPlus, KEY_PARALLEL);
     config.num_workers = ConfigGetParamInt(configVideoAngrylionPlus, KEY_NUM_WORKERS);
+    config.busyloop = ConfigGetParamBool(configVideoAngrylionPlus, KEY_BUSY_LOOP);
     config.vi.mode = ConfigGetParamInt(configVideoAngrylionPlus, KEY_VI_MODE);
     config.vi.interp = ConfigGetParamInt(configVideoAngrylionPlus, KEY_VI_INTERP);
     config.vi.widescreen = ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_WIDESCREEN);
     config.vi.hide_overscan = ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_HIDE_OVERSCAN);
+    config.vi.integer_scaling = ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_INTEGER_SCALING);
 
     config.dp.compat = ConfigGetParamInt(configVideoAngrylionPlus, KEY_DP_COMPAT);
 

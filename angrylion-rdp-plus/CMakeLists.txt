@@ -1,10 +1,19 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.9)
 
+option(BUILD_MUPEN64PLUS "Enables build of mupen64plus version" ON)
+option(BUILD_PROJECT64   "Enables build of project64 version" WIN32)
 option(GLES "Set to ON to use OpenGL ES 3.0 renderer instead of OpenGL 3.3 core")
 
 project(angrylion-plus)
 
+include(GNUInstallDirs)
+
 set(OpenGL_GL_PREFERENCE GLVND)
+
+if (BUILD_PROJECT64 AND NOT WIN32)
+    message(WARNING "BUILD_PROJECT64 is ON but not supported on current platform, disabling option")
+    set(BUILD_PROJECT64 OFF)
+endif()
 
 if(GLES)
     message("OpenGL ES 3.0 renderer enabled")
@@ -19,15 +28,13 @@ endif()
 set(CMAKE_MACOSX_RPATH 1)
 
 # check for INTERPROCEDURAL_OPTIMIZATION support
-if((${CMAKE_VERSION} VERSION_EQUAL 3.9) OR (${CMAKE_VERSION} VERSION_GREATER 3.9))
-    cmake_policy(SET CMP0069 NEW)
+cmake_policy(SET CMP0069 NEW)
 
-    include(CheckIPOSupported)
-    check_ipo_supported(RESULT ENABLE_IPO)
-    if(ENABLE_IPO)
-        message("Interprocedural optimizations enabled")
-    endif(ENABLE_IPO)
-endif()
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ENABLE_IPO)
+if(ENABLE_IPO)
+    message("Interprocedural optimizations enabled")
+endif(ENABLE_IPO)
 
 # C++14 is required for the Parallel utility class
 set(CMAKE_CXX_STANDARD 14)
@@ -42,11 +49,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif(NOT CMAKE_BUILD_TYPE)
 
-find_package(Git REQUIRED)
-find_package(PythonInterp 3.2 REQUIRED)
-
 if (NOT ANDROID)
-    find_package(PythonLibs)
     find_package(OpenGL REQUIRED)
 endif()
 
@@ -59,7 +62,7 @@ if ( MSVC )
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /W4 /w14640 /permissive-")
 endif()
 
-set(PATH_SRC "src")
+set(PATH_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # RDP core library
 set(PATH_CORE "${PATH_SRC}/core")
@@ -70,8 +73,9 @@ set(PATH_VERSION "${PATH_CORE}/version.h")
 add_custom_command(
     OUTPUT ${PATH_VERSION}
     COMMAND
-        ${PYTHON_EXECUTABLE}
-        "${CMAKE_SOURCE_DIR}/make_version.py"
+        ${CMAKE_COMMAND} -DPATH_VERSION=${PATH_VERSION}
+        -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/git-version.cmake
     COMMENT "Generate Git version"
 )
 
@@ -115,7 +119,7 @@ endif()
 include_directories(${PATH_SRC})
 
 # Project64 GFX Plugin (Windows only)
-if(WIN32)
+if(BUILD_PROJECT64)
     set(NAME_PLUGIN_ZILMAR ${CMAKE_PROJECT_NAME})
     set(PATH_PLUGIN_ZILMAR "${PATH_SRC}/plugin/zilmar")
 
@@ -126,18 +130,26 @@ if(WIN32)
     set_target_properties(${NAME_PLUGIN_ZILMAR} PROPERTIES PREFIX "")
 
     target_link_libraries(${NAME_PLUGIN_ZILMAR} alp-core alp-output shlwapi ${OPENGL_LIBRARIES})
-endif(WIN32)
+endif(BUILD_PROJECT64)
 
 # Mupen64Plus GFX plugin
-set(NAME_PLUGIN_M64P "mupen64plus-video-${CMAKE_PROJECT_NAME}")
-
-set(PATH_PLUGIN_M64P "${PATH_SRC}/plugin/mupen64plus")
-
-file(GLOB SOURCES_PLUGIN_M64P "${PATH_PLUGIN_M64P}/*.c")
-add_library(${NAME_PLUGIN_M64P} SHARED ${SOURCES_PLUGIN_M64P})
-
-if(NOT ANDROID)
-    set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
-endif()
-
-target_link_libraries(${NAME_PLUGIN_M64P} alp-core alp-output ${CMAKE_THREAD_LIBS_INIT} ${OPENGL_LIBRARIES})
+if(BUILD_MUPEN64PLUS)
+    set(NAME_PLUGIN_M64P "mupen64plus-video-${CMAKE_PROJECT_NAME}")
+    
+    set(PATH_PLUGIN_M64P "${PATH_SRC}/plugin/mupen64plus")
+    
+    file(GLOB SOURCES_PLUGIN_M64P "${PATH_PLUGIN_M64P}/*.c")
+    add_library(${NAME_PLUGIN_M64P} SHARED ${SOURCES_PLUGIN_M64P})
+    
+    if(NOT ANDROID)
+        set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
+    endif()
+    
+    target_link_libraries(${NAME_PLUGIN_M64P} alp-core alp-output ${CMAKE_THREAD_LIBS_INIT} ${OPENGL_LIBRARIES})
+    
+    if(UNIX AND NOT APPLE AND NOT ANDROID)
+        install(TARGETS ${NAME_PLUGIN_M64P}
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/mupen64plus"
+        )
+    endif()
+endif(BUILD_MUPEN64PLUS)

@@ -3,6 +3,7 @@
 
 #include "core/common.h"
 #include "core/msg.h"
+#include "core/version.h"
 
 #include "output/screen.h"
 
@@ -28,7 +29,7 @@ int32_t win_fullscreen;
 
 void* IntGetProcAddress(const char *name)
 {
-    return CoreVideo_GL_GetProcAddress(name);
+    return (void*)CoreVideo_GL_GetProcAddress(name);
 }
 
 void screen_init(struct n64video_config* config)
@@ -49,6 +50,7 @@ void screen_init(struct n64video_config* config)
     CoreVideo_GL_SwapBuffers = (ptr_VidExt_GL_SwapBuffers) DLSYM(CoreLibHandle, "VidExt_GL_SwapBuffers");
 
     CoreVideo_Init();
+    CoreVideo_SetCaption(CORE_NAME);
 
 #ifndef GLES
     CoreVideo_GL_SetAttribute(M64P_GL_CONTEXT_PROFILE_MASK, M64P_GL_CONTEXT_PROFILE_CORE);

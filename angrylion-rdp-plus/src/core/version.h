@@ -1,9 +1,9 @@
 #pragma once
 
 #define GIT_BRANCH "master"
-#define GIT_TAG "r8-39"
-#define GIT_COMMIT_HASH "f1d3b80"
-#define GIT_COMMIT_DATE "2020-12-24"
+#define GIT_TAG "nightly-build"
+#define GIT_COMMIT_HASH "20eaeaf"
+#define GIT_COMMIT_DATE "2023-08-15"
 
 #define CORE_BASE_NAME "angrylion's RDP Plus"
 
