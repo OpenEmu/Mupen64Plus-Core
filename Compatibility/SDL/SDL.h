@@ -49,8 +49,6 @@ void SDL_PumpEvents(void);
 
 void SDL_GL_SwapBuffers(void);
 
-Uint32 SDL_WasInit(Uint32);
-
 __END_DECLS
 
 #endif

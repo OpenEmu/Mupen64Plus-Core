@@ -64,7 +64,8 @@ EXPORT m64p_error CALL CoreStartup(int APIVersion, const char *ConfigPath, const
         return M64ERR_ALREADY_INIT;
 
     /* check wether the caller has already initialized SDL */
-    l_CallerUsingSDL = (SDL_WasInit(0) != 0);
+    // openemu
+    //l_CallerUsingSDL = (SDL_WasInit(0) != 0);
 
     /* very first thing is to set the callback functions for debug info and state changing*/
     SetDebugCallback(DebugCallback, Context);

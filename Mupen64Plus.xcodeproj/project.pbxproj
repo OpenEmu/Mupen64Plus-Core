@@ -515,7 +515,6 @@
 		555FD45D2B82CD2B00E42351 /* glsl_CombinerProgramUniformFactoryFast.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramUniformFactoryFast.cpp; sourceTree = "<group>"; };
 		555FD45F2B82CD5C00E42351 /* glsl_CombinerProgramUniformFactoryCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramUniformFactoryCommon.cpp; sourceTree = "<group>"; };
 		555FD4602B82CD5C00E42351 /* glsl_CombinerProgramUniformFactoryCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_CombinerProgramUniformFactoryCommon.h; sourceTree = "<group>"; };
-		555FD4622B82CE1200E42351 /* SDL_timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_timer.h; sourceTree = "<group>"; };
 		555FD4642B82CFF300E42351 /* glsl_CombinerProgramBuilderFast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_CombinerProgramBuilderFast.h; sourceTree = "<group>"; };
 		555FD4652B82CFF300E42351 /* glsl_CombinerProgramBuilderFast.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramBuilderFast.cpp; sourceTree = "<group>"; };
 		555FD4672B82D02000E42351 /* glsl_CombinerProgramBuilderCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramBuilderCommon.cpp; sourceTree = "<group>"; };
@@ -1333,7 +1332,6 @@
 				87CD091E1B31016400021C64 /* SDL_config.h */,
 				3DCABDC7166C524C002F2066 /* SDL_opengl.h */,
 				3D00F0AB1183E67F002995A1 /* SDL_thread.h */,
-				555FD4622B82CE1200E42351 /* SDL_timer.h */,
 				3D00F07F1183E52F002995A1 /* SDL.h */,
 				3D00F0801183E52F002995A1 /* SDLStubs.m */,
 			);
