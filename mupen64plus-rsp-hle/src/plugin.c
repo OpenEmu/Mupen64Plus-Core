@@ -94,7 +94,7 @@ static ptr_ConfigGetParamString   ConfigGetParamString = NULL;
 static ptr_CoreDoCommand          CoreDoCommand = NULL;
 
 /* local function */
-static void teardown_rsp_fallback()
+static void teardown_rsp_fallback(void)
 {
     if (l_RspFallback != NULL) {
         (*l_PluginShutdown)();

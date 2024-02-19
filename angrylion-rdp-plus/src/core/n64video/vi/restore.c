@@ -143,7 +143,7 @@ static STRICTINLINE void restore_filter32(int* r, int* g, int* b, uint32_t fboff
     *b = bend;
 }
 
-void vi_restore_init()
+void vi_restore_init(void)
 {
     int i;
     for (i = 0; i < 0x400; i++)

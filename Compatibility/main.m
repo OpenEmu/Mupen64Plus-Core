@@ -30,7 +30,7 @@
 
 struct cheat_ctx g_cheat_ctx;
 
-void new_vi()
+void new_vi(void)
 {
     GET_CURRENT_OR_RETURN();
     

@@ -1689,7 +1689,7 @@ enum ogl_LoadStatus
 	ogl_LOAD_SUCCEEDED = 1,
 };
 
-int ogl_LoadFunctions();
+int ogl_LoadFunctions(void);
 
 int ogl_GetMinorVersion(void);
 int ogl_GetMajorVersion(void);

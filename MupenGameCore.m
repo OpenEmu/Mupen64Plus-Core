@@ -152,11 +152,11 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
         return;
 
     dispatch_async(_callbackQueue, ^{
-        NSMutableSet *callbacks = _callbackHandlers[@(paramType)];
+        NSMutableSet *callbacks = self->_callbackHandlers[@(paramType)];
         if(callbacks == nil)
         {
             callbacks = [NSMutableSet set];
-            _callbackHandlers[@(paramType)] = callbacks;
+			self->_callbackHandlers[@(paramType)] = callbacks;
         }
 
         [callbacks addObject:block];
@@ -169,7 +169,7 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
 
     void(^runCallbacksForType)(m64p_core_param) =
     ^(m64p_core_param type){
-        NSMutableSet *callbacks = _callbackHandlers[@(type)];
+        NSMutableSet *callbacks = self->_callbackHandlers[@(type)];
         [callbacks filterUsingPredicate:
          [NSPredicate predicateWithBlock:
           ^ BOOL (BOOL(^evaluatedObject)(m64p_core_param, int), NSDictionary *bindings)
@@ -184,7 +184,7 @@ static void MupenStateCallback(void *context, m64p_core_param paramType, int new
     });
 }
 
-static void *dlopen_myself()
+static void *dlopen_myself(void)
 {
     Dl_info info;
     
@@ -250,7 +250,7 @@ static void MupenAudioSampleRateChanged(int SystemType)
     NSLog(@"[Mupen64Plus] samplerate changed %f -> %f\n", currentRate, current->_sampleRate);
 }
 
-static void MupenAudioLenChanged()
+static void MupenAudioLenChanged(void)
 {
     GET_CURRENT_OR_RETURN();
 

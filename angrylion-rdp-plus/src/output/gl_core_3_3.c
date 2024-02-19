@@ -1471,7 +1471,7 @@ static void ProcExtsFromExtList(void)
 	}
 }
 
-int ogl_LoadFunctions()
+int ogl_LoadFunctions(void)
 {
 	int numFailed = 0;
 	ClearExtensionVars();

@@ -62,7 +62,7 @@ static osal_inline m64p_error netplay_start(const char* host, int port)
     return M64ERR_INCOMPATIBLE;
 }
 
-static osal_inline m64p_error netplay_stop()
+static osal_inline m64p_error netplay_stop(void)
 {
     return M64ERR_INCOMPATIBLE;
 }
@@ -72,7 +72,7 @@ static osal_inline uint8_t netplay_register_player(uint8_t player, uint8_t plugi
     return 0;
 }
 
-static osal_inline int netplay_lag()
+static osal_inline int netplay_lag(void)
 {
     return 0;
 }
@@ -81,7 +81,7 @@ static osal_inline void netplay_set_controller(uint8_t player)
 {
 }
 
-static osal_inline int netplay_is_init()
+static osal_inline int netplay_is_init(void)
 {
     return 0;
 }
@@ -104,7 +104,7 @@ static osal_inline void netplay_check_sync(struct cp0* cp0)
 {
 }
 
-static osal_inline int netplay_next_controller()
+static osal_inline int netplay_next_controller(void)
 {
     return 0;
 }
