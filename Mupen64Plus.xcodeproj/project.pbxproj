@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -3041,7 +3041,7 @@
 				LastUpgradeCheck = 0700;
 			};
 			buildConfigurationList = 1DEB913E08733D840010E9CD /* Build configuration list for PBXProject "Mupen64Plus" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -3465,7 +3465,13 @@
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "\"$(USER_LIBRARY_DIR)/Application Support/OpenEmu/Cores\"";
-				LD_RUNPATH_SEARCH_PATHS = "\"~/Library/Graphics/Quartz Composer Plug-Ins/OpenEmuQC.plugin/Contents/Frameworks/\" \"/Library/Graphics/Quartz Composer Plug-Ins/OpenEmuQC.plugin/Contents/Frameworks/\" ~/Library/Frameworks /Library/Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"\"~/Library/Graphics/Quartz Composer Plug-Ins/OpenEmuQC.plugin/Contents/Frameworks/\"",
+					"\"/Library/Graphics/Quartz Composer Plug-Ins/OpenEmuQC.plugin/Contents/Frameworks/\"",
+					"~/Library/Frameworks",
+					/Library/Frameworks,
+					"@loader_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -3529,7 +3535,13 @@
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "\"$(USER_LIBRARY_DIR)/Application Support/OpenEmu/Cores\"";
-				LD_RUNPATH_SEARCH_PATHS = "\"~/Library/Graphics/Quartz Composer Plug-Ins/OpenEmuQC.plugin/Contents/Frameworks/\" \"/Library/Graphics/Quartz Composer Plug-Ins/OpenEmuQC.plugin/Contents/Frameworks/\" ~/Library/Frameworks /Library/Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"\"~/Library/Graphics/Quartz Composer Plug-Ins/OpenEmuQC.plugin/Contents/Frameworks/\"",
+					"\"/Library/Graphics/Quartz Composer Plug-Ins/OpenEmuQC.plugin/Contents/Frameworks/\"",
+					"~/Library/Frameworks",
+					/Library/Frameworks,
+					"@loader_path/../Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -3759,7 +3771,11 @@
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
-				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/GLideN64/src\" \"$(SRCROOT)/GLideN64/src/inc\" \"$(SRCROOT)/GLideN64/src/osal\"";
+				USER_HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/GLideN64/src\"",
+					"\"$(SRCROOT)/GLideN64/src/inc\"",
+					"\"$(SRCROOT)/GLideN64/src/osal\"",
+				);
 				USE_HEADERMAP = NO;
 			};
 			name = Debug;
@@ -3812,7 +3828,11 @@
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
-				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/GLideN64/src\" \"$(SRCROOT)/GLideN64/src/inc\" \"$(SRCROOT)/GLideN64/src/osal\"";
+				USER_HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/GLideN64/src\"",
+					"\"$(SRCROOT)/GLideN64/src/inc\"",
+					"\"$(SRCROOT)/GLideN64/src/osal\"",
+				);
 				USE_HEADERMAP = NO;
 			};
 			name = Release;
@@ -3857,7 +3877,11 @@
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
-				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/angrylion-rdp-plus\" \"$(SRCROOT)/angrylion-rdp-plus/core\" \"$(SRCROOT)/angrylion-rdp-plus/plugin-mupen64plus\"";
+				USER_HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/angrylion-rdp-plus\"",
+					"\"$(SRCROOT)/angrylion-rdp-plus/core\"",
+					"\"$(SRCROOT)/angrylion-rdp-plus/plugin-mupen64plus\"",
+				);
 			};
 			name = Debug;
 		};
@@ -3901,7 +3925,11 @@
 				PRIVATE_HEADERS_FOLDER_PATH = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "";
-				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/angrylion-rdp-plus\" \"$(SRCROOT)/angrylion-rdp-plus/core\" \"$(SRCROOT)/angrylion-rdp-plus/plugin-mupen64plus\"";
+				USER_HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/angrylion-rdp-plus\"",
+					"\"$(SRCROOT)/angrylion-rdp-plus/core\"",
+					"\"$(SRCROOT)/angrylion-rdp-plus/plugin-mupen64plus\"",
+				);
 			};
 			name = Release;
 		};

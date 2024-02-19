@@ -26,7 +26,7 @@
 
 #ifdef __arm64__
 #include "Neon/3DMathNeon.cpp"
-#include "Neon/CRC_OPT_NEON.cpp"
+#include "CRC32_ARMV8.cpp"
 #include "Neon/gSPNeon.cpp"
 #include "Neon/RSP_LoadMatrixNeon.cpp"
 //#elif __x86_64__
