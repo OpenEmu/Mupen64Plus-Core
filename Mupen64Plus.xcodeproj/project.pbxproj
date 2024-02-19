@@ -53,11 +53,19 @@
 		3DCABDC2166C4CB2002F2066 /* mupen64plus-rsp-hle.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3DCABDB3166C4ACB002F2066 /* mupen64plus-rsp-hle.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		3E82BC481F507B940081AF7B /* DebugDump.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC3E1F507B930081AF7B /* DebugDump.cpp */; };
 		3E82BC491F507B940081AF7B /* Debugger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC3F1F507B930081AF7B /* Debugger.cpp */; };
-		3E82BC4D1F507B940081AF7B /* RSP_LoadMatrix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */; };
 		3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC551F507C380081AF7B /* ColorBufferReader.cpp */; };
-		551FEDF525B6232500B9030D /* new_dynarec.c in Sources */ = {isa = PBXBuildFile; fileRef = 8784175025994FEF002ED39D /* new_dynarec.c */; };
 		551FEEB025B64D9000B9030D /* linkage.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 551FEEAF25B64D9000B9030D /* linkage.o */; };
-		8723F7001F74A36E003E572A /* CRC_OPT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */; };
+		555FD4512B82C99A00E42351 /* is_viewer.c in Sources */ = {isa = PBXBuildFile; fileRef = 555FD4502B82C99A00E42351 /* is_viewer.c */; };
+		555FD4542B82C9CB00E42351 /* cp2.c in Sources */ = {isa = PBXBuildFile; fileRef = 555FD4532B82C9CB00E42351 /* cp2.c */; };
+		555FD45B2B82CB9C00E42351 /* ArchSupport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD45A2B82CB9C00E42351 /* ArchSupport.cpp */; };
+		555FD45E2B82CD2B00E42351 /* glsl_CombinerProgramUniformFactoryFast.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD45D2B82CD2B00E42351 /* glsl_CombinerProgramUniformFactoryFast.cpp */; };
+		555FD4612B82CD5C00E42351 /* glsl_CombinerProgramUniformFactoryCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD45F2B82CD5C00E42351 /* glsl_CombinerProgramUniformFactoryCommon.cpp */; };
+		555FD4662B82CFF300E42351 /* glsl_CombinerProgramBuilderFast.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD4652B82CFF300E42351 /* glsl_CombinerProgramBuilderFast.cpp */; };
+		555FD4692B82D02000E42351 /* glsl_CombinerProgramBuilderCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD4672B82D02000E42351 /* glsl_CombinerProgramBuilderCommon.cpp */; };
+		555FD46C2B82D03800E42351 /* glsl_CombinerProgramBuilderAccurate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD46B2B82D03800E42351 /* glsl_CombinerProgramBuilderAccurate.cpp */; };
+		555FD46F2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD46D2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.cpp */; };
+		55C1C6A42B82D9C100BE1EFA /* vru_controller.c in Sources */ = {isa = PBXBuildFile; fileRef = 55C1C6A22B82D9C100BE1EFA /* vru_controller.c */; };
+		55C1C6A62B82DB5100BE1EFA /* arch_dynarec.c in Sources */ = {isa = PBXBuildFile; fileRef = 55C1C6A52B82DB5100BE1EFA /* arch_dynarec.c */; };
 		8723F7341F74A4D7003E572A /* F3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7061F74A49E003E572A /* F3D.cpp */; };
 		8723F7351F74A4D7003E572A /* F3DAM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7081F74A49E003E572A /* F3DAM.cpp */; };
 		8723F7361F74A4D7003E572A /* F3DBETA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F70A1F74A49E003E572A /* F3DBETA.cpp */; };
@@ -86,7 +94,6 @@
 		8755038F1E74C51D002222F3 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D208E971182550400BEAA42 /* OpenGL.framework */; };
 		875503901E74C51D002222F3 /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC2145C166C6D7F0014251E /* libpng.a */; };
 		875503911E74C51D002222F3 /* OpenEmuBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6D120F61711312600E868A8 /* OpenEmuBase.framework */; };
-		875505091E74C7BF002222F3 /* 3DMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503B01E74C7BE002222F3 /* 3DMath.cpp */; };
 		8755050B1E74C7BF002222F3 /* ColorBufferToRDRAM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503B41E74C7BE002222F3 /* ColorBufferToRDRAM.cpp */; };
 		8755050C1E74C7BF002222F3 /* DepthBufferToRDRAM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503B71E74C7BE002222F3 /* DepthBufferToRDRAM.cpp */; };
 		8755050D1E74C7BF002222F3 /* RDRAMtoColorBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 875503B91E74C7BE002222F3 /* RDRAMtoColorBuffer.cpp */; };
@@ -466,12 +473,10 @@
 		3E82BC341F507B930081AF7B /* Debugger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Debugger.h; sourceTree = "<group>"; };
 		3E82BC3A1F507B930081AF7B /* ZilmarGFX_1_3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZilmarGFX_1_3.h; sourceTree = "<group>"; };
 		3E82BC3B1F507B930081AF7B /* ZlutTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZlutTexture.h; sourceTree = "<group>"; };
-		3E82BC3D1F507B930081AF7B /* CRC_OPT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CRC_OPT.cpp; sourceTree = "<group>"; };
 		3E82BC3E1F507B930081AF7B /* DebugDump.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DebugDump.cpp; sourceTree = "<group>"; };
 		3E82BC3F1F507B930081AF7B /* Debugger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Debugger.cpp; sourceTree = "<group>"; };
 		3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RSP_LoadMatrix.cpp; sourceTree = "<group>"; };
 		3E82BC441F507B940081AF7B /* RSP_LoadMatrixX86.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RSP_LoadMatrixX86.cpp; sourceTree = "<group>"; };
-		3E82BC461F507B940081AF7B /* ZilmarPluginAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZilmarPluginAPI.cpp; sourceTree = "<group>"; };
 		3E82BC511F507C190081AF7B /* ColorBufferToRDRAMStub.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorBufferToRDRAMStub.h; sourceTree = "<group>"; };
 		3E82BC521F507C190081AF7B /* RDRAMtoColorBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RDRAMtoColorBuffer.h; sourceTree = "<group>"; };
 		3E82BC531F507C2A0081AF7B /* ClipPolygon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ClipPolygon.h; sourceTree = "<group>"; };
@@ -497,6 +502,31 @@
 		3E82BC6A1F507CD60081AF7B /* osal_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_files.h; sourceTree = "<group>"; };
 		3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FrameBuffer.cpp; path = OpenGL/FrameBuffer.cpp; sourceTree = "<group>"; };
 		551FEEAF25B64D9000B9030D /* linkage.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = linkage.o; sourceTree = "<group>"; };
+		555FD44F2B82C99A00E42351 /* is_viewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = is_viewer.h; sourceTree = "<group>"; };
+		555FD4502B82C99A00E42351 /* is_viewer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = is_viewer.c; sourceTree = "<group>"; };
+		555FD4522B82C9CB00E42351 /* cp2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cp2.h; sourceTree = "<group>"; };
+		555FD4532B82C9CB00E42351 /* cp2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cp2.c; sourceTree = "<group>"; };
+		555FD4562B82CB5B00E42351 /* gSPNeon.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gSPNeon.cpp; sourceTree = "<group>"; };
+		555FD4572B82CB5B00E42351 /* 3DMathNeon.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = 3DMathNeon.cpp; sourceTree = "<group>"; };
+		555FD4582B82CB5B00E42351 /* RSP_LoadMatrixNeon.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RSP_LoadMatrixNeon.cpp; sourceTree = "<group>"; };
+		555FD4592B82CB5B00E42351 /* CRC_OPT_NEON.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CRC_OPT_NEON.cpp; sourceTree = "<group>"; };
+		555FD45A2B82CB9C00E42351 /* ArchSupport.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ArchSupport.cpp; sourceTree = "<group>"; };
+		555FD45C2B82CD2B00E42351 /* glsl_CombinerProgramUniformFactoryFast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_CombinerProgramUniformFactoryFast.h; sourceTree = "<group>"; };
+		555FD45D2B82CD2B00E42351 /* glsl_CombinerProgramUniformFactoryFast.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramUniformFactoryFast.cpp; sourceTree = "<group>"; };
+		555FD45F2B82CD5C00E42351 /* glsl_CombinerProgramUniformFactoryCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramUniformFactoryCommon.cpp; sourceTree = "<group>"; };
+		555FD4602B82CD5C00E42351 /* glsl_CombinerProgramUniformFactoryCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_CombinerProgramUniformFactoryCommon.h; sourceTree = "<group>"; };
+		555FD4622B82CE1200E42351 /* SDL_timer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_timer.h; sourceTree = "<group>"; };
+		555FD4642B82CFF300E42351 /* glsl_CombinerProgramBuilderFast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_CombinerProgramBuilderFast.h; sourceTree = "<group>"; };
+		555FD4652B82CFF300E42351 /* glsl_CombinerProgramBuilderFast.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramBuilderFast.cpp; sourceTree = "<group>"; };
+		555FD4672B82D02000E42351 /* glsl_CombinerProgramBuilderCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramBuilderCommon.cpp; sourceTree = "<group>"; };
+		555FD4682B82D02000E42351 /* glsl_CombinerProgramBuilderCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_CombinerProgramBuilderCommon.h; sourceTree = "<group>"; };
+		555FD46A2B82D03800E42351 /* glsl_CombinerProgramBuilderAccurate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_CombinerProgramBuilderAccurate.h; sourceTree = "<group>"; };
+		555FD46B2B82D03800E42351 /* glsl_CombinerProgramBuilderAccurate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramBuilderAccurate.cpp; sourceTree = "<group>"; };
+		555FD46D2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramUniformFactoryAccurate.cpp; sourceTree = "<group>"; };
+		555FD46E2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_CombinerProgramUniformFactoryAccurate.h; sourceTree = "<group>"; };
+		55C1C6A22B82D9C100BE1EFA /* vru_controller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vru_controller.c; sourceTree = "<group>"; };
+		55C1C6A32B82D9C100BE1EFA /* vru_controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vru_controller.h; sourceTree = "<group>"; };
+		55C1C6A52B82DB5100BE1EFA /* arch_dynarec.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = arch_dynarec.c; sourceTree = "<group>"; };
 		55E0604525B377BC00521CB0 /* SSE2NEON.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SSE2NEON.h; sourceTree = "<group>"; usesTabs = 0; };
 		8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CRC_OPT.cpp; sourceTree = "<group>"; };
 		8723F7031F74A3A3003E572A /* xxhash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xxhash.h; sourceTree = "<group>"; };
@@ -622,7 +652,6 @@
 		875504091E74C7BE002222F3 /* libpng.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpng.a; sourceTree = "<group>"; };
 		8755040A1E74C7BE002222F3 /* libpng.lib */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpng.lib; sourceTree = "<group>"; };
 		8755040B1E74C7BE002222F3 /* libpngd.lib */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpngd.lib; sourceTree = "<group>"; };
-		8755040C1E74C7BE002222F3 /* libz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libz.a; sourceTree = "<group>"; };
 		8755040D1E74C7BE002222F3 /* zlib.lib */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = zlib.lib; sourceTree = "<group>"; };
 		8755040E1E74C7BE002222F3 /* zlibd.lib */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = zlibd.lib; sourceTree = "<group>"; };
 		8755040F1E74C7BE002222F3 /* mupen64plus-video-glidenhq.mk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "mupen64plus-video-glidenhq.mk"; sourceTree = "<group>"; };
@@ -1216,20 +1245,20 @@
 				08FB77AFFE84173DC02AAC07 /* Classes */,
 				32C88E010371C26100C91783 /* Other Sources */,
 				089C167CFE841241C02AAC07 /* Resources */,
-				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
+				089C1671FE841209C02AAC07 /* Frameworks */,
 				19C28FB8FE9D52D311CA2CBB /* Products */,
 			);
 			name = Mupen64Plus;
 			sourceTree = "<group>";
 		};
-		089C1671FE841209C02AAC07 /* Frameworks and Libraries */ = {
+		089C1671FE841209C02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				C6D120F61711312600E868A8 /* OpenEmuBase.framework */,
 				1058C7ACFEA557BF11CA2CBB /* Linked Frameworks */,
 				1058C7AEFEA557BF11CA2CBB /* Other Frameworks */,
 			);
-			name = "Frameworks and Libraries";
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		089C167CFE841241C02AAC07 /* Resources */ = {
@@ -1304,6 +1333,7 @@
 				87CD091E1B31016400021C64 /* SDL_config.h */,
 				3DCABDC7166C524C002F2066 /* SDL_opengl.h */,
 				3D00F0AB1183E67F002995A1 /* SDL_thread.h */,
+				555FD4622B82CE1200E42351 /* SDL_timer.h */,
 				3D00F07F1183E52F002995A1 /* SDL.h */,
 				3D00F0801183E52F002995A1 /* SDLStubs.m */,
 			);
@@ -1502,6 +1532,8 @@
 				3D00F06C1183E4AA002995A1 /* screenshot.m */,
 				3D00F0BF1183E6FA002995A1 /* vidext.m */,
 				3D8B35D712260F9D00C4C844 /* main.m */,
+				555FD45A2B82CB9C00E42351 /* ArchSupport.cpp */,
+				55C1C6A52B82DB5100BE1EFA /* arch_dynarec.c */,
 			);
 			path = Compatibility;
 			sourceTree = "<group>";
@@ -1519,11 +1551,22 @@
 		3E82BC6B1F507D290081AF7B /* OpenGL */ = {
 			isa = PBXGroup;
 			children = (
+				3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */,
 				87841BAC259B0AB9002ED39D /* GLideN64.cpp */,
 				3E5C54391F52698500323A31 /* Revision.h */,
-				3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */,
 			);
 			name = OpenGL;
+			sourceTree = "<group>";
+		};
+		555FD4552B82CB5B00E42351 /* Neon */ = {
+			isa = PBXGroup;
+			children = (
+				555FD4572B82CB5B00E42351 /* 3DMathNeon.cpp */,
+				555FD4592B82CB5B00E42351 /* CRC_OPT_NEON.cpp */,
+				555FD4562B82CB5B00E42351 /* gSPNeon.cpp */,
+				555FD4582B82CB5B00E42351 /* RSP_LoadMatrixNeon.cpp */,
+			);
+			path = Neon;
 			sourceTree = "<group>";
 		};
 		55E0604425B377BC00521CB0 /* sse2neon */ = {
@@ -1690,18 +1733,6 @@
 		875503AF1E74C7BE002222F3 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				EE2BBC45225AD5370007BF6F /* iob.cpp */,
-				EE2BBC44225AD5370007BF6F /* MemoryStatus.h */,
-				3E82BC331F507B930081AF7B /* DebugDump.h */,
-				3E82BC341F507B930081AF7B /* Debugger.h */,
-				3E82BC3A1F507B930081AF7B /* ZilmarGFX_1_3.h */,
-				3E82BC3B1F507B930081AF7B /* ZlutTexture.h */,
-				3E82BC3D1F507B930081AF7B /* CRC_OPT.cpp */,
-				3E82BC3E1F507B930081AF7B /* DebugDump.cpp */,
-				3E82BC3F1F507B930081AF7B /* Debugger.cpp */,
-				3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */,
-				3E82BC441F507B940081AF7B /* RSP_LoadMatrixX86.cpp */,
-				3E82BC461F507B940081AF7B /* ZilmarPluginAPI.cpp */,
 				875503B01E74C7BE002222F3 /* 3DMath.cpp */,
 				875503B11E74C7BE002222F3 /* 3DMath.h */,
 				875503B31E74C7BE002222F3 /* BufferCopy */,
@@ -1718,8 +1749,12 @@
 				875503C71E74C7BE002222F3 /* convert.h */,
 				8723F6FF1F74A36E003E572A /* CRC_OPT.cpp */,
 				875503C81E74C7BE002222F3 /* CRC.h */,
-				875503C91E74C7BE002222F3 /* CRC32.cpp */,
 				875503CA1E74C7BE002222F3 /* CRC32_ARMV8.cpp */,
+				875503C91E74C7BE002222F3 /* CRC32.cpp */,
+				3E82BC3E1F507B930081AF7B /* DebugDump.cpp */,
+				3E82BC331F507B930081AF7B /* DebugDump.h */,
+				3E82BC3F1F507B930081AF7B /* Debugger.cpp */,
+				3E82BC341F507B930081AF7B /* Debugger.h */,
 				875503CC1E74C7BE002222F3 /* DepthBuffer.cpp */,
 				875503CD1E74C7BE002222F3 /* DepthBuffer.h */,
 				875503CE1E74C7BE002222F3 /* DepthBufferRender */,
@@ -1748,13 +1783,16 @@
 				8755049F1E74C7BF002222F3 /* gSP.cpp */,
 				875504A01E74C7BF002222F3 /* gSP.h */,
 				875504A21E74C7BF002222F3 /* inc */,
+				EE2BBC45225AD5370007BF6F /* iob.cpp */,
+				875504BE1E74C7BF002222F3 /* Log_android.cpp */,
 				875504BC1E74C7BF002222F3 /* Log.cpp */,
 				875504BD1E74C7BF002222F3 /* Log.h */,
-				875504BE1E74C7BF002222F3 /* Log_android.cpp */,
+				EE2BBC44225AD5370007BF6F /* MemoryStatus.h */,
 				875504C01E74C7BF002222F3 /* mupenplus */,
 				875504C61E74C7BF002222F3 /* MupenPlusPluginAPI.cpp */,
 				875504C71E74C7BF002222F3 /* N64.cpp */,
 				875504C81E74C7BF002222F3 /* N64.h */,
+				555FD4552B82CB5B00E42351 /* Neon */,
 				875504C91E74C7BF002222F3 /* NoiseTexture.cpp */,
 				875504CA1E74C7BF002222F3 /* NoiseTexture.h */,
 				875504CB1E74C7BF002222F3 /* osal */,
@@ -1768,6 +1806,8 @@
 				875504D81E74C7BF002222F3 /* PostProcessor.h */,
 				875504D91E74C7BF002222F3 /* RDP.cpp */,
 				875504DA1E74C7BF002222F3 /* RDP.h */,
+				3E82BC431F507B940081AF7B /* RSP_LoadMatrix.cpp */,
+				3E82BC441F507B940081AF7B /* RSP_LoadMatrixX86.cpp */,
 				875504DB1E74C7BF002222F3 /* RSP.cpp */,
 				875504DC1E74C7BF002222F3 /* RSP.h */,
 				875504E11E74C7BF002222F3 /* sdl2_compat.h */,
@@ -1789,11 +1829,13 @@
 				875504F11E74C7BF002222F3 /* VI.h */,
 				875504F21E74C7BF002222F3 /* windows */,
 				875504F81E74C7BF002222F3 /* winlnxdefs.h */,
-				8723F7011F74A3A3003E572A /* xxHash */,
 				875504F91E74C7BF002222F3 /* wst.h */,
+				8723F7011F74A3A3003E572A /* xxHash */,
+				3E82BC3A1F507B930081AF7B /* ZilmarGFX_1_3.h */,
+				875504FC1E74C7BF002222F3 /* ZlutTexture.cpp */,
+				3E82BC3B1F507B930081AF7B /* ZlutTexture.h */,
 				875504FA1E74C7BF002222F3 /* ZilmarGFX_1_3.h */,
 				875504FB1E74C7BF002222F3 /* ZilmarPluginAPI.cpp */,
-				875504FC1E74C7BF002222F3 /* ZlutTexture.cpp */,
 				875504FD1E74C7BF002222F3 /* ZlutTexture.h */,
 			);
 			path = src;
@@ -1911,7 +1953,6 @@
 				875504091E74C7BE002222F3 /* libpng.a */,
 				8755040A1E74C7BE002222F3 /* libpng.lib */,
 				8755040B1E74C7BE002222F3 /* libpngd.lib */,
-				8755040C1E74C7BE002222F3 /* libz.a */,
 				8755040D1E74C7BE002222F3 /* zlib.lib */,
 				8755040E1E74C7BE002222F3 /* zlibd.lib */,
 			);
@@ -2036,10 +2077,22 @@
 				875504651E74C7BF002222F3 /* glsl_CombinerInputs.h */,
 				875504661E74C7BF002222F3 /* glsl_CombinerProgramBuilder.cpp */,
 				875504671E74C7BF002222F3 /* glsl_CombinerProgramBuilder.h */,
+				555FD46B2B82D03800E42351 /* glsl_CombinerProgramBuilderAccurate.cpp */,
+				555FD46A2B82D03800E42351 /* glsl_CombinerProgramBuilderAccurate.h */,
+				555FD4672B82D02000E42351 /* glsl_CombinerProgramBuilderCommon.cpp */,
+				555FD4682B82D02000E42351 /* glsl_CombinerProgramBuilderCommon.h */,
+				555FD4652B82CFF300E42351 /* glsl_CombinerProgramBuilderFast.cpp */,
+				555FD4642B82CFF300E42351 /* glsl_CombinerProgramBuilderFast.h */,
 				875504681E74C7BF002222F3 /* glsl_CombinerProgramImpl.cpp */,
 				875504691E74C7BF002222F3 /* glsl_CombinerProgramImpl.h */,
 				8755046A1E74C7BF002222F3 /* glsl_CombinerProgramUniformFactory.cpp */,
 				8755046B1E74C7BF002222F3 /* glsl_CombinerProgramUniformFactory.h */,
+				555FD46D2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.cpp */,
+				555FD46E2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.h */,
+				555FD45F2B82CD5C00E42351 /* glsl_CombinerProgramUniformFactoryCommon.cpp */,
+				555FD4602B82CD5C00E42351 /* glsl_CombinerProgramUniformFactoryCommon.h */,
+				555FD45D2B82CD2B00E42351 /* glsl_CombinerProgramUniformFactoryFast.cpp */,
+				555FD45C2B82CD2B00E42351 /* glsl_CombinerProgramUniformFactoryFast.h */,
 				87FB3C06214DCFB000A221BE /* glsl_FXAA.cpp */,
 				87FB3C07214DCFB000A221BE /* glsl_FXAA.h */,
 				8755046C1E74C7BF002222F3 /* glsl_ShaderPart.h */,
@@ -2358,6 +2411,8 @@
 				8784176525994FEF002ED39D /* cp0.h */,
 				8784176025994FEF002ED39D /* cp1.c */,
 				8784173325994FEF002ED39D /* cp1.h */,
+				555FD4532B82C9CB00E42351 /* cp2.c */,
+				555FD4522B82C9CB00E42351 /* cp2.h */,
 				8784173E25994FEF002ED39D /* fpu.h */,
 				8784176325994FEF002ED39D /* idec.c */,
 				8784173925994FEF002ED39D /* idec.h */,
@@ -2507,6 +2562,8 @@
 				8784177C25994FEF002ED39D /* eeprom.h */,
 				8784178525994FEF002ED39D /* flashram.c */,
 				8784177F25994FEF002ED39D /* flashram.h */,
+				555FD4502B82C99A00E42351 /* is_viewer.c */,
+				555FD44F2B82C99A00E42351 /* is_viewer.h */,
 				8784177A25994FEF002ED39D /* sram.c */,
 				8784178225994FEF002ED39D /* sram.h */,
 			);
@@ -2519,6 +2576,8 @@
 				8784179225994FEF002ED39D /* game_controller.c */,
 				8784179125994FEF002ED39D /* game_controller.h */,
 				8784178825994FEF002ED39D /* paks */,
+				55C1C6A22B82D9C100BE1EFA /* vru_controller.c */,
+				55C1C6A32B82D9C100BE1EFA /* vru_controller.h */,
 			);
 			path = controllers;
 			sourceTree = "<group>";
@@ -3045,7 +3104,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = /usr/bin/openemu_rb_automation.rb;
+			shellScript = "/usr/bin/openemu_rb_automation.rb\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -3075,14 +3134,12 @@
 			files = (
 				875505761E74C7BF002222F3 /* osal_files_unix.c in Sources */,
 				87841BA2259AF95C002ED39D /* osal_keys_unix.c in Sources */,
-				875505091E74C7BF002222F3 /* 3DMath.cpp in Sources */,
 				8755050E1E74C7BF002222F3 /* Combiner.cpp in Sources */,
 				8755050F1E74C7BF002222F3 /* CombinerKey.cpp in Sources */,
 				875505111E74C7BF002222F3 /* CommonPluginAPI.cpp in Sources */,
 				875505121E74C7BF002222F3 /* Config.cpp in Sources */,
 				875505131E74C7BF002222F3 /* convert.cpp in Sources */,
 				87F3EF981FA439A4007CF75E /* DisplayLoadProgress.cpp in Sources */,
-				8723F7001F74A36E003E572A /* CRC_OPT.cpp in Sources */,
 				875505161E74C7BF002222F3 /* DepthBuffer.cpp in Sources */,
 				875505191E74C7BF002222F3 /* DisplayWindow.cpp in Sources */,
 				875505261E74C7BF002222F3 /* FrameBufferInfo.cpp in Sources */,
@@ -3097,6 +3154,7 @@
 				875505751E74C7BF002222F3 /* NoiseTexture.cpp in Sources */,
 				875505781E74C7BF002222F3 /* PaletteTexture.cpp in Sources */,
 				875505791E74C7BF002222F3 /* Performance.cpp in Sources */,
+				555FD45E2B82CD2B00E42351 /* glsl_CombinerProgramUniformFactoryFast.cpp in Sources */,
 				8755057A1E74C7BF002222F3 /* PostProcessor.cpp in Sources */,
 				8755057B1E74C7BF002222F3 /* RDP.cpp in Sources */,
 				8755057C1E74C7BF002222F3 /* RSP.cpp in Sources */,
@@ -3111,7 +3169,6 @@
 				8755050C1E74C7BF002222F3 /* DepthBufferToRDRAM.cpp in Sources */,
 				8755050D1E74C7BF002222F3 /* RDRAMtoColorBuffer.cpp in Sources */,
 				875505171E74C7BF002222F3 /* ClipPolygon.cpp in Sources */,
-				3E82BC4D1F507B940081AF7B /* RSP_LoadMatrix.cpp in Sources */,
 				875505181E74C7BF002222F3 /* DepthBufferRender.cpp in Sources */,
 				875505101E74C7BF002222F3 /* CommonAPIImpl_common.cpp in Sources */,
 				8755054B1E74C7BF002222F3 /* Context.cpp in Sources */,
@@ -3136,6 +3193,8 @@
 				875505611E74C7BF002222F3 /* opengl_GLInfo.cpp in Sources */,
 				875505621E74C7BF002222F3 /* opengl_Parameters.cpp in Sources */,
 				875505631E74C7BF002222F3 /* opengl_TextureManipulationObjectFactory.cpp in Sources */,
+				555FD4662B82CFF300E42351 /* glsl_CombinerProgramBuilderFast.cpp in Sources */,
+				555FD4692B82D02000E42351 /* glsl_CombinerProgramBuilderCommon.cpp in Sources */,
 				875505641E74C7BF002222F3 /* opengl_UnbufferedDrawer.cpp in Sources */,
 				EE2BBC41225AD5050007BF6F /* GraphicBuffer.cpp in Sources */,
 				875505651E74C7BF002222F3 /* opengl_Utils.cpp in Sources */,
@@ -3144,6 +3203,7 @@
 				875505501E74C7BF002222F3 /* glsl_CombinerProgramImpl.cpp in Sources */,
 				875505511E74C7BF002222F3 /* glsl_CombinerProgramUniformFactory.cpp in Sources */,
 				87FB3C19214DED1800A221BE /* glsl_FXAA.cpp in Sources */,
+				555FD46C2B82D03800E42351 /* glsl_CombinerProgramBuilderAccurate.cpp in Sources */,
 				875505521E74C7BF002222F3 /* glsl_ShaderStorage.cpp in Sources */,
 				875505531E74C7BF002222F3 /* glsl_SpecialShadersFactory.cpp in Sources */,
 				875505541E74C7BF002222F3 /* glsl_Utils.cpp in Sources */,
@@ -3153,6 +3213,7 @@
 				3E82BC491F507B940081AF7B /* Debugger.cpp in Sources */,
 				875505711E74C7BF002222F3 /* Config_mupenplus.cpp in Sources */,
 				875505701E74C7BF002222F3 /* CommonAPIImpl_mupenplus.cpp in Sources */,
+				555FD46F2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.cpp in Sources */,
 				875505721E74C7BF002222F3 /* MupenPlusAPIImpl.cpp in Sources */,
 				3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */,
 				EE2BBC46225AD5380007BF6F /* iob.cpp in Sources */,
@@ -3160,12 +3221,14 @@
 				8723F7341F74A4D7003E572A /* F3D.cpp in Sources */,
 				8723F7351F74A4D7003E572A /* F3DAM.cpp in Sources */,
 				8723F7361F74A4D7003E572A /* F3DBETA.cpp in Sources */,
+				555FD4612B82CD5C00E42351 /* glsl_CombinerProgramUniformFactoryCommon.cpp in Sources */,
 				8723F7371F74A4D7003E572A /* F3DDKR.cpp in Sources */,
 				8723F7381F74A4D7003E572A /* F3DEX.cpp in Sources */,
 				8723F7391F74A4D7003E572A /* F3DEX2.cpp in Sources */,
 				8723F73A1F74A4D7003E572A /* F3DEX2ACCLAIM.cpp in Sources */,
 				8723F73B1F74A4D7003E572A /* F3DEX2CBFD.cpp in Sources */,
 				8723F73C1F74A4D7003E572A /* F3DFLX2.cpp in Sources */,
+				555FD45B2B82CB9C00E42351 /* ArchSupport.cpp in Sources */,
 				8723F73D1F74A4D7003E572A /* F3DGOLDEN.cpp in Sources */,
 				8723F73E1F74A4D7003E572A /* F3DPD.cpp in Sources */,
 				8723F73F1F74A4D7003E572A /* F3DSETA.cpp in Sources */,
@@ -3233,12 +3296,13 @@
 				878416C625994F58002ED39D /* video_capture_backend.c in Sources */,
 				878416D025994F6E002ED39D /* audio_plugin_compat.c in Sources */,
 				878416DA25994F71002ED39D /* input_plugin_compat.c in Sources */,
+				555FD4512B82C99A00E42351 /* is_viewer.c in Sources */,
 				878416E425994FAD002ED39D /* clock_ctime_plus_delta.c in Sources */,
 				878416EE25994FBA002ED39D /* dummy_video_capture.c in Sources */,
 				878416F825994FC7002ED39D /* file_storage.c in Sources */,
 				8784179325995103002ED39D /* af_rtc.c in Sources */,
 				8784179D25995108002ED39D /* cart_rom.c in Sources */,
-				551FEDF525B6232500B9030D /* new_dynarec.c in Sources */,
+				55C1C6A42B82D9C100BE1EFA /* vru_controller.c in Sources */,
 				878417A72599510D002ED39D /* cart.c in Sources */,
 				878417B125995111002ED39D /* eeprom.c in Sources */,
 				878417B225995115002ED39D /* flashram.c in Sources */,
@@ -3273,6 +3337,7 @@
 				878418D325995591002ED39D /* fb.c in Sources */,
 				878418DD25995594002ED39D /* rdp_core.c in Sources */,
 				878418E7259955A2002ED39D /* ri_controller.c in Sources */,
+				55C1C6A62B82DB5100BE1EFA /* arch_dynarec.c in Sources */,
 				878418F1259955B2002ED39D /* rsp_core.c in Sources */,
 				878418FB259955B9002ED39D /* si_controller.c in Sources */,
 				87841905259955BE002ED39D /* vi_controller.c in Sources */,
@@ -3281,6 +3346,7 @@
 				87841A6B259982D8002ED39D /* main.c in Sources */,
 				878419232599569D002ED39D /* rom.c in Sources */,
 				8784192D259956A5002ED39D /* savestates.c in Sources */,
+				555FD4542B82C9CB00E42351 /* cp2.c in Sources */,
 				87841937259956D3002ED39D /* util.c in Sources */,
 				878419412599573B002ED39D /* workqueue.c in Sources */,
 				8784194B25995832002ED39D /* dummy_audio.c in Sources */,
@@ -3384,7 +3450,6 @@
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
 					"$(inherited)",
-					"NEW_DYNAREC=NEW_DYNAREC_ARM64",
 					NO_ASM,
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=x86_64]" = (
@@ -3414,7 +3479,14 @@
 					"-DNOCRYPT",
 					"-DNOUNCRYPT",
 					"-fno-strict-aliasing",
-					"-fvisibility=hidden",
+				);
+				"OTHER_CFLAGS[arch=arm64]" = (
+					"-DIN_OPENEMU",
+					"-DM64P_PARALLEL",
+					"-DNDEBUG",
+					"-DNOCRYPT",
+					"-DNOUNCRYPT",
+					"-fno-strict-aliasing",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -3442,7 +3514,6 @@
 				GCC_PREFIX_HEADER = Mupen64Plus_Prefix.pch;
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
 					"$(inherited)",
-					"NEW_DYNAREC=NEW_DYNAREC_ARM64",
 					NO_ASM,
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=x86_64]" = (
@@ -3472,7 +3543,14 @@
 					"-DNOCRYPT",
 					"-DNOUNCRYPT",
 					"-fno-strict-aliasing",
-					"-fvisibility=hidden",
+				);
+				"OTHER_CFLAGS[arch=arm64]" = (
+					"-DIN_OPENEMU",
+					"-DM64P_PARALLEL",
+					"-DNDEBUG",
+					"-DNOCRYPT",
+					"-DNOUNCRYPT",
+					"-fno-strict-aliasing",
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -3637,7 +3715,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -3649,6 +3727,10 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../DerivedData/OpenEmu/Build/Products/Release\"",
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
+					"$(inherited)",
+					__NEON_OPT,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
@@ -3665,6 +3747,7 @@
 					"\"$(SRCROOT)/png\"",
 					"$(PROJECT_DIR)/GLideN64/src/GLideNHQ/lib",
 				);
+				LLVM_LTO = NO;
 				MACH_O_TYPE = mh_bundle;
 				OTHER_CFLAGS = (
 					"-DMUPENPLUSAPI",
@@ -3685,7 +3768,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -3697,6 +3780,10 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../DerivedData/OpenEmu/Build/Products/Release\"",
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
+					"$(inherited)",
+					__NEON_OPT,
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
@@ -3713,6 +3800,7 @@
 					"\"$(SRCROOT)/png\"",
 					"$(PROJECT_DIR)/GLideN64/src/GLideNHQ/lib",
 				);
+				LLVM_LTO = NO;
 				MACH_O_TYPE = mh_bundle;
 				OTHER_CFLAGS = (
 					"-DMUPENPLUSAPI",

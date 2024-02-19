@@ -26,6 +26,7 @@
 
 #include "SDL.h"
 #include "SDL_thread.h"
+#include "SDL_timer.h"
 #import <OpenEmuBase/OETimingUtils.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -170,4 +171,9 @@ int SDL_SemTryWait(SDL_sem *sem)
 		retval = 0;
 	}
 	return retval;
+}
+
+Uint32 SDL_WasInit(Uint32 notUsed)
+{
+	return 0;
 }

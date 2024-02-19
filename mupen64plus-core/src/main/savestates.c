@@ -43,6 +43,7 @@
 #include "device/device.h"
 #include "main/list.h"
 #include "main/main.h"
+#include "osal/files.h"
 #include "osal/preproc.h"
 #include "osd/osd.h"
 #include "plugin/plugin.h"
@@ -57,7 +58,7 @@ enum { GB_CART_FINGERPRINT_OFFSET = 0x134 };
 enum { DD_DISK_ID_OFFSET = 0x43670 };
 
 static const char* savestate_magic = "M64+SAVE";
-static const int savestate_latest_version = 0x00010800;  /* 1.8 */
+static const int savestate_latest_version = 0x00010900;  /* 1.9 */
 static const unsigned char pj64_magic[4] = { 0xC8, 0xA6, 0xD8, 0x23 };
 
 static savestates_job job = savestates_job_nothing;
@@ -85,31 +86,32 @@ static char *savestates_generate_path(savestates_type type)
     }
     else /* Use the selected savestate slot */
     {
-        char *filename;
+        char *filepath;
+        size_t size = 0;
+
         switch (type)
         {
             case savestates_type_m64p:
-                filename = formatstr("%s.st%d", ROM_SETTINGS.goodname, slot);
+                /* check if old file path exists, if it does then use that */
+                filepath = formatstr("%s%s.st%d", get_savestatepath(), ROM_SETTINGS.goodname, slot);
+                if (get_file_size(filepath, &size) != file_ok || size == 0)
+                {
+                    /* else use new path */
+                    filepath = formatstr("%s%s.st%d", get_savestatepath(), get_savestatefilename(), slot);
+                }
                 break;
             case savestates_type_pj64_zip:
-                filename = formatstr("%s.pj%d.zip", ROM_PARAMS.headername, slot);
+                filepath = formatstr("%s%s.pj%d.zip", get_savestatepath(), ROM_PARAMS.headername, slot);
                 break;
             case savestates_type_pj64_unc:
-                filename = formatstr("%s.pj%d", ROM_PARAMS.headername, slot);
+                filepath = formatstr("%s%s.pj%d", get_savestatepath(), ROM_PARAMS.headername, slot);
                 break;
             default:
-                filename = NULL;
+                filepath = NULL;
                 break;
         }
 
-        if (filename != NULL)
-        {
-            char *filepath = formatstr("%s%s", get_savestatepath(), filename);
-            free(filename);
-            return filepath;
-        }
-        else
-            return NULL;
+        return filepath;
     }
 }
 
@@ -140,6 +142,7 @@ void savestates_inc_slot(void)
 {
     if(++slot>9)
         slot = 0;
+    ConfigSetParameter(g_CoreConfig, "CurrentStateSlot", M64TYPE_INT, &slot);
     StateChanged(M64CORE_SAVESTATE_SLOT, slot);
 }
 
@@ -200,7 +203,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
 
     SDL_LockMutex(savestates_lock);
 
-    f = gzopen(filepath, "rb");
+    f = osal_gzopen(filepath, "rb");
     if(f==NULL)
     {
         main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not open state file: %s", filepath);
@@ -564,7 +567,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
                 COPYARRAY(cam_regs, curr, uint8_t, POCKET_CAM_REGS_COUNT);
             }
 
-            if (ROM_SETTINGS.transferpak && !Controls[i].RawData) {
+            if (ROM_SETTINGS.transferpak && !Controls[i].RawData && (Controls[i].Type == CONT_TYPE_STANDARD)) {
 
                 /* init transferpak state if enabled and not controlled by input plugin */
                 dev->transferpaks[i].enabled = enabled;
@@ -674,7 +677,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
             uint8_t rpk_state = GETDATA(curr, uint8_t);
 
             /* init rumble pak state if enabled and not controlled by the input plugin */
-            if (ROM_SETTINGS.rumble && !Controls[i].RawData) {
+            if (ROM_SETTINGS.rumble && !Controls[i].RawData && (Controls[i].Type == CONT_TYPE_STANDARD)) {
                 set_rumble_reg(&dev->rumblepaks[i], rpk_state);
             }
         }
@@ -709,7 +712,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
                 COPYARRAY(cam_regs, curr, uint8_t, POCKET_CAM_REGS_COUNT);
             }
 
-            if (ROM_SETTINGS.transferpak && !Controls[i].RawData) {
+            if (ROM_SETTINGS.transferpak && !Controls[i].RawData && (Controls[i].Type == CONT_TYPE_STANDARD)) {
 
                 /* init transferpak state if enabled and not controlled by input plugin */
                 dev->transferpaks[i].enabled = enabled;
@@ -868,6 +871,13 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
             dev->cart.flashram.erase_page = GETDATA(curr, uint16_t);
             dev->cart.flashram.mode = GETDATA(curr, uint16_t);
         }
+
+        if (version >= 0x00010900)
+        {
+            /* extra cp0 and cp2 state */
+            *r4300_cp0_latch(&dev->r4300.cp0) = GETDATA(curr, uint64_t);
+            *r4300_cp2_latch(&dev->r4300.cp2) = GETDATA(curr, uint64_t);
+        }
     }
     else
     {
@@ -891,10 +901,10 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
 
             dev->controllers[i].flavor->reset(&dev->controllers[i]);
 
-            if (ROM_SETTINGS.rumble) {
+            if (ROM_SETTINGS.rumble && (Controls[i].Type == CONT_TYPE_STANDARD)) {
                 poweron_rumblepak(&dev->rumblepaks[i]);
             }
-            if (ROM_SETTINGS.transferpak) {
+            if (ROM_SETTINGS.transferpak && (Controls[i].Type == CONT_TYPE_STANDARD)) {
                 poweron_transferpak(&dev->transferpaks[i]);
             }
         }
@@ -1262,10 +1272,10 @@ static int savestates_load_pj64(struct device* dev,
 
         dev->controllers[i].flavor->reset(&dev->controllers[i]);
 
-        if (ROM_SETTINGS.rumble) {
+        if (ROM_SETTINGS.rumble && (Controls[i].Type == CONT_TYPE_STANDARD)) {
             poweron_rumblepak(&dev->rumblepaks[i]);
         }
-        if (ROM_SETTINGS.transferpak) {
+        if (ROM_SETTINGS.transferpak && (Controls[i].Type == CONT_TYPE_STANDARD)) {
             poweron_transferpak(&dev->transferpaks[i]);
         }
     }
@@ -1338,7 +1348,7 @@ static int savestates_load_pj64_unc(struct device* dev, char *filepath)
     FILE *f;
 
     /* Open the file. */
-    f = fopen(filepath, "rb");
+    f = osal_file_open(filepath, "rb");
     if (f == NULL)
     {
         main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not open state file: %s", filepath);
@@ -1359,7 +1369,7 @@ static int savestates_load_pj64_unc(struct device* dev, char *filepath)
 static savestates_type savestates_detect_type(char *filepath)
 {
     unsigned char magic[4];
-    FILE *f = fopen(filepath, "rb");
+    FILE *f = osal_file_open(filepath, "rb");
     if (f == NULL)
     {
         DebugMessage(M64MSG_STATUS, "Could not open state file %s\n", filepath);
@@ -1399,21 +1409,21 @@ int savestates_load(void)
         // try M64P type first
         type = savestates_type_m64p;
         filepath = savestates_generate_path(type);
-        fPtr = fopen(filepath, "rb"); // can I open this?
+        fPtr = osal_file_open(filepath, "rb"); // can I open this?
         if (fPtr == NULL)
         {
             free(filepath);
             // try PJ64 zipped type second
             type = savestates_type_pj64_zip;
             filepath = savestates_generate_path(type);
-            fPtr = fopen(filepath, "rb"); // can I open this?
+            fPtr = osal_file_open(filepath, "rb"); // can I open this?
             if (fPtr == NULL)
             {
                 free(filepath);
                 // finally, try PJ64 uncompressed
                 type = savestates_type_pj64_unc;
                 filepath = savestates_generate_path(type);
-                fPtr = fopen(filepath, "rb"); // can I open this?
+                fPtr = osal_file_open(filepath, "rb"); // can I open this?
                 if (fPtr == NULL)
                 {
                     free(filepath);
@@ -1433,7 +1443,7 @@ int savestates_load(void)
         }
         filepath = savestates_generate_path(type);
         if (filepath != NULL)
-            fPtr = fopen(filepath, "rb"); // can I open this?
+            fPtr = osal_file_open(filepath, "rb"); // can I open this?
         if (fPtr == NULL)
         {
             main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Failed to open savestate file %s", filepath);
@@ -1477,7 +1487,7 @@ static void savestates_save_m64p_work(struct work_struct *work)
     SDL_LockMutex(savestates_lock);
 
     // Write the state to a GZIP file
-    f = gzopen(save->filepath, "wb");
+    f = osal_gzopen(save->filepath, "wb");
 
     if (f==NULL)
     {
@@ -1896,6 +1906,10 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     PUTDATA(curr, uint16_t, dev->cart.flashram.erase_page);
     PUTDATA(curr, uint16_t, dev->cart.flashram.mode);
 
+    /* cp0 and cp2 latch (since 1.9) */
+    PUTDATA(curr, uint64_t, *r4300_cp0_latch((struct cp0*)&dev->r4300.cp0));
+    PUTDATA(curr, uint64_t, *r4300_cp2_latch((struct cp2*)&dev->r4300.cp2));
+
     init_work(&save->work, savestates_save_m64p_work);
     queue_work(&save->work);
 
@@ -2119,7 +2133,7 @@ static int savestates_save_pj64_unc(const struct device* dev, char *filepath)
 {
     FILE *f;
 
-    f = fopen(filepath, "wb");
+    f = osal_file_open(filepath, "wb");
     if (f == NULL)
     {
         main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not create PJ64 state file: %s", filepath);

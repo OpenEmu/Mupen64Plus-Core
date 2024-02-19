@@ -57,6 +57,7 @@ extern int g_gs_vi_counter;
 
 const char* get_savestatepath(void);
 const char* get_savesrampath(void);
+const char* get_savestatefilename(void);
 
 void new_frame(void);
 void new_vi(void);
@@ -76,6 +77,7 @@ void main_advance_one(void);
 void main_speedup(int percent);
 void main_speeddown(int percent);
 void main_set_fastforward(int enable);
+void main_speedlimiter_toggle(void);
 
 void main_take_next_screenshot(void);
 

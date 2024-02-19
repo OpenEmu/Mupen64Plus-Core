@@ -40,6 +40,7 @@
 #define SDL_SCANCODE_RIGHTBRACKET SDLK_RIGHTBRACKET
 #define SDL_SCANCODE_LEFTBRACKET SDLK_LEFTBRACKET
 #define SDL_SCANCODE_F SDLK_f
+#define SDL_SCANCODE_Y SDLK_y
 #define SDL_SCANCODE_SLASH SDLK_SLASH
 #define SDL_SCANCODE_G SDLK_g
 #define SDL_SCANCODE_RETURN SDLK_RETURN
@@ -82,6 +83,7 @@ static m64p_handle l_CoreEventsConfig = NULL;
 * static variables and definitions for eventloop.c
 */
 
+#define kbdSaveSlot "Kbd Mapping Slot "
 #define kbdFullscreen "Kbd Mapping Fullscreen"
 #define kbdStop "Kbd Mapping Stop"
 #define kbdPause "Kbd Mapping Pause"
@@ -98,6 +100,7 @@ static m64p_handle l_CoreEventsConfig = NULL;
 #define kbdForward "Kbd Mapping Fast Forward"
 #define kbdAdvance "Kbd Mapping Frame Advance"
 #define kbdGameshark "Kbd Mapping Gameshark"
+#define kbdSpeedtoggle "Kbd Mapping Speed Limiter Toggle"
 
 typedef enum {joyFullscreen,
               joyStop,
@@ -117,6 +120,7 @@ typedef enum {joyFullscreen,
               joyGameshark
 } eJoyCommand;
 
+#ifndef NO_KEYBINDINGS
 static const char *JoyCmdName[] = { "Joy Mapping Fullscreen",
                                     "Joy Mapping Stop",
                                     "Joy Mapping Pause",
@@ -138,6 +142,7 @@ static const int NumJoyCommands = sizeof(JoyCmdName) / sizeof(const char *);
 
 static int JoyCmdActive[16][2];  /* if extra joystick commands are added above, make sure there is enough room in this array */
                                  /* [i][0] is Command Active, [i][1] is Hotkey Active */
+#endif /* NO_KEYBINDINGS */
 
 static int GamesharkActive = 0;
 
@@ -145,6 +150,7 @@ static int GamesharkActive = 0;
 * static functions for eventloop.c
 */
 
+#ifndef NO_KEYBINDINGS
 /** MatchJoyCommand
  *    This function processes an SDL event and updates the JoyCmdActive array if the
  *    event matches with the given command.
@@ -294,13 +300,16 @@ static int MatchJoyCommand(const SDL_Event *event, eJoyCommand cmd)
     /* nothing found */
     return 0;
 }
+#endif /* NO_KEYBINDINGS */
 
 /*********************************************************************************************************
 * sdl event filter
 */
 static int SDLCALL event_sdl_filter(void *userdata, SDL_Event *event)
 {
+#ifndef NO_KEYBINDINGS
     int cmd, action;
+#endif /* NO_KEYBINDINGS */
 
     switch(event->type)
     {
@@ -360,6 +369,7 @@ static int SDLCALL event_sdl_filter(void *userdata, SDL_Event *event)
 #endif
 #endif
 
+#ifndef NO_KEYBINDINGS
         // if joystick action is detected, check if it's mapped to a special function
         case SDL_JOYAXISMOTION:
         case SDL_JOYBUTTONDOWN:
@@ -414,6 +424,8 @@ static int SDLCALL event_sdl_filter(void *userdata, SDL_Event *event)
 
             return 0;
             break;
+#endif /* NO_KEYBINDINGS */
+
     }
 
     return 1;  // add this event to SDL queue
@@ -425,6 +437,7 @@ static int SDLCALL event_sdl_filter(void *userdata, SDL_Event *event)
 
 void event_initialize(void)
 {
+#ifndef NO_KEYBINDINGS
     int i, j;
 
     /* set initial state of all joystick commands to 'off' */
@@ -491,6 +504,8 @@ void event_initialize(void)
             } /* Iterate over comma-separated config phrases */
         }
     }
+#endif /* NO_KEYBINDINGS */
+
 
     /* set up SDL event filter and disable key repeat */
 #if !SDL_VERSION_ATLEAST(2,0,0)
@@ -538,6 +553,21 @@ int event_set_core_defaults(void)
 
     ConfigSetDefaultFloat(l_CoreEventsConfig, "Version", CONFIG_PARAM_VERSION,  "Mupen64Plus CoreEvents config parameter set version number.  Please don't change this version number.");
     /* Keyboard presses mapped to core functions */
+#ifndef NO_KEYBINDINGS
+    char kbdSaveSlotStr[sizeof(kbdSaveSlot)+1];
+    char kbdSaveSlotHelpStr[27];
+    int key = SDL_SCANCODE_UNKNOWN;
+    for (int slot = 0; slot < 10; slot++)
+    {
+#if ! SDL_VERSION_ATLEAST(1,3,0)
+        key = SDL_SCANCODE_0 + slot;
+#else
+        key = slot == 0 ? SDL_SCANCODE_0 : SDL_SCANCODE_1 + (slot - 1);
+#endif
+        sprintf(kbdSaveSlotStr, "%s%i", kbdSaveSlot, slot);
+        sprintf(kbdSaveSlotHelpStr, "SDL keysym for save slot %i", slot);
+        ConfigSetDefaultInt(l_CoreEventsConfig, kbdSaveSlotStr, sdl_native2keysym(key), kbdSaveSlotHelpStr);
+    }
     ConfigSetDefaultInt(l_CoreEventsConfig, kbdStop, sdl_native2keysym(SDL_SCANCODE_ESCAPE),          "SDL keysym for stopping the emulator");
     ConfigSetDefaultInt(l_CoreEventsConfig, kbdFullscreen, sdl_native2keysym(SDL_NUM_SCANCODES),      "SDL keysym for switching between fullscreen/windowed modes");
     ConfigSetDefaultInt(l_CoreEventsConfig, kbdSave, sdl_native2keysym(SDL_SCANCODE_F5),              "SDL keysym for saving the emulator state");
@@ -552,6 +582,7 @@ int event_set_core_defaults(void)
     ConfigSetDefaultInt(l_CoreEventsConfig, kbdIncrease, sdl_native2keysym(SDL_SCANCODE_RIGHTBRACKET),"SDL keysym for increasing the volume");
     ConfigSetDefaultInt(l_CoreEventsConfig, kbdDecrease, sdl_native2keysym(SDL_SCANCODE_LEFTBRACKET), "SDL keysym for decreasing the volume");
     ConfigSetDefaultInt(l_CoreEventsConfig, kbdForward, sdl_native2keysym(SDL_SCANCODE_F),            "SDL keysym for temporarily going really fast");
+    ConfigSetDefaultInt(l_CoreEventsConfig, kbdSpeedtoggle, sdl_native2keysym(SDL_SCANCODE_Y),        "SDL keysym for toggling the framerate limiter");
     ConfigSetDefaultInt(l_CoreEventsConfig, kbdAdvance, sdl_native2keysym(SDL_SCANCODE_SLASH),        "SDL keysym for advancing by one frame when paused");
     ConfigSetDefaultInt(l_CoreEventsConfig, kbdGameshark, sdl_native2keysym(SDL_SCANCODE_G),          "SDL keysym for pressing the game shark button");
     /* Joystick events mapped to core functions */
@@ -571,37 +602,26 @@ int event_set_core_defaults(void)
     ConfigSetDefaultString(l_CoreEventsConfig, JoyCmdName[joyForward], "",    "Joystick event string for fast-forward");
     ConfigSetDefaultString(l_CoreEventsConfig, JoyCmdName[joyAdvance], "",    "Joystick event string for advancing by one frame when paused");
     ConfigSetDefaultString(l_CoreEventsConfig, JoyCmdName[joyGameshark], "",  "Joystick event string for pressing the game shark button");
-
+#endif /* NO_KEYBINDINGS */
     return 1;
 }
 
+#ifndef NO_KEYBINDINGS
 static int get_saveslot_from_keysym(int keysym)
 {
-    switch (keysym) {
-    case SDL_SCANCODE_0:
-        return 0;
-    case SDL_SCANCODE_1:
-        return 1;
-    case SDL_SCANCODE_2:
-        return 2;
-    case SDL_SCANCODE_3:
-        return 3;
-    case SDL_SCANCODE_4:
-        return 4;
-    case SDL_SCANCODE_5:
-        return 5;
-    case SDL_SCANCODE_6:
-        return 6;
-    case SDL_SCANCODE_7:
-        return 7;
-    case SDL_SCANCODE_8:
-        return 8;
-    case SDL_SCANCODE_9:
-        return 9;
-    default:
-        return -1;
+    char kbdSaveSlotStr[sizeof(kbdSaveSlot)+1];
+    int kbdSaveSlotKey;
+    for (int slot = 0; slot < 10; slot++)
+    {
+        sprintf(kbdSaveSlotStr, "%s%i", kbdSaveSlot, slot);
+        kbdSaveSlotKey = ConfigGetParamInt(l_CoreEventsConfig, kbdSaveSlotStr);
+        if (keysym == sdl_keysym2native(kbdSaveSlotKey))
+            return slot;
     }
+
+    return -1;
 }
+#endif /* NO_KEYBINDINGS */
 
 /*********************************************************************************************************
 * sdl keyup/keydown handlers
@@ -609,14 +629,15 @@ static int get_saveslot_from_keysym(int keysym)
 
 void event_sdl_keydown(int keysym, int keymod)
 {
+#ifndef NO_KEYBINDINGS
     int slot;
 
-    /* check for the only 2 hard-coded key commands: Alt-enter for fullscreen and 0-9 for save state slot */
+    /* check for the only hard-coded key command: Alt-enter for fullscreen */
     if (keysym == SDL_SCANCODE_RETURN && keymod & (KMOD_LALT | KMOD_RALT))
         gfx.changeWindow();
+    /* check all of the configurable commands */
     else if ((slot = get_saveslot_from_keysym(keysym)) >= 0)
         main_state_set_slot(slot);
-    /* check all of the configurable commands */
     else if (keysym == sdl_keysym2native(ConfigGetParamInt(l_CoreEventsConfig, kbdStop)))
         main_stop();
     else if (keysym == sdl_keysym2native(ConfigGetParamInt(l_CoreEventsConfig, kbdFullscreen)))
@@ -631,6 +652,8 @@ void event_sdl_keydown(int keysym, int keymod)
         main_reset(0);
     else if (keysym == sdl_keysym2native(ConfigGetParamInt(l_CoreEventsConfig, kbdSpeeddown)))
         main_speeddown(5);
+    else if (keysym == sdl_keysym2native(ConfigGetParamInt(l_CoreEventsConfig, kbdSpeedtoggle)))
+        main_speedlimiter_toggle();
     else if (keysym == sdl_keysym2native(ConfigGetParamInt(l_CoreEventsConfig, kbdSpeedup)))
         main_speedup(5);
     else if (keysym == sdl_keysym2native(ConfigGetParamInt(l_CoreEventsConfig, kbdScreenshot)))
@@ -651,6 +674,7 @@ void event_sdl_keydown(int keysym, int keymod)
         event_set_gameshark(1);
     }
     else
+#endif /* NO_KEYBINDINGS */
     {
         /* pass all other keypresses to the input plugin */
         input.keyDown(keymod, keysym);
@@ -660,6 +684,7 @@ void event_sdl_keydown(int keysym, int keymod)
 
 void event_sdl_keyup(int keysym, int keymod)
 {
+#ifndef NO_KEYBINDINGS
     if (keysym == sdl_keysym2native(ConfigGetParamInt(l_CoreEventsConfig, kbdStop)))
     {
         return;
@@ -672,8 +697,11 @@ void event_sdl_keyup(int keysym, int keymod)
     {
         event_set_gameshark(0);
     }
-    else input.keyUp(keymod, keysym);
-
+    else
+#endif /* NO_KEYBINDINGS */
+    {
+        input.keyUp(keymod, keysym);
+    }
 }
 
 int event_gameshark_active(void)

@@ -36,9 +36,10 @@
 #endif
 
 /* global functions */
-void init_cp0(struct cp0* cp0, unsigned int count_per_op, struct new_dynarec_hot_state* new_dynarec_hot_state, const struct interrupt_handler* interrupt_handlers)
+void init_cp0(struct cp0* cp0, unsigned int count_per_op, unsigned int count_per_op_denom_pot, struct new_dynarec_hot_state* new_dynarec_hot_state, const struct interrupt_handler* interrupt_handlers)
 {
     cp0->count_per_op = count_per_op;
+    cp0->count_per_op_denom_pot = count_per_op_denom_pot;
 #ifdef NEW_DYNAREC
     cp0->new_dynarec_hot_state = new_dynarec_hot_state;
 #endif
@@ -60,7 +61,7 @@ void poweron_cp0(struct cp0* cp0)
     cp0_regs[CP0_RANDOM_REG] = UINT32_C(31);
     cp0_regs[CP0_STATUS_REG]= UINT32_C(0x34000000);
     cp0_regs[CP0_CONFIG_REG]= UINT32_C(0x6e463);
-    cp0_regs[CP0_PREVID_REG] = UINT32_C(0xb00);
+    cp0_regs[CP0_PREVID_REG] = UINT32_C(0xb10);
     cp0_regs[CP0_COUNT_REG] = UINT32_C(0x5000);
     cp0_regs[CP0_CAUSE_REG] = UINT32_C(0x5c);
     cp0_regs[CP0_CONTEXT_REG] = UINT32_C(0x7ffff0);
@@ -90,6 +91,16 @@ uint32_t* r4300_cp0_regs(struct cp0* cp0)
 #endif
 }
 
+uint64_t* r4300_cp0_latch(struct cp0* cp0)
+{
+#ifndef NEW_DYNAREC
+    return &cp0->latch;
+#else
+    /* New dynarec uses a different memory layout */
+    return &cp0->new_dynarec_hot_state->cp0_latch;
+#endif
+}
+
 uint32_t* r4300_cp0_last_addr(struct cp0* cp0)
 {
     return &cp0->last_addr;
@@ -97,12 +108,7 @@ uint32_t* r4300_cp0_last_addr(struct cp0* cp0)
 
 unsigned int* r4300_cp0_next_interrupt(struct cp0* cp0)
 {
-#ifndef NEW_DYNAREC
     return &cp0->next_interrupt;
-#else
-	/* New dynarec uses a different memory layout */
-    return &cp0->new_dynarec_hot_state->next_interrupt;
-#endif
 }
 
 int* r4300_cp0_cycle_count(struct cp0* cp0)
@@ -129,6 +135,19 @@ int check_cop1_unusable(struct r4300_core* r4300)
     return 0;
 }
 
+int check_cop2_unusable(struct r4300_core* r4300)
+{
+    uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
+
+    if (!(cp0_regs[CP0_STATUS_REG] & CP0_STATUS_CU2))
+    {
+        cp0_regs[CP0_CAUSE_REG] = CP0_CAUSE_EXCCODE_CPU | CP0_CAUSE_CE2;
+        exception_general(r4300);
+        return 1;
+    }
+    return 0;
+}
+
 void cp0_update_count(struct r4300_core* r4300)
 {
     struct cp0* cp0 = &r4300->cp0;
@@ -139,11 +158,17 @@ void cp0_update_count(struct r4300_core* r4300)
     {
 #endif
         uint32_t count = ((*r4300_pc(r4300) - cp0->last_addr) >> 2) * cp0->count_per_op;
+        if (r4300->cp0.count_per_op_denom_pot) {
+            count += (1 << r4300->cp0.count_per_op_denom_pot) - 1;
+            count >>= r4300->cp0.count_per_op_denom_pot;
+        }
         cp0_regs[CP0_COUNT_REG] += count;
         *r4300_cp0_cycle_count(cp0) += count;
         cp0->last_addr = *r4300_pc(r4300);
 #ifdef NEW_DYNAREC
     }
+    else
+        cp0_regs[CP0_COUNT_REG] = *r4300_cp0_next_interrupt(cp0) + *r4300_cp0_cycle_count(cp0);
 #endif
 
 #ifdef COMPARE_CORE
@@ -159,16 +184,13 @@ void cp0_update_count(struct r4300_core* r4300)
 static void exception_epilog(struct r4300_core* r4300)
 {
 #ifndef NO_ASM
+#ifndef NEW_DYNAREC
     if (r4300->emumode == EMUMODE_DYNAREC)
     {
-#ifndef NEW_DYNAREC
         dyna_jump();
         if (!r4300->recomp.dyna_interp) { r4300->delay_slot = 0; }
-#else
-        /* ??? for new_dynarec dyna_interp is always 0 so that means delay_slot = 0 path is always taken */
-        r4300->delay_slot = 0;
-#endif
     }
+#endif
 #endif
 
 #ifndef NEW_DYNAREC

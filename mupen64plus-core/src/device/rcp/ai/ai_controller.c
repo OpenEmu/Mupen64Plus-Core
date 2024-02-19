@@ -79,11 +79,7 @@ static void do_dma(struct ai_controller* ai, struct ai_dma* dma)
             ? 44100 /* default sample rate */
             : ai->vi->clock / (1 + ai->regs[AI_DACRATE_REG]);
 
-        unsigned int bits = (ai->regs[AI_BITRATE_REG] == 0)
-            ? 16 /* default bit rate */
-            : 1 + ai->regs[AI_BITRATE_REG];
-
-        ai->iaout->set_format(ai->aout, frequency, bits);
+        ai->iaout->set_frequency(ai->aout, frequency);
 
         ai->samples_format_changed = 0;
     }
@@ -104,19 +100,19 @@ static void do_dma(struct ai_controller* ai, struct ai_dma* dma)
 
 static void fifo_push(struct ai_controller* ai)
 {
-    unsigned int duration = get_dma_duration(ai);
+    unsigned int duration = get_dma_duration(ai) * ai->dma_modifier;
 
     if (ai->regs[AI_STATUS_REG] & AI_STATUS_BUSY)
     {
         ai->fifo[1].address = ai->regs[AI_DRAM_ADDR_REG];
-        ai->fifo[1].length = ai->regs[AI_LEN_REG];
+        ai->fifo[1].length = ai->regs[AI_LEN_REG] & ~UINT32_C(7);
         ai->fifo[1].duration = duration;
         ai->regs[AI_STATUS_REG] |= AI_STATUS_FULL;
     }
     else
     {
         ai->fifo[0].address = ai->regs[AI_DRAM_ADDR_REG];
-        ai->fifo[0].length = ai->regs[AI_LEN_REG];
+        ai->fifo[0].length = ai->regs[AI_LEN_REG] & ~UINT32_C(7);
         ai->fifo[0].duration = duration;
         ai->regs[AI_STATUS_REG] |= AI_STATUS_BUSY;
 
@@ -148,13 +144,15 @@ void init_ai(struct ai_controller* ai,
              struct ri_controller* ri,
              struct vi_controller* vi,
              void* aout,
-             const struct audio_out_backend_interface* iaout)
+             const struct audio_out_backend_interface* iaout,
+             float dma_modifier)
 {
     ai->mi = mi;
     ai->ri = ri;
     ai->vi = vi;
     ai->aout = aout;
     ai->iaout = iaout;
+    ai->dma_modifier = dma_modifier;
 }
 
 void poweron_ai(struct ai_controller* ai)
@@ -209,7 +207,6 @@ void write_ai_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
         clear_rcp_interrupt(ai->mi, MI_INTR_AI);
         return;
 
-    case AI_BITRATE_REG:
     case AI_DACRATE_REG:
         /* lazy audio format setting */
         if ((ai->regs[reg]) != (value & mask))
@@ -231,6 +228,7 @@ void ai_end_of_dma_event(void* opaque)
         unsigned int diff = ai->fifo[0].length - ai->last_read;
         unsigned char *p = (unsigned char*)&ai->ri->rdram->dram[ai->fifo[0].address/4];
         ai->iaout->push_samples(ai->aout, p + diff, ai->last_read);
+        ai->last_read = 0;
     }
 
     fifo_pop(ai);

@@ -137,7 +137,8 @@ typedef enum {
   M64CORE_AUDIO_MUTE,
   M64CORE_INPUT_GAMESHARK,
   M64CORE_STATE_LOADCOMPLETE,
-  M64CORE_STATE_SAVECOMPLETE
+  M64CORE_STATE_SAVECOMPLETE,
+  M64CORE_SCREENSHOT_CAPTURED,
 } m64p_core_param;
 
 typedef enum {
@@ -167,7 +168,10 @@ typedef enum {
   M64CMD_NETPLAY_CONTROL_PLAYER,
   M64CMD_NETPLAY_GET_VERSION,
   M64CMD_NETPLAY_CLOSE,
-  M64CMD_PIF_OPEN
+  M64CMD_PIF_OPEN,
+  M64CMD_ROM_SET_SETTINGS,
+  M64CMD_DISK_OPEN,
+  M64CMD_DISK_CLOSE
 } m64p_command;
 
 typedef struct {
@@ -195,6 +199,12 @@ typedef struct {
    */
   char* (*get_gb_cart_ram)(void* cb_data, int controller_num);
 
+  /* Allow the frontend to know what DD IPL ROM region file to load
+   * cb_data: points to frontend-defined callback data.
+   * region: a region from m64p_system_type
+   */
+  void (*set_dd_rom_region)(void* cb_data, uint8_t region);
+
   /* Allow the frontend to specify the DD IPL ROM file to load
    * cb_data: points to frontend-defined callback data.
    * Returns a NULL-terminated string owned by the core specifying the DD IPL ROM filename to load
@@ -221,6 +231,27 @@ typedef enum
     SYSTEM_MPAL
 } m64p_system_type;
 
+typedef enum
+{
+    SAVETYPE_EEPROM_4K       = 0,
+    SAVETYPE_EEPROM_4KB      = 0, // Preserve inaccurate/misleading name
+    SAVETYPE_EEPROM_16K      = 1,
+    SAVETYPE_EEPROM_16KB     = 1, // Preserve inaccurate/misleading name
+    SAVETYPE_SRAM            = 2,
+    SAVETYPE_FLASH_RAM       = 3,
+    SAVETYPE_CONTROLLER_PAK  = 4,
+    SAVETYPE_CONTROLLER_PACK = 4, // Preserve inaccurate/off-brand name
+    SAVETYPE_NONE            = 5,
+} m64p_rom_save_type;
+
+typedef enum
+{
+    DDREGION_JAPAN   = 0,
+    DDREGION_US      = 1,
+    DDREGION_DEV     = 2,
+    DDREGION_UNKNOWN = 3,
+} m64p_disk_region;
+
 typedef struct
 {
    uint8_t  init_PI_BSB_DOM1_LAT_REG;  /* 0x00 */
@@ -237,7 +268,8 @@ typedef struct
    uint32_t unknown;                   /* 0x34 */
    uint32_t Manufacturer_ID;           /* 0x38 */
    uint16_t Cartridge_ID;              /* 0x3C - Game serial number  */
-   uint16_t Country_code;              /* 0x3E */
+   uint8_t  Country_code;              /* 0x3E */
+   uint8_t  Version;                   /* 0x3F */
 } m64p_rom_header;
 
 typedef struct
@@ -251,6 +283,10 @@ typedef struct
    unsigned char transferpak; /* 0 - No, 1 - Yes boolean for transfer pak support. */
    unsigned char mempak; /* 0 - No, 1 - Yes boolean for memory pak support. */
    unsigned char biopak; /* 0 - No, 1 - Yes boolean for bio pak support. */
+   unsigned char disableextramem; /* 0 - No, 1 - Yes boolean for disabling 4MB expansion RAM pack */
+   unsigned int countperop; /* Number of CPU cycles per instruction. */
+   unsigned int sidmaduration; /* Default SI DMA duration */
+   unsigned int aidmamodifier; /* Percentage modifier for AI DMA duration */
 } m64p_rom_settings;
 
 /* ----------------------------------------- */
@@ -396,6 +432,11 @@ typedef enum {
   M64P_GL_CONTEXT_PROFILE_ES
 } m64p_GLContextType;
 
+typedef enum {
+  M64P_RENDER_OPENGL = 0,
+  M64P_RENDER_VULKAN
+} m64p_render_mode;
+
 typedef struct {
   unsigned int Functions;
   m64p_error    (*VidExtFuncInit)(void);
@@ -412,6 +453,9 @@ typedef struct {
   m64p_error    (*VidExtFuncToggleFS)(void);
   m64p_error    (*VidExtFuncResizeWindow)(int, int);
   uint32_t      (*VidExtFuncGLGetDefaultFramebuffer)(void);
+  m64p_error    (*VidExtFuncInitWithRenderMode)(m64p_render_mode);
+  m64p_error    (*VidExtFuncVKGetSurface)(void**, void*);
+  m64p_error    (*VidExtFuncVKGetInstanceExtensions)(const char**[], uint32_t*);
 } m64p_video_extension_functions;
 
 #endif /* define M64P_TYPES_H */

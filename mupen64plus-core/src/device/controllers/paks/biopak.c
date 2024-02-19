@@ -28,9 +28,7 @@
 #include "api/m64p_types.h"
 #include "api/callbacks.h"
 
-//#include <SDL_timer.h>
-// openemu
-#include <SDL.h>
+#include <SDL_timer.h>
 
 #include <string.h>
 

@@ -97,7 +97,7 @@ static int SaveRGBBufferToFile(const char *filename, const unsigned char *buf, i
         return 3;
     }
     // open the file to write
-    FILE *savefile = fopen(filename, "wb");
+    FILE *savefile = osal_file_open(filename, "wb");
     if (savefile == NULL)
     {
         DebugMessage(M64MSG_ERROR, "Error opening '%s' to save screenshot.", filename);
@@ -189,7 +189,7 @@ static char *GetNextScreenshotPath(void)
     for (; CurrentShotIndex < 1000; CurrentShotIndex++)
     {
         sprintf(NumberPtr, "%03i.png", CurrentShotIndex);
-        FILE *pFile = fopen(ScreenshotPath, "r");
+        FILE *pFile = osal_file_open(ScreenshotPath, "r");
         if (pFile == NULL)
             break;
         fclose(pFile);
@@ -222,7 +222,10 @@ void TakeScreenshot(int iFrameNumber)
     // look for an unused screenshot filename
     filename = GetNextScreenshotPath();
     if (filename == NULL)
+    {
+        StateChanged(M64CORE_SCREENSHOT_CAPTURED, 0);
         return;
+    }
 
     // get the width and height
     int width = 640;
@@ -233,6 +236,7 @@ void TakeScreenshot(int iFrameNumber)
     unsigned char *pucFrame = (unsigned char *) malloc(width * height * 3);
     if (pucFrame == NULL)
     {
+        StateChanged(M64CORE_SCREENSHOT_CAPTURED, 0);
         free(filename);
         return;
     }
@@ -241,11 +245,19 @@ void TakeScreenshot(int iFrameNumber)
     gfx.readScreen(pucFrame, &width, &height, 0);
 
     // write the image to a PNG
-    SaveRGBBufferToFile(filename, pucFrame, width, height, width * 3);
+    int rval = SaveRGBBufferToFile(filename, pucFrame, width, height, width * 3);
     // free the memory
     free(pucFrame);
     free(filename);
     // print message -- this allows developers to capture frames and use them in the regression test
-    main_message(M64MSG_INFO, OSD_BOTTOM_LEFT, "Captured screenshot for frame %i.", iFrameNumber);
+    if (rval != 0)
+    {
+        StateChanged(M64CORE_SCREENSHOT_CAPTURED, 0);
+    }
+    else
+    {
+        main_message(M64MSG_INFO, OSD_BOTTOM_LEFT, "Captured screenshot for frame %i.", iFrameNumber);
+        StateChanged(M64CORE_SCREENSHOT_CAPTURED, 1);
+    }
 }
 

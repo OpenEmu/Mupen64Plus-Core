@@ -31,6 +31,7 @@
 
 #include "cp0.h"
 #include "cp1.h"
+#include "cp2.h"
 
 #include "recomp_types.h" /* for precomp_instr, regcache_state */
 
@@ -190,6 +191,8 @@ struct r4300_core
 
     struct cp1 cp1;
 
+    struct cp2 cp2;
+
     struct memory* mem;
     struct mi_controller* mi;
     struct rdram* rdram;
@@ -211,7 +214,7 @@ struct r4300_core
     offsetof(struct new_dynarec_hot_state, regs))
 #endif
 
-void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controller* mi, struct rdram* rdram, const struct interrupt_handler* interrupt_handlers, unsigned int emumode, unsigned int count_per_op, int no_compiled_jump, int randomize_interrupt, uint32_t start_address);
+void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controller* mi, struct rdram* rdram, const struct interrupt_handler* interrupt_handlers, unsigned int emumode, unsigned int count_per_op, unsigned int count_per_op_denom_pot, int no_compiled_jump, int randomize_interrupt, uint32_t start_address);
 void poweron_r4300(struct r4300_core* r4300);
 
 void run_r4300(struct r4300_core* r4300);

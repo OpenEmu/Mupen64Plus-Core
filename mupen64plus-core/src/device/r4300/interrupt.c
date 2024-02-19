@@ -158,15 +158,11 @@ void add_interrupt_event_count(struct cp0* cp0, int type, unsigned int count)
     {
         cp0->q.first = event;
         event->next = NULL;
-        *cp0_next_interrupt = cp0->q.first->data.count;
-        *cp0_cycle_count = cp0_regs[CP0_COUNT_REG] - cp0->q.first->data.count;
     }
     else if (before_event(cp0, count, cp0->q.first->data.count, cp0->q.first->data.type))
     {
         event->next = cp0->q.first;
         cp0->q.first = event;
-        *cp0_next_interrupt = cp0->q.first->data.count;
-        *cp0_cycle_count = cp0_regs[CP0_COUNT_REG] - cp0->q.first->data.count;
     }
     else
     {
@@ -188,6 +184,8 @@ void add_interrupt_event_count(struct cp0* cp0, int type, unsigned int count)
             e->next = event;
         }
     }
+    *cp0_next_interrupt = cp0->q.first->data.count;
+    *cp0_cycle_count = cp0_regs[CP0_COUNT_REG] - cp0->q.first->data.count;
 }
 
 void remove_interrupt_event(struct cp0* cp0)
@@ -641,6 +639,21 @@ void gen_interrupt(struct r4300_core* r4300)
         case RSP_DMA_EVT:
             remove_interrupt_event(&r4300->cp0);
             call_interrupt_handler(&r4300->cp0, 12);
+            break;
+
+        case DD_MC_INT:
+            remove_interrupt_event(&r4300->cp0);
+            call_interrupt_handler(&r4300->cp0, 13);
+            break;
+
+        case DD_BM_INT:
+            remove_interrupt_event(&r4300->cp0);
+            call_interrupt_handler(&r4300->cp0, 14);
+            break;
+
+        case DD_DV_INT:
+            remove_interrupt_event(&r4300->cp0);
+            call_interrupt_handler(&r4300->cp0, 15);
             break;
 
         default:

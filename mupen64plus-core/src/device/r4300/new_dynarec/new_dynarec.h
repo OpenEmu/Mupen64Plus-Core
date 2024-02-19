@@ -52,7 +52,6 @@ struct new_dynarec_hot_state
 #else
     uint32_t dynarec_local[16];
 #endif
-    unsigned int next_interrupt;
     int cycle_count;
     int pending_exception;
     int pcaddr;
@@ -62,14 +61,16 @@ struct new_dynarec_hot_state
     uint64_t rdword;
     uint64_t wdword;
     uint32_t wword;
-    uint32_t fcr0;
-    uint32_t fcr31;
+    uint32_t cp1_fcr0;
+    uint32_t cp1_fcr31;
     int64_t  regs[32];
     int64_t  hi;
     int64_t  lo;
     uint32_t cp0_regs[32];
+    uint64_t cp0_latch;
     float* cp1_regs_simple[32];
     double* cp1_regs_double[32];
+    uint64_t cp2_latch;
     uint32_t rounding_modes[4];
     int branch_target;
     struct precomp_instr* pc;
@@ -79,7 +80,6 @@ struct new_dynarec_hot_state
     int64_t rd;
     intptr_t ram_offset;
     uintptr_t mini_ht[32][2];
-    unsigned char restore_candidate[512];
     uintptr_t memory_map[1048576];
 #else
     char dummy;
