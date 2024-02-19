@@ -55,6 +55,9 @@
 		3E82BC491F507B940081AF7B /* Debugger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC3F1F507B930081AF7B /* Debugger.cpp */; };
 		3E82BC561F507C380081AF7B /* ColorBufferReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3E82BC551F507C380081AF7B /* ColorBufferReader.cpp */; };
 		551FEEB025B64D9000B9030D /* linkage.o in Frameworks */ = {isa = PBXBuildFile; fileRef = 551FEEAF25B64D9000B9030D /* linkage.o */; };
+		5520DABC2B82F77700A80727 /* hvqm.c in Sources */ = {isa = PBXBuildFile; fileRef = 5520DABB2B82F77700A80727 /* hvqm.c */; };
+		5520DABE2B82F78700A80727 /* re2.c in Sources */ = {isa = PBXBuildFile; fileRef = 5520DABD2B82F78700A80727 /* re2.c */; };
+		5520DAC02B82F88A00A80727 /* osal_dynamiclib_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 5520DABF2B82F88A00A80727 /* osal_dynamiclib_unix.c */; };
 		555FD4512B82C99A00E42351 /* is_viewer.c in Sources */ = {isa = PBXBuildFile; fileRef = 555FD4502B82C99A00E42351 /* is_viewer.c */; };
 		555FD4542B82C9CB00E42351 /* cp2.c in Sources */ = {isa = PBXBuildFile; fileRef = 555FD4532B82C9CB00E42351 /* cp2.c */; };
 		555FD45B2B82CB9C00E42351 /* ArchSupport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD45A2B82CB9C00E42351 /* ArchSupport.cpp */; };
@@ -502,6 +505,10 @@
 		3E82BC6A1F507CD60081AF7B /* osal_files.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osal_files.h; sourceTree = "<group>"; };
 		3E82BC6C1F507D6D0081AF7B /* FrameBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FrameBuffer.cpp; path = OpenGL/FrameBuffer.cpp; sourceTree = "<group>"; };
 		551FEEAF25B64D9000B9030D /* linkage.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = linkage.o; sourceTree = "<group>"; };
+		5520DABB2B82F77700A80727 /* hvqm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hvqm.c; sourceTree = "<group>"; };
+		5520DABD2B82F78700A80727 /* re2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = re2.c; sourceTree = "<group>"; };
+		5520DABF2B82F88A00A80727 /* osal_dynamiclib_unix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = osal_dynamiclib_unix.c; sourceTree = "<group>"; };
+		5520DAC12B82F8BB00A80727 /* osal_dynamiclib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = osal_dynamiclib.h; sourceTree = "<group>"; };
 		555FD44F2B82C99A00E42351 /* is_viewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = is_viewer.h; sourceTree = "<group>"; };
 		555FD4502B82C99A00E42351 /* is_viewer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = is_viewer.c; sourceTree = "<group>"; };
 		555FD4522B82C9CB00E42351 /* cp2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cp2.h; sourceTree = "<group>"; };
@@ -1167,7 +1174,6 @@
 		94E1B90E18D0F6A9003ACCFF /* su.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = su.h; sourceTree = "<group>"; };
 		94E6B86A166C2A0A00082F27 /* INSTALL */ = {isa = PBXFileReference; lastKnownFileType = text; path = INSTALL; sourceTree = "<group>"; };
 		94E6B86B166C2A0A00082F27 /* LICENSES */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSES; sourceTree = "<group>"; };
-		94E6B86E166C2A0A00082F27 /* mupen64plus-rsp-hle.vcproj */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "mupen64plus-rsp-hle.vcproj"; sourceTree = "<group>"; };
 		94E6B870166C2A0A00082F27 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		94E6B871166C2A0A00082F27 /* RELEASE */ = {isa = PBXFileReference; lastKnownFileType = text; path = RELEASE; sourceTree = "<group>"; };
 		94E6B875166C2A0A00082F27 /* jpeg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = jpeg.c; sourceTree = "<group>"; };
@@ -2868,18 +2874,9 @@
 		94E6B86C166C2A0A00082F27 /* projects */ = {
 			isa = PBXGroup;
 			children = (
-				94E6B86D166C2A0A00082F27 /* msvc8 */,
 				94E6B86F166C2A0A00082F27 /* unix */,
 			);
 			path = projects;
-			sourceTree = "<group>";
-		};
-		94E6B86D166C2A0A00082F27 /* msvc8 */ = {
-			isa = PBXGroup;
-			children = (
-				94E6B86E166C2A0A00082F27 /* mupen64plus-rsp-hle.vcproj */,
-			);
-			path = msvc8;
 			sourceTree = "<group>";
 		};
 		94E6B86F166C2A0A00082F27 /* unix */ = {
@@ -2893,11 +2890,11 @@
 		94E6B872166C2A0A00082F27 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				942130CB1793DD8F00E57482 /* alist.c */,
-				942130CC1793DD8F00E57482 /* alist.h */,
 				94B5C87118CAC2FB0088DA62 /* alist_audio.c */,
 				94B5C87218CAC2FB0088DA62 /* alist_naudio.c */,
 				94B5C87318CAC2FB0088DA62 /* alist_nead.c */,
+				942130CB1793DD8F00E57482 /* alist.c */,
+				942130CC1793DD8F00E57482 /* alist.h */,
 				94B5C87418CAC2FB0088DA62 /* arithmetics.h */,
 				94B5C87518CAC2FB0088DA62 /* audio.c */,
 				94B5C87618CAC2FB0088DA62 /* audio.h */,
@@ -2907,12 +2904,16 @@
 				94A5321F18E273C800AE11B3 /* hle_internal.h */,
 				94A5322018E273DD00AE11B3 /* hle.c */,
 				94A5322218E273EB00AE11B3 /* hle.h */,
+				5520DABB2B82F77700A80727 /* hvqm.c */,
 				94E6B875166C2A0A00082F27 /* jpeg.c */,
 				94B5C87818CAC2FB0088DA62 /* memory.c */,
 				94B5C87918CAC2FB0088DA62 /* memory.h */,
 				94B5C87A18CAC2FB0088DA62 /* mp3.c */,
 				94B5C87B18CAC2FB0088DA62 /* musyx.c */,
+				5520DABF2B82F88A00A80727 /* osal_dynamiclib_unix.c */,
+				5520DAC12B82F8BB00A80727 /* osal_dynamiclib.h */,
 				94B5C87D18CAC2FB0088DA62 /* plugin.c */,
+				5520DABD2B82F78700A80727 /* re2.c */,
 				94E6B877166C2A0A00082F27 /* rsp_api_export.ver */,
 				94A5322318E2740800AE11B3 /* ucodes.h */,
 			);
@@ -3111,6 +3112,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5520DABC2B82F77700A80727 /* hvqm.c in Sources */,
 				94B5C88618CAC2FB0088DA62 /* plugin.c in Sources */,
 				94B5C88418CAC2FB0088DA62 /* mp3.c in Sources */,
 				94B5C88118CAC2FB0088DA62 /* alist_nead.c in Sources */,
@@ -3119,10 +3121,12 @@
 				94B5C88218CAC2FB0088DA62 /* audio.c in Sources */,
 				94B5C88018CAC2FB0088DA62 /* alist_naudio.c in Sources */,
 				94B5C88518CAC2FB0088DA62 /* musyx.c in Sources */,
+				5520DAC02B82F88A00A80727 /* osal_dynamiclib_unix.c in Sources */,
 				94B5C88318CAC2FB0088DA62 /* memory.c in Sources */,
 				3DCABDBB166C4B89002F2066 /* jpeg.c in Sources */,
 				942130D01793DD8F00E57482 /* alist.c in Sources */,
 				942130D11793DD8F00E57482 /* cicx105.c in Sources */,
+				5520DABE2B82F78700A80727 /* re2.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

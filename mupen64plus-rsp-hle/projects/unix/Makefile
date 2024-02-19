@@ -1,6 +1,6 @@
 #/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 # *   mupen64plus-rsp-hle - Makefile                                        *
-# *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+# *   Mupen64Plus homepage: https://mupen64plus.org/                        *
 # *   Copyright (C) 2008-2009 Richard Goedeken                              *
 # *   Copyright (C) 2007-2008 DarkJeztr Tillin9                             *
 # *                                                                         *
@@ -66,7 +66,7 @@ ifeq ("$(patsubst MINGW%,MINGW,$(UNAME))","MINGW")
   PIC = 0
 endif
 ifeq ("$(OS)","NONE")
-  $(error OS type "$(UNAME)" not supported.  Please file bug report at 'http://code.google.com/p/mupen64plus/issues')
+  $(error OS type "$(UNAME)" not supported.  Please file bug report at 'https://github.com/mupen64plus/mupen64plus-core/issues')
 endif
 
 # detect system architecture
@@ -102,6 +102,13 @@ ifneq ("$(filter ppc64 powerpc64,$(HOST_CPU))","")
   PIC ?= 1
   $(warning Architecture "$(HOST_CPU)" not officially supported.')
 endif
+ifneq ("$(filter ppc64le powerpc64le,$(HOST_CPU))","")
+  CPU := PPC
+  ARCH_DETECTED := 64BITS
+  BIG_ENDIAN := 0
+  PIC ?= 1
+  $(warning Architecture "$(HOST_CPU)" not officially supported.')
+endif
 ifneq ("$(filter arm%,$(HOST_CPU))","")
   ifeq ("$(filter arm%b,$(HOST_CPU))","")
     CPU := ARM
@@ -116,14 +123,31 @@ ifneq ("$(filter mips,$(HOST_CPU))","")
   PIC ?= 1
   $(warning Architecture "$(HOST_CPU)" not officially supported.')
 endif
-ifeq ("$(CPU)","NONE")
-  $(error CPU type "$(HOST_CPU)" not supported.  Please file bug report at 'http://code.google.com/p/mupen64plus/issues')
+ifneq ("$(filter aarch64,$(HOST_CPU))","")
+    CPU := AARCH
+    ARCH_DETECTED := 64BITS
+    PIC ?= 1
+    NEW_DYNAREC := 1
+    NO_ASM := 1
 endif
+ifneq ("$(filter riscv64,$(HOST_CPU))","")
+    CPU := RISCV64
+    ARCH_DETECTED := 64BITS
+    PIC ?= 1
+    NO_ASM := 1
+    $(warning Architecture "$(HOST_CPU)" not officially supported.)
+endif
+ifeq ("$(CPU)","NONE")
+  $(error CPU type "$(HOST_CPU)" not supported.  Please file bug report at 'https://github.com/mupen64plus/mupen64plus-core/issues')
+endif
+
+SRCDIR = ../../src
+OBJDIR = _obj$(POSTFIX)
 
 # base CFLAGS, LDLIBS, and LDFLAGS
 OPTFLAGS ?= -O3 -flto
 WARNFLAGS ?= -Wall
-CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -ffast-math -fno-strict-aliasing -fvisibility=hidden -I../../src
+CFLAGS += $(OPTFLAGS) $(WARNFLAGS) -ffast-math -fno-strict-aliasing -fvisibility=hidden -I$(SRCDIR)
 LDFLAGS += $(SHARED)
 
 # Since we are building a shared library, we must compile with -fPIC on some architectures
@@ -143,23 +167,34 @@ ifeq ($(ARCH_DETECTED), 64BITS_32)
   ifeq ($(OS), FREEBSD)
     $(error Do not use the BITS=32 option with FreeBSD, use -m32 and -m elf_i386)
   endif
-  CFLAGS += -m32
-  LDFLAGS += -Wl,-m,elf_i386
+  ifneq ($(OS), OSX)
+    ifeq ($(OS), MINGW)
+      LDFLAGS += -Wl,-m,i386pe
+    else
+      CFLAGS += -m32
+      LDFLAGS += -Wl,-m,elf_i386
+    endif
+  endif
+endif
+
+ifeq ($(ARCH_DETECTED), 64BITS)
+  ifeq ($(OS), MINGW)
+    LDFLAGS += -Wl,-m,i386pep
+  endif
 endif
 
 # set special flags per-system
 ifeq ($(OS), LINUX)
   # only export api symbols
   LDFLAGS += -Wl,-version-script,$(SRCDIR)/rsp_api_export.ver
+  LDLIBS += -ldl
 endif
 ifeq ($(OS), OSX)
-  #xcode-select has been around since XCode 3.0, i.e. OS X 10.5
-  OSX_SDK_ROOT = $(shell xcode-select -print-path)/Platforms/MacOSX.platform/Developer/SDKs
-  OSX_SDK_PATH = $(OSX_SDK_ROOT)/$(shell ls $(OSX_SDK_ROOT) | tail -1)
+  OSX_SDK_PATH = $(shell xcrun --sdk macosx --show-sdk-path)
 
   ifeq ($(CPU), X86)
     ifeq ($(ARCH_DETECTED), 64BITS)
-      CFLAGS += -pipe -arch x86_64 -mmacosx-version-min=10.5 -isysroot $(OSX_SDK_PATH)
+      CFLAGS += -pipe -arch x86_64 -mmacosx-version-min=10.9 -isysroot $(OSX_SDK_PATH)
     else
       CFLAGS += -pipe -mmmx -msse -fomit-frame-pointer -arch i686 -mmacosx-version-min=10.5 -isysroot $(OSX_SDK_PATH)
       LDFLAGS += -read_only_relocs suppress
@@ -210,6 +245,7 @@ ifeq ($(DEBUG),1)
   CFLAGS += -g
   INSTALL_STRIP_FLAG ?= 
 else
+  CFLAGS += -DNDEBUG
   ifneq ($(OS),OSX)
     INSTALL_STRIP_FLAG ?= -s
   endif
@@ -231,10 +267,6 @@ ifeq ($(DUMP), 1)
 	CFLAGS += -DENABLE_TASK_DUMP
 endif
 
-
-SRCDIR = ../../src
-OBJDIR = _obj$(POSTFIX)
-
 # list of source files to compile
 SOURCE = \
 	$(SRCDIR)/alist.c \
@@ -244,11 +276,21 @@ SOURCE = \
 	$(SRCDIR)/audio.c \
 	$(SRCDIR)/cicx105.c \
 	$(SRCDIR)/hle.c \
+	$(SRCDIR)/hvqm.c \
 	$(SRCDIR)/jpeg.c \
 	$(SRCDIR)/memory.c \
 	$(SRCDIR)/mp3.c \
 	$(SRCDIR)/musyx.c \
+	$(SRCDIR)/re2.c \
 	$(SRCDIR)/plugin.c
+
+ifeq ($(OS), MINGW)
+SOURCE += \
+	$(SRCDIR)/osal_dynamiclib_win32.c
+else
+SOURCE += \
+	$(SRCDIR)/osal_dynamiclib_unix.c
+endif
 
 # generate a list of object files build, make a temporary directory for them
 OBJECTS := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(filter %.c, $(SOURCE)))

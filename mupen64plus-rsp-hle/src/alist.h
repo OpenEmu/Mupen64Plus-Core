@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-rsp-hle - alist.h                                         *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2014 Bobby Smiles                                       *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -149,6 +149,13 @@ void alist_iirf(
         uint16_t count,
         int16_t* table,
         uint32_t address);
+
+void alist_overload(
+        struct hle_t* hle,
+        uint16_t dmem,
+        int16_t count,
+        int16_t gain,
+        uint16_t attenuation);
 
 /*
  * Audio flags
