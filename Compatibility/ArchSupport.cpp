@@ -29,10 +29,13 @@
 #include "CRC32_ARMV8.cpp"
 #include "Neon/gSPNeon.cpp"
 #include "Neon/RSP_LoadMatrixNeon.cpp"
-//#elif __x86_64__
-//#include "RSP_LoadMatrixX86.cpp"
 #else
+//Disabled because RSP_LoadMatrixX86.cpp is i386-only, not x86_64.
+//#if __x86_64__
+//#include "RSP_LoadMatrixX86.cpp"
+//#else
 #include "RSP_LoadMatrix.cpp"
+//#endif
 #include "CRC_OPT.cpp"
 #include "3DMath.cpp"
 #endif
