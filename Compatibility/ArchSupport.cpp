@@ -25,7 +25,6 @@
 // This is needed so we only compile the NEON source files under ARM64, and not Intel
 
 #ifdef __arm64__
-#include "Neon/3DMathNeon.cpp"
 #include "CRC32_ARMV8.cpp"
 #include "Neon/gSPNeon.cpp"
 #include "Neon/RSP_LoadMatrixNeon.cpp"
@@ -37,5 +36,4 @@
 #include "RSP_LoadMatrix.cpp"
 //#endif
 #include "CRC_OPT.cpp"
-#include "3DMath.cpp"
 #endif

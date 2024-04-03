@@ -67,6 +67,7 @@
 		555FD4692B82D02000E42351 /* glsl_CombinerProgramBuilderCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD4672B82D02000E42351 /* glsl_CombinerProgramBuilderCommon.cpp */; };
 		555FD46C2B82D03800E42351 /* glsl_CombinerProgramBuilderAccurate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD46B2B82D03800E42351 /* glsl_CombinerProgramBuilderAccurate.cpp */; };
 		555FD46F2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD46D2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.cpp */; };
+		55701D3A2BB381830093578C /* 3DMathSimd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 55701D392BB381830093578C /* 3DMathSimd.cpp */; };
 		55C1C6A42B82D9C100BE1EFA /* vru_controller.c in Sources */ = {isa = PBXBuildFile; fileRef = 55C1C6A22B82D9C100BE1EFA /* vru_controller.c */; };
 		55C1C6A62B82DB5100BE1EFA /* arch_dynarec.c in Sources */ = {isa = PBXBuildFile; fileRef = 55C1C6A52B82DB5100BE1EFA /* arch_dynarec.c */; };
 		8723F7341F74A4D7003E572A /* F3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7061F74A49E003E572A /* F3D.cpp */; };
@@ -533,6 +534,7 @@
 		555FD46B2B82D03800E42351 /* glsl_CombinerProgramBuilderAccurate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramBuilderAccurate.cpp; sourceTree = "<group>"; };
 		555FD46D2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = glsl_CombinerProgramUniformFactoryAccurate.cpp; sourceTree = "<group>"; };
 		555FD46E2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glsl_CombinerProgramUniformFactoryAccurate.h; sourceTree = "<group>"; };
+		55701D392BB381830093578C /* 3DMathSimd.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = 3DMathSimd.cpp; sourceTree = "<group>"; };
 		55C1C6A22B82D9C100BE1EFA /* vru_controller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vru_controller.c; sourceTree = "<group>"; };
 		55C1C6A32B82D9C100BE1EFA /* vru_controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vru_controller.h; sourceTree = "<group>"; };
 		55C1C6A52B82DB5100BE1EFA /* arch_dynarec.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = arch_dynarec.c; sourceTree = "<group>"; };
@@ -1544,6 +1546,7 @@
 				3D8B35D712260F9D00C4C844 /* main.m */,
 				555FD45A2B82CB9C00E42351 /* ArchSupport.cpp */,
 				55C1C6A52B82DB5100BE1EFA /* arch_dynarec.c */,
+				55701D392BB381830093578C /* 3DMathSimd.cpp */,
 			);
 			path = Compatibility;
 			sourceTree = "<group>";
@@ -2738,11 +2741,11 @@
 		87841ACE259A6DD2002ED39D /* mupen64plus */ = {
 			isa = PBXGroup;
 			children = (
+				87841AD2259A6DD2002ED39D /* api */,
+				87841AD1259A6DD2002ED39D /* gfx_m64p.c */,
+				87841AD8259A6DD2002ED39D /* gfx_m64p.h */,
 				87841ACF259A6DD2002ED39D /* msg.c */,
 				87841AD0259A6DD2002ED39D /* screen.c */,
-				87841AD1259A6DD2002ED39D /* gfx_m64p.c */,
-				87841AD2259A6DD2002ED39D /* api */,
-				87841AD8259A6DD2002ED39D /* gfx_m64p.h */,
 			);
 			path = mupen64plus;
 			sourceTree = "<group>";
@@ -2762,16 +2765,16 @@
 		87841AD9259A6DD2002ED39D /* zilmar */ = {
 			isa = PBXGroup;
 			children = (
-				87841ADA259A6DD2002ED39D /* wgl_ext.c */,
-				87841ADB259A6DD2002ED39D /* msg.c */,
-				87841ADC259A6DD2002ED39D /* gfx_1.3.c */,
-				87841ADD259A6DD2002ED39D /* config.h */,
-				87841ADE259A6DD2002ED39D /* screen.c */,
-				87841ADF259A6DD2002ED39D /* wgl_ext.h */,
 				87841AE0259A6DD2002ED39D /* config.c */,
-				87841AE1259A6DD2002ED39D /* resource.h */,
-				87841AE2259A6DD2002ED39D /* gfx_1.3.h */,
+				87841ADD259A6DD2002ED39D /* config.h */,
 				87841AE3259A6DD2002ED39D /* config.rc */,
+				87841ADC259A6DD2002ED39D /* gfx_1.3.c */,
+				87841AE2259A6DD2002ED39D /* gfx_1.3.h */,
+				87841ADB259A6DD2002ED39D /* msg.c */,
+				87841AE1259A6DD2002ED39D /* resource.h */,
+				87841ADE259A6DD2002ED39D /* screen.c */,
+				87841ADA259A6DD2002ED39D /* wgl_ext.c */,
+				87841ADF259A6DD2002ED39D /* wgl_ext.h */,
 			);
 			path = zilmar;
 			sourceTree = "<group>";
@@ -2779,12 +2782,12 @@
 		87841AE4259A6DD2002ED39D /* output */ = {
 			isa = PBXGroup;
 			children = (
-				87841AE5259A6DD2002ED39D /* gl_core_3_3.h */,
-				87841AE6259A6DD2002ED39D /* vdac.h */,
 				87841AE7259A6DD2002ED39D /* gl_core_3_3.c */,
-				87841AE8259A6DD2002ED39D /* vdac.c */,
-				87841AE9259A6DD2002ED39D /* screen.h */,
+				87841AE5259A6DD2002ED39D /* gl_core_3_3.h */,
 				87841AEA259A6DD2002ED39D /* gl_proc.h */,
+				87841AE9259A6DD2002ED39D /* screen.h */,
+				87841AE8259A6DD2002ED39D /* vdac.c */,
+				87841AE6259A6DD2002ED39D /* vdac.h */,
 			);
 			path = output;
 			sourceTree = "<group>";
@@ -3147,6 +3150,7 @@
 				8755050E1E74C7BF002222F3 /* Combiner.cpp in Sources */,
 				8755050F1E74C7BF002222F3 /* CombinerKey.cpp in Sources */,
 				875505111E74C7BF002222F3 /* CommonPluginAPI.cpp in Sources */,
+				55701D3A2BB381830093578C /* 3DMathSimd.cpp in Sources */,
 				875505121E74C7BF002222F3 /* Config.cpp in Sources */,
 				875505131E74C7BF002222F3 /* convert.cpp in Sources */,
 				87F3EF981FA439A4007CF75E /* DisplayLoadProgress.cpp in Sources */,
