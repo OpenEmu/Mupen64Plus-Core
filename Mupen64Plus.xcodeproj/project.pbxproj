@@ -2378,6 +2378,7 @@
 			);
 			path = rsp;
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		8784171E25994FEF002ED39D /* pif */ = {
 			isa = PBXGroup;
