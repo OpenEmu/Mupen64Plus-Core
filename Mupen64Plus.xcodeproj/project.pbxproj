@@ -3661,7 +3661,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/png\"",
-					"$(PROJECT_DIR)/GLideN64/src/GLideNHQ/lib",
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_CFLAGS = (
@@ -3709,7 +3708,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/png\"",
-					"$(PROJECT_DIR)/GLideN64/src/GLideNHQ/lib",
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_CFLAGS = (
