@@ -263,7 +263,17 @@ static uintptr_t jump_table_symbols[] = {
 
 static void cache_flush(char* start, char* end)
 {
-#ifndef WIN32
+    // dc civac writes the cache line back, which requires the page to be
+    // writable. The depth counter makes the call harmless inside an already
+    // open window (new_recompile_block).
+    jit_write_window(1);
+
+#if defined(__APPLE__)
+    // mrs ctr_el0 (see below) raises SIGILL in user mode on Apple Silicon - the
+    // cache line size cannot be queried there. Darwin's documented interface
+    // cleans and invalidates the range instead.
+    sys_icache_invalidate(start, (size_t)((char*)end - (char*)start));
+#elif !defined(WIN32)
     // Don't rely on GCC's __clear_cache implementation, as it caches
     // icache/dcache cache line sizes, that can vary between cores on
     // big.LITTLE architectures.
@@ -292,7 +302,9 @@ static void cache_flush(char* start, char* end)
 
     __asm__ volatile("dsb ish" : : : "memory");
     __asm__ volatile("isb" : : : "memory");
-#endif
+#endif // __APPLE__
+
+    jit_write_window(0);
 }
 
 /* Linker */
@@ -300,6 +312,11 @@ static void set_jump_target(intptr_t addr,uintptr_t target)
 {
   u_int *ptr=(u_int *)addr;
   intptr_t offset=target-(intptr_t)addr;
+
+  // Patching means writing into the executable cache. Called both from
+  // new_recompile_block (window already open) and from add_pointer()/
+  // kill_pointer(), which may run outside a window.
+  jit_write_window(1);
 
   if((*ptr&0xFC000000)==0x14000000) {
     assert(offset>=-134217728LL&&offset<134217728LL);
@@ -320,6 +337,8 @@ static void set_jump_target(intptr_t addr,uintptr_t target)
   }
   else
     assert(0); /*Should not happen*/
+
+  jit_write_window(0);
 }
 
 /* Literal pool */
@@ -340,6 +359,8 @@ static void *add_pointer(void *src, void* addr)
   assert((ptr2[1]&0xFFE00000)==0x72800000); //movk
   assert((ptr2[2]&0x9f000000)==0x10000000); //adr
   set_jump_target((intptr_t)src,(intptr_t)addr);
+  // set_jump_target() and cache_flush() each open the write window themselves,
+  // so there is no separate pair here anymore.
   intptr_t ptr_rx=((intptr_t)ptr-(intptr_t)base_addr)+(intptr_t)base_addr_rx;
   cache_flush((void*)ptr_rx, (void*)(ptr_rx+4));
   return ptr2;
@@ -4540,6 +4561,7 @@ static void do_miniht_insert(u_int return_address,int rt,int temp) {
 static void do_clear_cache(void)
 {
   int i,j;
+  // cache_flush() opens the write window itself.
   for (i=0;i<(1<<(TARGET_SIZE_2-17));i++)
   {
     u_int bitmap=needs_clear_cache[i];
@@ -4608,6 +4630,10 @@ static void arch_init(void) {
     if(offset>=-134217728LL&&offset<134217728LL) {
       *ptr4=0x14000000|((offset>>2)&0x3ffffff); // direct branch
     }else{
+      // x18 as the branch register: it is the only register slot the allocator
+      // never hands out (EXCLUDE_REG on Darwin), so no program value can be
+      // disturbed here. The target is a runtime function in C that does not
+      // rely on x18 anyway.
       *ptr4=0x58000000|((8>>2)<<5)|18; // ldr x18,[pc,#8]
       *(ptr4+1)=0xd61f0000|(18<<5);
     }

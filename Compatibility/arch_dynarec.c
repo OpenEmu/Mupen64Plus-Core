@@ -22,6 +22,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#if __x86_64__
+/* The new dynarec is compiled from this file rather than as a source of its
+ * own so that it is only built for the architectures NEW_DYNAREC is set for;
+ * the file itself rejects an empty NEW_DYNAREC. */
+#if defined(__x86_64__) || defined(__aarch64__)
 #include "device/r4300/new_dynarec/new_dynarec.c"
 #endif

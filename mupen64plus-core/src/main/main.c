@@ -101,7 +101,9 @@ int         g_EmulatorRunning = 0;      // need separate boolean to tell if emul
 
 int g_rom_pause;
 
+#ifndef IN_OPENEMU
 struct cheat_ctx g_cheat_ctx;
+#endif
 
 /* g_mem_base is global to allow plugins early access (before device is initialized).
  * Do not use this variable directly in emulation code.
@@ -1030,6 +1032,11 @@ static void apply_speed_limiter(void)
 #endif
 }
 
+/* OpenEmu keeps its own vertical interrupt handler in Compatibility/main.m,
+ * next to the definition of g_cheat_ctx: it applies the cheats and notifies
+ * the renderer, but leaves out the speed limiter, the input polling and the
+ * pause loop, because the frontend drives those itself. */
+#ifndef IN_OPENEMU
 /* TODO: make a GameShark module and move that there */
 static void gs_apply_cheats(struct cheat_ctx* ctx)
 {
@@ -1078,6 +1085,7 @@ void new_vi(void)
 
     netplay_check_sync(&g_dev.r4300.cp0);
 }
+#endif /* !IN_OPENEMU */
 
 static void main_switch_pak(int control_id)
 {

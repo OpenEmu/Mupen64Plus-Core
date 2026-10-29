@@ -435,7 +435,10 @@ void generic_jump_to(struct r4300_core* r4300, uint32_t address)
         cached_interpreter_jump_to(r4300, address);
         break;
 
-#ifndef NO_ASM
+    /* NO_ASM means the x86 assembly recompiler is not built, which does not
+     * apply to the architecture independent new dynarec: it is driven through
+     * the hot state, and without this case exceptions would not be taken. */
+#if !defined(NO_ASM) || defined(NEW_DYNAREC)
     case EMUMODE_DYNAREC:
 #ifdef NEW_DYNAREC
         r4300->new_dynarec_hot_state.pcaddr = address;

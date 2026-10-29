@@ -68,6 +68,7 @@
 		555FD46F2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 555FD46D2B82D07400E42351 /* glsl_CombinerProgramUniformFactoryAccurate.cpp */; };
 		55C1C6A42B82D9C100BE1EFA /* vru_controller.c in Sources */ = {isa = PBXBuildFile; fileRef = 55C1C6A22B82D9C100BE1EFA /* vru_controller.c */; };
 		55C1C6A62B82DB5100BE1EFA /* arch_dynarec.c in Sources */ = {isa = PBXBuildFile; fileRef = 55C1C6A52B82DB5100BE1EFA /* arch_dynarec.c */; };
+		A11C03D72EA0000000000011 /* linkage_arm64.S in Sources */ = {isa = PBXBuildFile; fileRef = 8784175E25994FEF002ED39D /* linkage_arm64.S */; };
 		8723F7341F74A4D7003E572A /* F3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7061F74A49E003E572A /* F3D.cpp */; };
 		8723F7351F74A4D7003E572A /* F3DAM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F7081F74A49E003E572A /* F3DAM.cpp */; };
 		8723F7361F74A4D7003E572A /* F3DBETA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8723F70A1F74A49E003E572A /* F3DBETA.cpp */; };
@@ -2998,6 +2999,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 1DEB913A08733D840010E9CD /* Build configuration list for PBXNativeTarget "Mupen64Plus" */;
 			buildPhases = (
+				A11C03D82EA0000000000021 /* Generate asm_defines_gas.h */,
 				8D5B49B1048680CD000E48DA /* Sources */,
 				8D5B49AF048680CD000E48DA /* Resources */,
 				8D5B49B3048680CD000E48DA /* Frameworks */,
@@ -3289,6 +3291,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A11C03D82EA0000000000021 /* Generate asm_defines_gas.h */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate asm_defines_gas.h";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nDEFINES=\"$DERIVED_FILE_DIR/asm_defines_gas.h\"\nARCH=\"${ARCHS%% *}\"\ncase \"$ARCH\" in\n    arm64) DYNAREC=NEW_DYNAREC_ARM64 ;;\n    x86_64) DYNAREC=NEW_DYNAREC_X64 ;;\n    *) echo \"error: no dynarec for $ARCH\" >&2; exit 1 ;;\nesac\nmkdir -p \"$DERIVED_FILE_DIR\"\nxcrun clang -arch \"$ARCH\" -isysroot \"$SDKROOT\" \\\n    -I \"$SRCROOT/mupen64plus-core/src\" \\\n    -DIN_OPENEMU -DM64P_PARALLEL -DNEW_DYNAREC=$DYNAREC \\\n    -c \"$SRCROOT/mupen64plus-core/src/asm_defines/asm_defines.c\" \\\n    -o \"$DERIVED_FILE_DIR/asm_defines.o\"\nLC_ALL=C awk '/@ASM_DEFINE/ { print \"#define\", $2, $3 }' \"$DERIVED_FILE_DIR/asm_defines.o\" > \"$DEFINES\"\n";
+		};
 		8D5B49B1048680CD000E48DA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3343,6 +3364,7 @@
 				878418DD25995594002ED39D /* rdp_core.c in Sources */,
 				878418E7259955A2002ED39D /* ri_controller.c in Sources */,
 				55C1C6A62B82DB5100BE1EFA /* arch_dynarec.c in Sources */,
+				A11C03D72EA0000000000011 /* linkage_arm64.S in Sources */,
 				878418F1259955B2002ED39D /* rsp_core.c in Sources */,
 				878418FB259955B9002ED39D /* si_controller.c in Sources */,
 				87841905259955BE002ED39D /* vi_controller.c in Sources */,
@@ -3448,6 +3470,7 @@
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_FAST_MATH = YES;
 				GCC_MODEL_TUNING = G5;
+				"EXCLUDED_SOURCE_FILE_NAMES[arch=x86_64]" = linkage_arm64.S;
 				GCC_PREFIX_HEADER = Mupen64Plus_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -3456,12 +3479,14 @@
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
 					"$(inherited)",
 					NO_ASM,
+					"NEW_DYNAREC=NEW_DYNAREC_ARM64",
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=x86_64]" = (
 					"$(inherited)",
 					"NEW_DYNAREC=NEW_DYNAREC_X64",
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)",
 					"\"$(SRCROOT)/mupen64plus-core/src\"",
 					"\"$(SRCROOT)/Compatibility/SDL\"",
 					"\"$(SRCROOT)/mupen64plus-core/subprojects/md5\"",
@@ -3486,14 +3511,6 @@
 					"-DIN_OPENEMU",
 					"-DM64P_PARALLEL",
 					"-DDYNAREC",
-					"-DNDEBUG",
-					"-DNOCRYPT",
-					"-DNOUNCRYPT",
-					"-fno-strict-aliasing",
-				);
-				"OTHER_CFLAGS[arch=arm64]" = (
-					"-DIN_OPENEMU",
-					"-DM64P_PARALLEL",
 					"-DNDEBUG",
 					"-DNOCRYPT",
 					"-DNOUNCRYPT",
@@ -3522,16 +3539,19 @@
 				GCC_FAST_MATH = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 3;
+				"EXCLUDED_SOURCE_FILE_NAMES[arch=x86_64]" = linkage_arm64.S;
 				GCC_PREFIX_HEADER = Mupen64Plus_Prefix.pch;
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=arm64]" = (
 					"$(inherited)",
 					NO_ASM,
+					"NEW_DYNAREC=NEW_DYNAREC_ARM64",
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=x86_64]" = (
 					"$(inherited)",
 					"NEW_DYNAREC=NEW_DYNAREC_X64",
 				);
 				HEADER_SEARCH_PATHS = (
+					"$(DERIVED_FILE_DIR)",
 					"\"$(SRCROOT)/mupen64plus-core/src\"",
 					"\"$(SRCROOT)/Compatibility/SDL\"",
 					"\"$(SRCROOT)/mupen64plus-core/subprojects/md5\"",
@@ -3556,14 +3576,6 @@
 					"-DIN_OPENEMU",
 					"-DM64P_PARALLEL",
 					"-DDYNAREC",
-					"-DNDEBUG",
-					"-DNOCRYPT",
-					"-DNOUNCRYPT",
-					"-fno-strict-aliasing",
-				);
-				"OTHER_CFLAGS[arch=arm64]" = (
-					"-DIN_OPENEMU",
-					"-DM64P_PARALLEL",
 					"-DNDEBUG",
 					"-DNOCRYPT",
 					"-DNOUNCRYPT",
@@ -3786,7 +3798,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/png\"",
-					"$(PROJECT_DIR)/GLideN64/src/GLideNHQ/lib",
 				);
 				LLVM_LTO = NO;
 				MACH_O_TYPE = mh_bundle;
@@ -3843,7 +3854,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/png\"",
-					"$(PROJECT_DIR)/GLideN64/src/GLideNHQ/lib",
 				);
 				LLVM_LTO = NO;
 				MACH_O_TYPE = mh_bundle;

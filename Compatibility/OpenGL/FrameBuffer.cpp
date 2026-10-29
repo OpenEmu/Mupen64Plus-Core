@@ -31,8 +31,11 @@
 using namespace std;
 using namespace graphics;
 
+/* The frontend owns the default framebuffer, so a copy target must not be
+ * created for it: the copy pass would render into a handle the frontend never
+ * bound, which shows up as a black screen while emulation keeps running. */
 FrameBuffer::FrameBuffer()
-	: m_copyFBO(ObjectHandle::defaultFramebuffer)
+	: m_copyFBO(ObjectHandle::null)
 	, m_ColorBufferFBO(0)
 	, m_pColorBufferTexture(nullptr)
 {

@@ -25,7 +25,71 @@
 #include <sys/types.h> // needed for u_int, u_char, etc
 #include <assert.h>
 
+// The cache addressing variants are defined up here because jit_write_window()
+// already needs them; the allocation further down evaluates CACHE_ADDR again.
+#define FIXED_CACHE_ADDR 1    // Put the dynarec cache at extra_memory address
+#define DYNAMIC_CACHE_ADDR 2  // Put the dynarec cache at random address
+#define DOUBLE_CACHE_ADDR 3   // Put the dynarec cache at random address with RW address != RX address
+#define JIT_CACHE_ADDR 4      // Apple MAP_JIT page, write window toggled explicitly
+
+// Apple Silicon forbids RWX pages. DOUBLE_CACHE_ADDR solves that with two
+// mappings of one shm object - but on Apple Silicon that raises SIGBUS as soon as
+// execution jumps through the RX mapping. The intended way there is MAP_JIT: a
+// page that is alternately writable OR executable, toggled with
+// pthread_jit_write_protect_np(). Hence there is ONE address here; base_addr and
+// base_addr_rx point at the same mapping.
+#ifdef __APPLE__
+#define CACHE_ADDR JIT_CACHE_ADDR
+#else
+#define CACHE_ADDR FIXED_CACHE_ADDR
+#endif
+
 #if defined(__APPLE__)
+#include <sys/mman.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <libkern/OSCacheControl.h> // sys_icache_invalidate()
+
+// A page is always either writable or executable, never both. The write window
+// has to be open before emitting code and closed before executing it. On all
+// other platforms these are no-ops so the call sites do not have to be littered
+// with #ifdefs.
+//
+// The window is nestable, and it has to be: new_recompile_block() keeps it open
+// while set_jump_target() and cache_flush() open it again inside. A plain on/off
+// would close too early there and let the rest of the block be written into a
+// non-writable page. A depth counter therefore only really switches at the
+// 0<->1 boundary; the counters are per thread because the write protection is
+// per thread as well.
+#if CACHE_ADDR==JIT_CACHE_ADDR
+static __thread int jit_write_depth;
+#endif
+
+static void jit_write_window(int writable)
+{
+#if CACHE_ADDR==JIT_CACHE_ADDR
+  // Closing without an open window would be a bookkeeping error and would drive
+  // the counter below zero, inverting the logic. assert() is compiled out in
+  // release builds, hence a real check here.
+  if(writable) {
+    if(jit_write_depth++==0)
+      pthread_jit_write_protect_np(0);
+  }else{
+    if(jit_write_depth<=0) {
+      // No DebugMessage() available here yet: it lives in callbacks.h, which is
+      // only included further down.
+      fprintf(stderr, "new_dynarec: jit_write_window() closed without an open window\n");
+      return;
+    }
+    if(--jit_write_depth==0)
+      pthread_jit_write_protect_np(1);
+  }
+#else
+  (void)writable;
+#endif
+}
+
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
@@ -2899,6 +2963,7 @@ static void invalidate_all_pages(void)
     }
   }
   #if NEW_DYNAREC >= NEW_DYNAREC_ARM
+  // cache_flush() opens the write window itself.
   cache_flush((char *)base_addr_rx,(char *)base_addr_rx+(1<<TARGET_SIZE_2));
   #endif
   #ifdef USE_MINI_HT
@@ -8633,18 +8698,17 @@ void new_dynarec_init(void)
 #if !defined(RECOMP_DBG)
 #if NEW_DYNAREC == NEW_DYNAREC_ARM64
 
-#define FIXED_CACHE_ADDR 1    // Put the dynarec cache at extra_memory address
-#define DYNAMIC_CACHE_ADDR 2  // Put the dynarec cache at random address
-#define DOUBLE_CACHE_ADDR 3   // Put the dynarec cache at random address with RW address != RX address
+// The variants and CACHE_ADDR themselves are defined further up in the file
+// because jit_write_window() already needs them.
 
-// Default to fixed cache address
-#define CACHE_ADDR FIXED_CACHE_ADDR
-
-#if CACHE_ADDR==DOUBLE_CACHE_ADDR
-  #include <unistd.h>
-  #include <sys/types.h>
-  #include <fcntl.h>
-
+#if CACHE_ADDR==JIT_CACHE_ADDR
+  base_addr = mmap(NULL, 1<<TARGET_SIZE_2,
+                 PROT_READ | PROT_WRITE | PROT_EXEC,
+                 MAP_PRIVATE | MAP_ANONYMOUS | MAP_JIT,
+                 -1, 0);
+  assert(base_addr!=(void*)-1);
+  base_addr_rx = base_addr;
+#elif CACHE_ADDR==DOUBLE_CACHE_ADDR
   int fd = shm_open("/new_dynarec", O_RDWR | O_CREAT | O_EXCL, 0600);
   assert(fd!=-1);
   shm_unlink("/new_dynarec");
@@ -8728,7 +8792,13 @@ void new_dynarec_init(void)
     g_dev.r4300.new_dynarec_hot_state.memory_map[n]=(uintptr_t)-1;
 
   tlb_speed_hacks();
+  // arch_init() writes the jump table to the end of the code cache. Under
+  // MAP_JIT (Apple Silicon) the page is protected by default - otherwise the
+  // write window only opens in new_recompile_block(), which made this raise
+  // SIGBUS (KERN_PROTECTION_FAILURE).
+  jit_write_window(1);
   arch_init();
+  jit_write_window(0);
 }
 
 void new_dynarec_cleanup(void)
@@ -8758,6 +8828,8 @@ void new_dynarec_cleanup(void)
 
 int new_recompile_block(int addr)
 {
+  // From here on the cache is written to.
+  jit_write_window(1);
 #if defined(RECOMPILER_DEBUG) && !defined(RECOMP_DBG)
   recomp_dbg_block(addr);
 #endif
@@ -8796,6 +8868,7 @@ int new_recompile_block(int addr)
     else {
       assem_debug("Compile at unmapped memory address: %x ", (int)addr);
       //assem_debug("start: %x next: %x",g_dev.r4300.new_dynarec_hot_state.memory_map[start>>12],g_dev.r4300.new_dynarec_hot_state.memory_map[(start+4096)>>12]);
+      jit_write_window(0);
       return 1; // Caller will invoke exception handler
     }
     //DebugMessage(M64MSG_VERBOSE, "source= %x",(intptr_t)source);
@@ -11804,6 +11877,9 @@ int new_recompile_block(int addr)
   u_int *ptr=(u_int*)copy;
   ptr[slen]=dirty_entry_count;
 
+  // The window stays open here: further down ll_kill_pointers() (via
+  // kill_pointer()) and do_clear_cache() patch into the cache again. It is only
+  // closed at the end of the function so the page becomes executable.
   #if NEW_DYNAREC >= NEW_DYNAREC_ARM
   intptr_t beginning_rx=((intptr_t)beginning-(intptr_t)base_addr)+(intptr_t)base_addr_rx;
   intptr_t out_rx=((intptr_t)out-(intptr_t)base_addr)+(intptr_t)base_addr_rx;
@@ -11880,5 +11956,10 @@ int new_recompile_block(int addr)
     }
     expirep=(expirep+1)&65535;
   }
+
+  // All writes are done: close the window, the block is executed right away and
+  // needs an executable page.
+  jit_write_window(0);
+
   return 0;
 }

@@ -315,11 +315,7 @@ static void MupenSetAudioSpeed(int percent)
 //#ifdef DEBUG
 //    int ival = EMUMODE_PURE_INTERPRETER;
 //#else
-#ifdef __aarch64__
-	int ival = EMUMODE_PURE_INTERPRETER;
-#else
     int ival = EMUMODE_DYNAREC;
-#endif
 //#endif
 
     ConfigOpenSection("Core", &section);
