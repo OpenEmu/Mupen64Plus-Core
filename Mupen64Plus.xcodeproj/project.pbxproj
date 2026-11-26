@@ -3786,7 +3786,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/png\"",
-					"$(PROJECT_DIR)/GLideN64/src/GLideNHQ/lib",
 				);
 				LLVM_LTO = NO;
 				MACH_O_TYPE = mh_bundle;
@@ -3843,7 +3842,6 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/png\"",
-					"$(PROJECT_DIR)/GLideN64/src/GLideNHQ/lib",
 				);
 				LLVM_LTO = NO;
 				MACH_O_TYPE = mh_bundle;
